@@ -10,12 +10,14 @@ import GodsPage from './components/gods/GodsPage';
 import PoojaPage from './components/pooja/PoojaPage';
 import StoriesPage from './components/stories/StoriesPage';
 import AdminPanel from './components/admin/AdminPanel';
+import { loadRemoteContent, publishContentToGitHub } from './services/contentBackendService';
 import {
   addHistory,
   clearFavorites,
   clearHistory,
   exportAllContent,
   getContentBundle,
+  getContentSourceInfo,
   getFavoriteIds,
   getReaderFontSize,
   importAllContent,
@@ -27,6 +29,7 @@ import {
   savePoojaBidhi,
   saveStory,
   saveStotra,
+  seedRemoteContentIfNoLocal,
   setReaderFontSize as saveReaderFontSize,
   toggleFavorite,
   updateCategory,
@@ -55,6 +58,8 @@ interface ContentStatus {
 }
 
 const normalizeSearch = (value: string): string => value.trim().toLowerCase();
+const ADMIN_SESSION_KEY = 'om-stotra-sagar-admin-session';
+const ADMIN_PASSCODE = import.meta.env.VITE_ADMIN_PASSCODE as string | undefined;
 // TODO: Add an English/Nepali language switcher in a future release.
 
 export default function App() {
@@ -69,6 +74,8 @@ export default function App() {
   const [readerFontSize, setReaderFontSizeState] = useState<ReaderFontSize>(getReaderFontSize());
   const [status, setStatus] = useState<ContentStatus | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [contentSourceInfo, setContentSourceInfo] = useState(() => getContentSourceInfo());
+  const [adminUnlocked, setAdminUnlocked] = useState(() => typeof sessionStorage !== 'undefined' && sessionStorage.getItem(ADMIN_SESSION_KEY) === 'unlocked');
 
   const stotras = content.stotras.length > 0 ? content.stotras : DEFAULT_STOTRAS;
   const categories = content.categories.length > 0 ? content.categories : DEFAULT_CATEGORIES;
@@ -108,9 +115,29 @@ export default function App() {
     saveReaderFontSize(readerFontSize);
   }, [readerFontSize]);
 
+  useEffect(() => {
+    let isMounted = true;
+    loadRemoteContent().then((remoteContent) => {
+      if (!isMounted || !remoteContent) return;
+      try {
+        const seeded = seedRemoteContentIfNoLocal(remoteContent);
+        if (seeded) {
+          setContent(getContentBundle());
+          setContentSourceInfo(getContentSourceInfo());
+        }
+      } catch (error) {
+        console.warn('Remote content ignored.');
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const syncContent = () => {
     setContent(getContentBundle());
     setFavoriteIds(getFavoriteIds());
+    setContentSourceInfo(getContentSourceInfo());
   };
 
   const setMessage = (text: string, kind: ContentStatus['kind'] = 'neutral') => {
@@ -126,6 +153,14 @@ export default function App() {
       setActiveCategory('All');
       setActiveDeity(null);
       clearMessage();
+    }
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    if (value.trim() && activeView !== 'stotras') {
+      setActiveView('stotras');
+      setIsMenuOpen(false);
     }
   };
 
@@ -357,6 +392,44 @@ export default function App() {
     }
   };
 
+  const handleAdminUnlock = (passcode: string) => {
+    if (!ADMIN_PASSCODE) {
+      setMessage('Admin passcode is not configured.', 'error');
+      return false;
+    }
+    if (passcode !== ADMIN_PASSCODE) {
+      setMessage('Invalid admin passcode.', 'error');
+      return false;
+    }
+    sessionStorage.setItem(ADMIN_SESSION_KEY, 'unlocked');
+    setAdminUnlocked(true);
+    setMessage('Admin unlocked for this browser session.');
+    return true;
+  };
+
+  const handleAdminLogout = () => {
+    sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    setAdminUnlocked(false);
+    setMessage('Admin logged out.');
+    handleViewChange('home');
+  };
+
+  const handlePublishContent = async (): Promise<boolean> => {
+    const password = window.prompt('Enter backend admin password to publish content') || '';
+    if (!password) {
+      setMessage('Backend admin password is required to publish.', 'error');
+      return false;
+    }
+    setIsSaving(true);
+    try {
+      const result = await publishContentToGitHub(getContentBundle(), password);
+      setMessage(result.message, result.ok ? 'neutral' : 'error');
+      return result.ok;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleBrowseStotras = (deity: string) => {
     setActiveDeity(deity);
     setActiveView('stotras');
@@ -371,7 +444,7 @@ export default function App() {
       activeView={activeView}
       searchQuery={searchQuery}
       isMenuOpen={isMenuOpen}
-      onSearchChange={setSearchQuery}
+      onSearchChange={handleSearchChange}
       onViewChange={handleViewChange}
       onToggleMenu={() => setIsMenuOpen((open) => !open)}
     >
@@ -392,7 +465,7 @@ export default function App() {
           activeCategory={activeCategory}
           isLoading={false}
           favoriteStotraIds={favoriteIds}
-          onSearchChange={setSearchQuery}
+          onSearchChange={handleSearchChange}
           onDeityChange={setActiveDeity}
           onCategoryChange={setActiveCategory}
           onOpenStotra={handleOpenStotra}
@@ -421,33 +494,45 @@ export default function App() {
           onBrowseStotras={() => handleViewChange('stotras')}
         />
       ) : activeView === 'admin' ? (
-        <AdminPanel
-          isOpen
-          stotras={stotras}
-          categories={categories}
-          deities={deities}
-          poojaBidhi={poojaBidhi}
-          stories={stories}
-          panchang={panchang}
-          isSaving={isSaving}
-          message={status?.kind === 'neutral' ? status.text : null}
-          errorMessage={status?.kind === 'error' ? status.text : null}
-          onClose={() => handleViewChange('home')}
-          onSaveStotra={handleSaveStotra}
-          onDeleteStotra={handleDeleteStotra}
-          onSaveCategory={handleSaveCategory}
-          onDeleteCategory={handleDeleteCategory}
-          onSaveDeity={handleSaveDeity}
-          onDeleteDeity={handleDeleteDeity}
-          onSavePoojaBidhi={handleSavePoojaBidhi}
-          onDeletePoojaBidhi={handleDeletePoojaBidhi}
-          onSaveStory={handleSaveStory}
-          onDeleteStory={handleDeleteStory}
-          onSavePanchangContent={handleSavePanchangContent}
-          onExportAllContent={handleExportAllContent}
-          onImportAllContent={handleImportAllContent}
-          onResetToDefaultContent={handleResetToDefaultContent}
-        />
+        adminUnlocked ? (
+          <AdminPanel
+            isOpen
+            stotras={stotras}
+            categories={categories}
+            deities={deities}
+            poojaBidhi={poojaBidhi}
+            stories={stories}
+            panchang={panchang}
+            isSaving={isSaving}
+            message={status?.kind === 'neutral' ? status.text : null}
+            errorMessage={status?.kind === 'error' ? status.text : null}
+            localContentActive={contentSourceInfo.hasLocalContent}
+            onClose={() => handleViewChange('home')}
+            onLogoutAdmin={handleAdminLogout}
+            onSaveStotra={handleSaveStotra}
+            onDeleteStotra={handleDeleteStotra}
+            onSaveCategory={handleSaveCategory}
+            onDeleteCategory={handleDeleteCategory}
+            onSaveDeity={handleSaveDeity}
+            onDeleteDeity={handleDeleteDeity}
+            onSavePoojaBidhi={handleSavePoojaBidhi}
+            onDeletePoojaBidhi={handleDeletePoojaBidhi}
+            onSaveStory={handleSaveStory}
+            onDeleteStory={handleDeleteStory}
+            onSavePanchangContent={handleSavePanchangContent}
+            onExportAllContent={handleExportAllContent}
+            onImportAllContent={handleImportAllContent}
+            onResetToDefaultContent={handleResetToDefaultContent}
+            onPublishContent={handlePublishContent}
+          />
+        ) : (
+          <AdminAccessGate
+            errorMessage={status?.kind === 'error' ? status.text : null}
+            message={status?.kind === 'neutral' ? status.text : null}
+            onSubmit={handleAdminUnlock}
+            onCancel={() => handleViewChange('home')}
+          />
+        )
       ) : (
         <HomePage
           stotras={stotras}
@@ -461,7 +546,7 @@ export default function App() {
           activeCategory={activeCategory}
           isLoading={false}
           favoriteStotraIds={favoriteIds}
-          onSearchChange={setSearchQuery}
+          onSearchChange={handleSearchChange}
           onDeityChange={setActiveDeity}
           onCategoryChange={setActiveCategory}
           onNavigate={handleNavigate}
@@ -481,5 +566,57 @@ export default function App() {
         onToggleFavorite={handleToggleFavorite}
       />
     </AppShell>
+  );
+}
+
+function AdminAccessGate({
+  message,
+  errorMessage,
+  onSubmit,
+  onCancel,
+}: {
+  message: string | null;
+  errorMessage: string | null;
+  onSubmit: (passcode: string) => boolean;
+  onCancel: () => void;
+}) {
+  const [passcode, setPasscode] = useState('');
+
+  return (
+    <main className="page-container page-shell">
+      <section className="page-hero editorial-card admin-access-card">
+        <p className="page-eyebrow">Admin Access</p>
+        <h1 className="page-title">Unlock local content studio</h1>
+        <p className="page-subtitle">
+          Enter the admin passcode for this browser session. This is a simple v1 content gate, not production authentication.
+        </p>
+        {message && <StateMessage title="Admin" message={message} />}
+        {errorMessage && <StateMessage title="Admin notice" message={errorMessage} tone="error" />}
+        <form
+          className="form-stack admin-access-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (onSubmit(passcode)) setPasscode('');
+          }}
+        >
+          <input
+            type="password"
+            value={passcode}
+            onChange={(event) => setPasscode(event.target.value)}
+            placeholder="Admin passcode"
+            className="admin-input"
+            autoComplete="current-password"
+          />
+          <div className="button-row">
+            <button className="action-button" type="submit">
+              Unlock Admin
+            </button>
+            <button className="secondary-button" type="button" onClick={onCancel}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      </section>
+    </main>
   );
 }

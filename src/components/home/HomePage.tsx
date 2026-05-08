@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, Calendar, Feather, Heart, Sparkles, ScrollText, ShieldCheck, Users } from 'lucide-react';
+import { ArrowRight, BookOpen, Calendar, Feather, Heart, Search, Sparkles, ScrollText, ShieldCheck, Users } from 'lucide-react';
 import type { Category, Deity, HinduStory, PoojaBidhi, Stotra } from '../../types';
 import StateMessage from '../common/StateMessage';
 
@@ -34,6 +34,7 @@ export default function HomePage({
   activeCategory,
   isLoading,
   favoriteStotraIds,
+  onSearchChange,
   onDeityChange,
   onCategoryChange,
   onNavigate,
@@ -117,6 +118,21 @@ export default function HomePage({
               </button>
             </div>
 
+            <div className="hero-search-row">
+              <div className="search-wrap hero-search-wrap">
+                <input
+                  type="text"
+                  aria-label="Search stotras from home"
+                  placeholder="Search stotras, deities, aartis, mantras..."
+                  value={searchQuery}
+                  onChange={(event) => onSearchChange(event.target.value)}
+                  onFocus={() => onNavigate('stotras')}
+                  className="search-bar"
+                />
+                <Search className="search-icon" size={16} />
+              </div>
+            </div>
+
             <div className="hero-note-card devotional-note editorial-card">
               <p className="page-eyebrow">Opening line</p>
               <p className="hero-sanskrit">ॐ नमः शिवाय</p>
@@ -127,7 +143,14 @@ export default function HomePage({
               <p className="hero-strip-label">Popular categories</p>
               <div className="chip-row">
                 {categories.slice(0, 6).map((category) => (
-                  <button key={category.id} onClick={() => onCategoryChange(category.name)} className="tag-chip tag-chip-muted">
+                  <button
+                    key={category.id}
+                    onClick={() => {
+                      onCategoryChange(category.name);
+                      onNavigate('stotras');
+                    }}
+                    className="tag-chip tag-chip-muted"
+                  >
                     {category.name}
                   </button>
                 ))}
@@ -151,9 +174,9 @@ export default function HomePage({
 
             <div className="hero-stats">
               <StatBadge label="Stotras" value={`${Math.max(stotras.length, 20)}+`} />
-              <StatBadge label="Deities" value="12" />
-              <StatBadge label="Pooja Guides" value="8" />
-              <StatBadge label="Stories" value="10" />
+              <StatBadge label="Deities" value={String(deities.length)} />
+              <StatBadge label="Pooja Guides" value={String(poojaBidhi.length)} />
+              <StatBadge label="Stories" value={String(stories.length)} />
             </div>
 
             <div className="hero-mini-grid">
@@ -239,7 +262,10 @@ export default function HomePage({
             {deities.slice(0, 6).map((deity, index) => (
               <button
                 key={deity.id}
-                onClick={() => onDeityChange(activeDeity === deity.name ? null : deity.name)}
+                onClick={() => {
+                  onDeityChange(activeDeity === deity.name ? null : deity.name);
+                  onNavigate('stotras');
+                }}
                 className={`deity-card-premium deity-showcase-card ${activeDeity === deity.name ? 'deity-card-active' : ''}`}
               >
                 <div className={`deity-card-top visual-gradient-${showcaseGradient(index)}`}>

@@ -55,12 +55,16 @@ export interface HinduStory {
   summary: string;
   story: string;
   lesson: string;
+  source?: string;
   tags: string[];
 }
 
 export interface PanchangTerm {
-  title: string;
-  text: string;
+  name?: string;
+  description?: string;
+  practicalMeaning?: string;
+  title?: string;
+  text?: string;
 }
 
 export interface PanchangContent {

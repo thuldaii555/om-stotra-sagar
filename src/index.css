@@ -1734,6 +1734,23 @@ h4 {
   margin-bottom: 0.25rem;
 }
 
+.backup-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(63, 52, 44, 0.10);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.backup-title {
+  margin: 0;
+  font-weight: 900;
+  color: var(--navy);
+}
+
 .admin-json {
   min-height: 18rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -3374,6 +3391,101 @@ body {
   }
 }
 
+.brand-lockup {
+  max-width: 18.5rem;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.brand-copy,
+.brand-title,
+.brand-subtitle {
+  min-width: 0;
+}
+
+.brand-title,
+.brand-subtitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brand-title {
+  white-space: nowrap;
+}
+
+.nav-bar {
+  column-gap: clamp(1rem, 2vw, 1.8rem);
+}
+
+.nav-menu-desktop {
+  gap: 0.35rem;
+}
+
+.nav-actions {
+  flex-shrink: 0;
+}
+
+.header-cta-desktop {
+  display: inline-flex;
+}
+
+.search-wrap-desktop {
+  min-width: 14rem;
+  width: 16rem;
+}
+
+.hero-search-row {
+  width: 100%;
+  max-width: 42rem;
+}
+
+.hero-search-wrap {
+  width: 100%;
+}
+
+.admin-subtabs {
+  padding: 0 1rem 0.8rem;
+  border-bottom: 1px solid rgba(91, 31, 31, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.admin-access-card {
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.admin-access-form {
+  max-width: 30rem;
+  margin-inline: auto;
+}
+
+.danger-button {
+  border-color: rgba(190, 18, 60, 0.22);
+  color: #9f1239;
+}
+
+@media (max-width: 1280px) {
+  .search-wrap-desktop {
+    display: none;
+  }
+}
+
+@media (max-width: 1180px) {
+  .brand-lockup {
+    max-width: 15.5rem;
+  }
+
+  .nav-item {
+    padding-inline: 0.72rem;
+  }
+}
+
+@media (max-width: 1040px) {
+  .header-cta-desktop {
+    display: none;
+  }
+}
+
 /* Premium rebuild overrides */
 .site-shell {
   min-height: 100vh;
@@ -4359,5 +4471,80 @@ body {
 
   .record-actions {
     justify-content: flex-start;
+  }
+}
+
+/* Functional header fixes: keep brand, nav, CTA, and search from colliding. */
+.nav-bar {
+  column-gap: clamp(1rem, 2vw, 1.8rem);
+}
+
+.brand-lockup {
+  max-width: 18.5rem;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.brand-copy,
+.brand-title,
+.brand-subtitle {
+  min-width: 0;
+}
+
+.brand-title,
+.brand-subtitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brand-title {
+  white-space: nowrap;
+}
+
+.nav-menu-desktop {
+  gap: 0.35rem;
+}
+
+.nav-actions {
+  flex-shrink: 0;
+}
+
+.header-cta-desktop {
+  display: inline-flex;
+}
+
+.search-wrap-desktop {
+  min-width: 14rem;
+  width: 16rem;
+}
+
+.hero-search-row {
+  width: 100%;
+  max-width: 42rem;
+}
+
+.hero-search-wrap {
+  width: 100%;
+}
+
+@media (max-width: 1280px) {
+  .search-wrap-desktop {
+    display: none;
+  }
+}
+
+@media (max-width: 1180px) {
+  .brand-lockup {
+    max-width: 15.5rem;
+  }
+
+  .nav-item {
+    padding-inline: 0.72rem;
+  }
+}
+
+@media (max-width: 1040px) {
+  .header-cta-desktop {
+    display: none;
   }
 }

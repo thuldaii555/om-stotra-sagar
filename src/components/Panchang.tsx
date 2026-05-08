@@ -6,6 +6,8 @@ import type { PanchangContent } from '../types';
 const today = new Date();
 const weekday = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(today);
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Local time zone';
+const termName = (item: { name?: string; title?: string }) => item.name || item.title || '';
+const termDescription = (item: { description?: string; text?: string }) => item.description || item.text || '';
 
 export default function Panchang({ content }: { content: PanchangContent }) {
   return (
@@ -42,7 +44,13 @@ export default function Panchang({ content }: { content: PanchangContent }) {
 
           <div className="content-grid panchang-info-grid">
             {content.dailyNotes.map((note, index) => (
-              <InfoCard key={`${note.title}-${index}`} icon={index % 2 === 0 ? <SunMedium /> : <MoonStar />} title={note.title} text={note.text} />
+              <InfoCard
+                key={`${termName(note)}-${index}`}
+                icon={index % 2 === 0 ? <SunMedium /> : <MoonStar />}
+                title={termName(note)}
+                text={termDescription(note)}
+                practicalMeaning={note.practicalMeaning}
+              />
             ))}
           </div>
         </div>
@@ -55,9 +63,10 @@ export default function Panchang({ content }: { content: PanchangContent }) {
           <div className="soft-divider" />
           <div className="content-grid term-grid">
             {content.terms.map((item, index) => (
-              <div key={`${item.title}-${index}`} className="term-card">
-                <p className="term-title">{item.title}</p>
-                <p className="term-copy">{item.text}</p>
+              <div key={`${termName(item)}-${index}`} className="term-card">
+                <p className="term-title">{termName(item)}</p>
+                <p className="term-copy">{termDescription(item)}</p>
+                {item.practicalMeaning && <p className="term-copy">Practical use: {item.practicalMeaning}</p>}
               </div>
             ))}
           </div>
@@ -72,12 +81,13 @@ export default function Panchang({ content }: { content: PanchangContent }) {
   );
 }
 
-function InfoCard({ icon, title, text }: { key?: string; icon: ReactNode; title: string; text: string }) {
+function InfoCard({ icon, title, text, practicalMeaning }: { key?: string; icon: ReactNode; title: string; text: string; practicalMeaning?: string }) {
   return (
     <div className="term-card term-card-with-icon">
       <div className="term-icon">{icon}</div>
       <p className="term-title">{title}</p>
       <p className="term-copy">{text}</p>
+      {practicalMeaning && <p className="term-copy">Practical use: {practicalMeaning}</p>}
     </div>
   );
 }

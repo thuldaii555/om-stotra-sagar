@@ -43,6 +43,13 @@ export default function StoriesPage({ stories }: StoriesPageProps) {
               <p className="reader-paragraph">{story.lesson}</p>
             </section>
 
+            {story.source && (
+              <section className="info-callout">
+                <p className="page-eyebrow">Source</p>
+                <p>{story.source}</p>
+              </section>
+            )}
+
             <div className="chip-row">
               {story.tags.map((tag) => (
                 <span key={tag} className="tag-chip tag-chip-muted">

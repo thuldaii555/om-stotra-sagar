@@ -1,85 +1,106 @@
 # Om Stotra Sagar
 
-Om Stotra Sagar is an English-first, local-first Hindu devotional reading website for stotras, deity profiles, pooja guidance, stories, Panchang learning, and personal favorites. It works in the browser without Firebase, login, backend setup, or a required internet connection.
+Om Stotra Sagar is an English-first, local-first Hindu devotional reading website for stotras, deity profiles, pooja guidance, stories, Panchang learning, and personal favorites.
 
-It includes:
-- Stotra reading with search and filters
-- Deity profiles
-- Pooja Bidhi guides
-- Family-friendly devotional stories
-- An editable educational Panchang guide
-- Local favorites
-- Local content admin tools
+It works as a static browser app by default. Firebase, login, and a required backend are not used.
 
-## Local-first architecture
+## Run Locally
 
-All editable content is stored in the browser using `localStorage`.
-
-That means:
-- Content changes stay on the same browser unless you export them.
-- Favorites and reader font size also persist locally.
-- Export and import are used for backup and restore.
-- Reset restores the bundled starter content.
-- Malformed saved content is normalized so the app can recover to usable defaults.
-
-## Run locally
-
-Prerequisite:
-- Node.js
-
-Steps:
 1. Install dependencies: `npm install`
 2. Start the app: `npm run dev`
 3. Open `http://localhost:3000`
 
-## Content storage
+## Local-First Mode
 
-The app stores:
-- Stotras
-- Deities
-- Categories
-- Pooja Bidhi
-- Stories
-- Panchang guide content
-- Favorites
-- Reader font size
+Editable content is stored in browser `localStorage`.
 
-Starter content lives in `src/data/defaultContent.ts`. User edits are saved in the browser.
+- The bundled starter library lives in `src/data/`.
+- Local edits stay in the same browser.
+- Export/import JSON is the portable backup path.
+- Reset Defaults restores bundled content and clears local favorites/history.
+- If optional backend functions are unavailable, the app falls back to local/default content.
 
-## Admin
+Content loading priority:
 
-The Admin section is a local content studio. It lets you:
-- Add, edit, and delete content locally
-- Create deities and categories inline while editing a stotra
-- Create deities inline while editing a pooja guide
-- Edit Panchang intro text, terms, daily notes, and disclaimer
-- Export all content as JSON
-- Import JSON backups
-- Reset the browser back to the default starter content
+1. localStorage user/admin edited content, if present
+2. remote GitHub content from the optional Netlify Function, only when no local browser bundle exists
+3. default bundled content
 
-## Export and import
+Remote content is not written over existing browser content automatically.
 
-- In Admin, open Backup & Restore.
-- Use Export Content to place the current content bundle in the JSON box.
-- Copy the JSON or save it separately as a backup.
-- Paste a previous export or load a JSON file, then use Import Content to restore it.
-- Invalid JSON is rejected with a clean error message.
+## Admin Passcode
 
-## Reset defaults
+Admin uses a simple v1 passcode gate.
 
-In Admin, open Backup & Restore and choose Reset to Default Content. This restores bundled starter content for stotras, deities, categories, pooja guides, stories, and Panchang guide content. It also clears local favorites and reading history.
+- Set `VITE_ADMIN_PASSCODE=` for local/static Admin access.
+- Admin unlock state is stored in `sessionStorage`, not `localStorage`.
+- If `VITE_ADMIN_PASSCODE` is missing, Admin shows: “Admin passcode is not configured.”
 
-## Current limitations
+This is not production authentication. Real auth can be added later.
 
-- Data is not synced across devices.
-- Panchang is an educational guide, not a live calculation service.
-- The starter texts and short excerpts should still be verified before public release.
-- Browser storage can be cleared by the user or browser settings, so export important edits.
+## Export / Import
 
-## Future plans
+In Admin, open **Backup & Publish**.
 
-See [docs/FUTURE_BACKEND.md](docs/FUTURE_BACKEND.md) for optional future work such as Nepali support, synced accounts, or live Panchang.
+- **Export Content** copies the current normalized content bundle into the JSON box.
+- **Import Content** restores JSON from the box.
+- **Reset Defaults** restores bundled content.
+- Export important edits before clearing browser data.
 
-## Netlify deployment
+## Optional GitHub Backend With Netlify Functions
 
-Do not deploy yet. When v1 is approved, build with `npm run build` and deploy the generated `dist` folder to Netlify as a static site.
+The app includes optional Netlify Functions:
+
+- `netlify/functions/get-content.cjs`
+- `netlify/functions/save-content.cjs`
+
+These functions read and write a JSON content file in GitHub:
+
+`data/om-stotra-content.json`
+
+Frontend code never receives the GitHub token. Publishing must go through the server-side Netlify Function.
+
+Required Netlify environment variables:
+
+```env
+ADMIN_PASSWORD=
+GITHUB_TOKEN=
+GITHUB_OWNER=
+GITHUB_REPO=
+GITHUB_BRANCH=main
+GITHUB_CONTENT_PATH=data/om-stotra-content.json
+```
+
+Local/static admin passcode:
+
+```env
+VITE_ADMIN_PASSCODE=
+```
+
+Never expose `GITHUB_TOKEN` in frontend code. Set it only in Netlify environment variables or a local Netlify dev environment.
+
+## Backend Behavior
+
+- On app load, the frontend tries `/.netlify/functions/get-content`.
+- If that endpoint is unavailable, unconfigured, or returns no content, localStorage/default content is used.
+- If localStorage content already exists, it remains active and remote content is ignored until the user imports or publishes intentionally.
+- In Admin, **Publish to GitHub** calls `/.netlify/functions/save-content`.
+- If backend env vars are missing or functions are unavailable, publishing shows `Backend not configured` and local editing still works.
+
+Normal Vite development does not require Netlify CLI:
+
+```bash
+npm run dev
+```
+
+To test functions locally later, install/use Netlify CLI, create a local `.env` with server-only variables, and run Netlify dev from the project root:
+
+```bash
+netlify dev
+```
+
+See `docs/NETLIFY_DEPLOYMENT.md` for account migration and deployment details.
+
+## Content Notes
+
+The site includes devotional texts, excerpts, meanings, pooja guides, stories, and Panchang education. Source notes are included on major content items. Traditional texts and regional variants should still be verified against preferred trusted editions before public release.

@@ -18,10 +18,18 @@ export type CategoryInput = Pick<Category, 'name' | 'description'> & { id?: stri
 export type PanchangContentInput = Partial<PanchangContent>;
 
 const CONTENT_KEY = 'om-stotra-sagar-content';
+const CONTENT_META_KEY = 'om-stotra-sagar-content-meta';
 const FAVORITES_KEY = 'om-stotra-sagar-favorites';
 const HISTORY_KEY = 'om-stotra-sagar-history';
 const READER_FONT_SIZE_KEY = 'reader-font-size';
 const MAX_HISTORY = 20;
+
+type ContentSource = 'local' | 'remote';
+
+interface ContentMetadata {
+  source: ContentSource;
+  updatedAt: string;
+}
 
 const createId = (prefix: string): string => {
   const randomId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2, 10);
@@ -121,19 +129,29 @@ const normalizeStory = (story: Partial<HinduStory> & { id?: string }, fallbackId
   summary: cleanText(story.summary),
   story: cleanText(story.story),
   lesson: cleanText(story.lesson),
+  source: cleanOptionalText(story.source),
   tags: cleanTags(story.tags),
 });
 
-const normalizePanchangTerm = (term: Partial<PanchangTerm>): PanchangTerm => ({
-  title: cleanText(term.title),
-  text: cleanText(term.text),
-});
+const normalizePanchangTerm = (term: Partial<PanchangTerm>): PanchangTerm => {
+  const name = cleanText(term.name || term.title);
+  const description = cleanText(term.description || term.text);
+  const practicalMeaning = cleanOptionalText(term.practicalMeaning);
+
+  return {
+    name,
+    description,
+    practicalMeaning,
+    title: name,
+    text: practicalMeaning ? `${description} Practical use: ${practicalMeaning}` : description,
+  };
+};
 
 const normalizePanchangContent = (content: Partial<PanchangContent> | undefined): PanchangContent => {
   const fallback = DEFAULT_CONTENT.panchang;
   const next = content ?? {};
-  const terms = ensureArray<Partial<PanchangTerm>>(next.terms).map(normalizePanchangTerm).filter((term) => term.title && term.text);
-  const dailyNotes = ensureArray<Partial<PanchangTerm>>(next.dailyNotes).map(normalizePanchangTerm).filter((term) => term.title && term.text);
+  const terms = ensureArray<Partial<PanchangTerm>>(next.terms).map(normalizePanchangTerm).filter((term) => term.name && term.description);
+  const dailyNotes = ensureArray<Partial<PanchangTerm>>(next.dailyNotes).map(normalizePanchangTerm).filter((term) => term.name && term.description);
 
   return {
     introTitle: cleanText(next.introTitle) || fallback.introTitle,
@@ -167,7 +185,11 @@ const readBundle = (): ContentBundle => {
   return normalizeBundle(stored);
 };
 
-const persistBundle = (bundle: ContentBundle): ContentBundle => writeStorage(CONTENT_KEY, bundle);
+const persistBundle = (bundle: ContentBundle, source: ContentSource = 'local'): ContentBundle => {
+  writeStorage(CONTENT_KEY, bundle);
+  writeStorage<ContentMetadata>(CONTENT_META_KEY, { source, updatedAt: new Date().toISOString() });
+  return bundle;
+};
 
 const updateBundle = (updater: (bundle: ContentBundle) => ContentBundle): ContentBundle => persistBundle(updater(readBundle()));
 
@@ -192,8 +214,58 @@ const upsertByCaseInsensitiveName = <T extends { id: string; name: string }>(ite
   return { items: copy, savedItem };
 };
 
+export function validateContentBundle(bundle: ContentBundle = readBundle()): string[] {
+  const issues: string[] = [];
+  const deityNames = new Set(bundle.deities.map((item) => item.name));
+  const categoryNames = new Set(bundle.categories.map((item) => item.name));
+
+  bundle.stotras.forEach((item) => {
+    if (!item.title || !item.deity || !item.category || !item.content || !item.source || item.tags.length === 0) issues.push(`Stotra incomplete: ${item.id}`);
+    if (!deityNames.has(item.deity)) issues.push(`Stotra deity mismatch: ${item.id} -> ${item.deity}`);
+    if (!categoryNames.has(item.category)) issues.push(`Stotra category mismatch: ${item.id} -> ${item.category}`);
+  });
+  bundle.deities.forEach((item) => {
+    if (!item.name || !item.description || !item.significance || item.tags.length === 0) issues.push(`Deity incomplete: ${item.id}`);
+  });
+  bundle.poojaBidhi.forEach((item) => {
+    if (!item.title || !item.deity || !item.overview || item.materials.length === 0 || item.steps.length === 0 || item.benefits.length === 0 || !item.cautions) issues.push(`Pooja guide incomplete: ${item.id}`);
+    if (item.deity !== 'Navagraha' && !deityNames.has(item.deity)) issues.push(`Pooja deity mismatch: ${item.id} -> ${item.deity}`);
+  });
+  bundle.stories.forEach((item) => {
+    if (!item.title || !item.summary || !item.story || !item.lesson || !item.source || item.tags.length === 0) issues.push(`Story incomplete: ${item.id}`);
+  });
+  if (!bundle.panchang.intro || bundle.panchang.terms.length === 0 || !bundle.panchang.disclaimer) issues.push('Panchang content incomplete');
+  bundle.panchang.terms.forEach((item, index) => {
+    if (!item.name || !item.description || !item.practicalMeaning) issues.push(`Panchang term incomplete: ${item.name || item.title || index + 1}`);
+  });
+
+  return issues;
+}
+
 export function getContentBundle(): ContentBundle {
   return readBundle();
+}
+
+export function hasLocalContentBundle(): boolean {
+  return typeof localStorage !== 'undefined' && localStorage.getItem(CONTENT_KEY) !== null;
+}
+
+export function getContentSourceInfo(): { hasLocalContent: boolean; source: ContentSource | 'default'; updatedAt?: string } {
+  const metadata = readStorage<ContentMetadata | null>(CONTENT_META_KEY, null);
+  if (hasLocalContentBundle()) {
+    return {
+      hasLocalContent: true,
+      source: metadata?.source || 'local',
+      updatedAt: metadata?.updatedAt,
+    };
+  }
+  return { hasLocalContent: false, source: 'default' };
+}
+
+export function seedRemoteContentIfNoLocal(bundle: ContentBundle): boolean {
+  if (hasLocalContentBundle()) return false;
+  persistBundle(normalizeBundle(bundle), 'remote');
+  return true;
 }
 
 export function getStotras(): Stotra[] {
@@ -368,10 +440,10 @@ export function exportAllContent(): string {
   return JSON.stringify(readBundle(), null, 2);
 }
 
-export function importAllContent(json: string): ContentBundle {
+export function importAllContent(json: string, source: ContentSource = 'local'): ContentBundle {
   const parsed = JSON.parse(json) as Partial<ContentBundle>;
   const next = normalizeBundle(parsed);
-  persistBundle(next);
+  persistBundle(next, source);
   return next;
 }
 

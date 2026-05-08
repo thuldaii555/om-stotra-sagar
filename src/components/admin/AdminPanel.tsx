@@ -15,6 +15,7 @@ interface AdminPanelProps {
   isSaving: boolean;
   message: string | null;
   errorMessage: string | null;
+  localContentActive: boolean;
   onClose: () => void;
   onSaveStotra: (input: StotraInput, id?: string) => boolean;
   onDeleteStotra: (id: string) => void;
@@ -30,9 +31,12 @@ interface AdminPanelProps {
   onExportAllContent: () => string;
   onImportAllContent: (json: string) => boolean;
   onResetToDefaultContent: () => void;
+  onPublishContent: () => Promise<boolean>;
+  onLogoutAdmin: () => void;
 }
 
 type AdminTab = 'stotras' | 'deities' | 'pooja' | 'stories' | 'categories' | 'panchang' | 'tools';
+type AdminGroup = 'content' | 'setup' | 'backup';
 
 const emptyStotraForm: StotraInput = {
   title: '',
@@ -81,6 +85,7 @@ const emptyStoryForm: HinduStoryInput = {
   summary: '',
   story: '',
   lesson: '',
+  source: '',
   tags: [],
 };
 
@@ -101,15 +106,27 @@ const normalize = (value: string) => value.trim().toLowerCase();
 const fromCommaList = (value: string): string[] => value.split(',').map((item) => item.trim()).filter(Boolean);
 const fromLineList = (value: string): string[] => value.split(/[\n,]/).map((item) => item.trim()).filter(Boolean);
 const toCommaList = (items: string[]): string => items.join(', ');
+const toLineList = (items: string[]): string => items.join('\n');
 const fromTermList = (value: string) =>
   value
     .split('\n')
     .map((line) => {
       const [title, ...textParts] = line.split(':');
-      return { title: title?.trim() || '', text: textParts.join(':').trim() };
+      const [description, practicalMeaning] = textParts.join(':').split('|');
+      const name = title?.trim() || '';
+      const cleanDescription = description?.trim() || '';
+      const cleanPracticalMeaning = practicalMeaning?.trim() || '';
+      return {
+        name,
+        title: name,
+        description: cleanDescription,
+        practicalMeaning: cleanPracticalMeaning || undefined,
+        text: cleanPracticalMeaning ? `${cleanDescription} Practical use: ${cleanPracticalMeaning}` : cleanDescription,
+      };
     })
-    .filter((term) => term.title && term.text);
-const toTermList = (items: { title: string; text: string }[]): string => items.map((item) => `${item.title}: ${item.text}`).join('\n');
+    .filter((term) => term.name && term.description);
+const toTermList = (items: { name?: string; title?: string; description?: string; text?: string; practicalMeaning?: string }[]): string =>
+  items.map((item) => `${item.name || item.title}: ${item.description || item.text}${item.practicalMeaning ? ` | ${item.practicalMeaning}` : ''}`).join('\n');
 
 export default function AdminPanel({
   isOpen,
@@ -122,6 +139,7 @@ export default function AdminPanel({
   isSaving,
   message,
   errorMessage,
+  localContentActive,
   onClose,
   onSaveStotra,
   onDeleteStotra,
@@ -137,8 +155,11 @@ export default function AdminPanel({
   onExportAllContent,
   onImportAllContent,
   onResetToDefaultContent,
+  onPublishContent,
+  onLogoutAdmin,
 }: AdminPanelProps) {
   const [tab, setTab] = useState<AdminTab>('stotras');
+  const [group, setGroup] = useState<AdminGroup>('content');
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
   const [exportText, setExportText] = useState('');
   const [stotraForm, setStotraForm] = useState<StotraInput>(emptyStotraForm);
@@ -280,6 +301,9 @@ export default function AdminPanel({
     if (storyForm.title.trim().length < 2 || storyForm.summary.trim().length < 5 || storyForm.story.trim().length < 10 || storyForm.lesson.trim().length < 5) {
       setNotice('Title, summary, story, and lesson are required.');
       return;
+    }
+    if (!storyForm.source?.trim()) {
+      setNotice('Source is recommended before publishing publicly.');
     }
     const saved = editingStoryId
       ? onSaveStory({ ...storyForm, tags: fromCommaList(toCommaList(storyForm.tags || [])) }, editingStoryId)
@@ -424,6 +448,11 @@ export default function AdminPanel({
     setValidationMessage('Local content reset to default content.');
   };
 
+  const chooseGroup = (nextGroup: AdminGroup) => {
+    setGroup(nextGroup);
+    setTab(nextGroup === 'content' ? 'stotras' : nextGroup === 'setup' ? 'deities' : 'tools');
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -443,27 +472,44 @@ export default function AdminPanel({
               </div>
               <div className="admin-hero-badges">
                 <span className="badge">Local-first</span>
-                <span className="badge">Export Content</span>
-                <span className="badge">No backend</span>
+                <span className="badge">Export / Import</span>
+                <span className="badge">Optional GitHub Publish</span>
               </div>
+              <button onClick={onLogoutAdmin} className="secondary-button">
+                Logout Admin
+              </button>
               <button onClick={onClose} className="icon-button" aria-label="Close admin panel">
                 <X size={18} />
               </button>
             </header>
 
             <div className="admin-tabs nav-menu">
-              <TabButton active={tab === 'stotras'} onClick={() => setTab('stotras')} icon={<ScrollText size={16} />} label="Stotras" />
-              <TabButton active={tab === 'deities'} onClick={() => setTab('deities')} icon={<Sparkles size={16} />} label="Deities" />
-              <TabButton active={tab === 'categories'} onClick={() => setTab('categories')} icon={<Layers size={16} />} label="Categories" />
-              <TabButton active={tab === 'pooja'} onClick={() => setTab('pooja')} icon={<BookOpen size={16} />} label="Pooja Bidhi" />
-              <TabButton active={tab === 'stories'} onClick={() => setTab('stories')} icon={<BookOpen size={16} />} label="Stories" />
-              <TabButton active={tab === 'panchang'} onClick={() => setTab('panchang')} icon={<CalendarClock size={16} />} label="Panchang" />
-              <TabButton active={tab === 'tools'} onClick={() => setTab('tools')} icon={<Download size={16} />} label="Backup & Restore" />
+              <TabButton active={group === 'content'} onClick={() => chooseGroup('content')} icon={<ScrollText size={16} />} label="Content" />
+              <TabButton active={group === 'setup'} onClick={() => chooseGroup('setup')} icon={<Layers size={16} />} label="Library Setup" />
+              <TabButton active={group === 'backup'} onClick={() => chooseGroup('backup')} icon={<Download size={16} />} label="Backup & Publish" />
+            </div>
+
+            <div className="admin-subtabs nav-menu">
+              {group === 'content' && (
+                <>
+                  <TabButton active={tab === 'stotras'} onClick={() => setTab('stotras')} icon={<ScrollText size={16} />} label="Stotras" />
+                  <TabButton active={tab === 'pooja'} onClick={() => setTab('pooja')} icon={<BookOpen size={16} />} label="Pooja Bidhi" />
+                  <TabButton active={tab === 'stories'} onClick={() => setTab('stories')} icon={<BookOpen size={16} />} label="Stories" />
+                </>
+              )}
+              {group === 'setup' && (
+                <>
+                  <TabButton active={tab === 'deities'} onClick={() => setTab('deities')} icon={<Sparkles size={16} />} label="Deities" />
+                  <TabButton active={tab === 'categories'} onClick={() => setTab('categories')} icon={<Layers size={16} />} label="Categories" />
+                  <TabButton active={tab === 'panchang'} onClick={() => setTab('panchang')} icon={<CalendarClock size={16} />} label="Panchang Guide" />
+                </>
+              )}
             </div>
 
             <div className="admin-body">
               <div className="studio-banner">
                 <p>Local admin changes are saved only in this browser. Use Export Content to keep a backup.</p>
+                {localContentActive && <p>Local browser content is active. Export or publish it when ready.</p>}
               </div>
 
               {message && <MessageBanner tone="success" text={message} />}
@@ -547,16 +593,16 @@ export default function AdminPanel({
 
                     <SectionBand title="Content">
                       <div className="form-stack">
-                        <textarea value={stotraForm.content} onChange={(event) => setStotraForm((prev) => ({ ...prev, content: event.target.value }))} placeholder="Stotra text or verified excerpt" rows={9} className="admin-input" />
-                        <textarea value={stotraForm.process || ''} onChange={(event) => setStotraForm((prev) => ({ ...prev, process: event.target.value }))} placeholder="How to Recite" rows={3} className="admin-input" />
+                        <textarea value={stotraForm.content} onChange={(event) => setStotraForm((prev) => ({ ...prev, content: event.target.value }))} placeholder="Stotra text or verified excerpt" rows={16} className="admin-input" />
+                        <textarea value={stotraForm.process || ''} onChange={(event) => setStotraForm((prev) => ({ ...prev, process: event.target.value }))} placeholder="How to Recite" rows={4} className="admin-input" />
                       </div>
                     </SectionBand>
 
                     <SectionBand title="Meaning & Benefits">
                       <div className="form-stack">
-                        <textarea value={stotraForm.nepaliMeaning || ''} onChange={(event) => setStotraForm((prev) => ({ ...prev, nepaliMeaning: event.target.value }))} placeholder="Meaning" rows={4} className="admin-input" />
-                        <textarea value={stotraForm.wordMeaning || ''} onChange={(event) => setStotraForm((prev) => ({ ...prev, wordMeaning: event.target.value }))} placeholder="Word meaning" rows={4} className="admin-input" />
-                        <textarea value={stotraForm.benefits || ''} onChange={(event) => setStotraForm((prev) => ({ ...prev, benefits: event.target.value }))} placeholder="Benefits" rows={3} className="admin-input" />
+                        <textarea value={stotraForm.nepaliMeaning || ''} onChange={(event) => setStotraForm((prev) => ({ ...prev, nepaliMeaning: event.target.value }))} placeholder="Meaning" rows={5} className="admin-input" />
+                        <textarea value={stotraForm.wordMeaning || ''} onChange={(event) => setStotraForm((prev) => ({ ...prev, wordMeaning: event.target.value }))} placeholder="Word meaning" rows={5} className="admin-input" />
+                        <textarea value={stotraForm.benefits || ''} onChange={(event) => setStotraForm((prev) => ({ ...prev, benefits: event.target.value }))} placeholder="Benefits" rows={4} className="admin-input" />
                       </div>
                     </SectionBand>
 
@@ -751,9 +797,9 @@ export default function AdminPanel({
                     <SectionBand title="Guide">
                       <div className="form-stack">
                         <textarea value={poojaForm.overview} onChange={(event) => setPoojaForm((prev) => ({ ...prev, overview: event.target.value }))} placeholder="Overview" rows={3} className="admin-input" />
-                        <textarea value={toCommaList(poojaForm.materials || [])} onChange={(event) => setPoojaForm((prev) => ({ ...prev, materials: fromLineList(event.target.value) }))} placeholder="Materials, one per line or comma separated" rows={4} className="admin-input" />
-                        <textarea value={toCommaList(poojaForm.steps || [])} onChange={(event) => setPoojaForm((prev) => ({ ...prev, steps: fromLineList(event.target.value) }))} placeholder="Steps, one per line or comma separated" rows={6} className="admin-input" />
-                        <textarea value={toCommaList(poojaForm.benefits || [])} onChange={(event) => setPoojaForm((prev) => ({ ...prev, benefits: fromLineList(event.target.value) }))} placeholder="Benefits, one per line or comma separated" rows={4} className="admin-input" />
+                        <textarea value={toLineList(poojaForm.materials || [])} onChange={(event) => setPoojaForm((prev) => ({ ...prev, materials: fromLineList(event.target.value) }))} placeholder="Materials, one per line or comma separated" rows={8} className="admin-input" />
+                        <textarea value={toLineList(poojaForm.steps || [])} onChange={(event) => setPoojaForm((prev) => ({ ...prev, steps: fromLineList(event.target.value) }))} placeholder="Steps, one per line or comma separated" rows={10} className="admin-input" />
+                        <textarea value={toLineList(poojaForm.benefits || [])} onChange={(event) => setPoojaForm((prev) => ({ ...prev, benefits: fromLineList(event.target.value) }))} placeholder="Benefits, one per line or comma separated" rows={6} className="admin-input" />
                       </div>
                     </SectionBand>
                     <SectionBand title="Notes">
@@ -817,8 +863,9 @@ export default function AdminPanel({
                     </SectionBand>
                     <SectionBand title="Story & Lesson">
                       <div className="form-stack">
-                        <textarea value={storyForm.story} onChange={(event) => setStoryForm((prev) => ({ ...prev, story: event.target.value }))} placeholder="Story" rows={8} className="admin-input" />
-                        <textarea value={storyForm.lesson} onChange={(event) => setStoryForm((prev) => ({ ...prev, lesson: event.target.value }))} placeholder="Lesson" rows={3} className="admin-input" />
+                        <textarea value={storyForm.story} onChange={(event) => setStoryForm((prev) => ({ ...prev, story: event.target.value }))} placeholder="Story" rows={12} className="admin-input" />
+                        <textarea value={storyForm.lesson} onChange={(event) => setStoryForm((prev) => ({ ...prev, lesson: event.target.value }))} placeholder="Lesson" rows={4} className="admin-input" />
+                        <input value={storyForm.source || ''} onChange={(event) => setStoryForm((prev) => ({ ...prev, source: event.target.value }))} placeholder="Source note" className="admin-input" />
                         <input value={toCommaList(storyForm.tags || [])} onChange={(event) => setStoryForm((prev) => ({ ...prev, tags: fromCommaList(event.target.value) }))} placeholder="Tags, comma-separated" className="admin-input" />
                       </div>
                     </SectionBand>
@@ -838,6 +885,7 @@ export default function AdminPanel({
                             summary: story.summary,
                             story: story.story,
                             lesson: story.lesson,
+                            source: story.source || '',
                             tags: story.tags || [],
                           });
                           setValidationMessage(null);
@@ -869,7 +917,7 @@ export default function AdminPanel({
                         value={panchangTermsText}
                         onChange={(event) => setPanchangTermsText(event.target.value)}
                         placeholder="Tithi: Lunar day used in Hindu calendrical tradition."
-                        rows={8}
+                        rows={12}
                         className="admin-input"
                       />
                     </SectionBand>
@@ -878,7 +926,7 @@ export default function AdminPanel({
                         value={panchangNotesText}
                         onChange={(event) => setPanchangNotesText(event.target.value)}
                         placeholder="Morning reflection: Short prayer or stotra reading."
-                        rows={7}
+                        rows={9}
                         className="admin-input"
                       />
                     </SectionBand>
@@ -905,15 +953,46 @@ export default function AdminPanel({
                   <div className="admin-card backup-card">
                     <div className="section-header">
                       <div>
-                        <p className="section-kicker">Backup &amp; Restore</p>
-                        <h3 className="section-heading">Export or restore local content</h3>
+                        <p className="section-kicker">Backup &amp; Publish</p>
+                        <h3 className="section-heading">Portable local content controls</h3>
                       </div>
                     </div>
-                    <div className="button-row">
+                    <section className="backup-section">
+                      <div>
+                        <p className="backup-title">Export JSON</p>
+                        <p className="body-copy">Always works locally. Use this before moving browsers or accounts.</p>
+                      </div>
+                      <div className="button-row">
                         <button onClick={handleExport} className="action-button">Export Content</button>
+                      </div>
+                    </section>
+                    <section className="backup-section">
+                      <div>
+                        <p className="backup-title">Import JSON</p>
+                        <p className="body-copy">Always works locally. Paste JSON below or load a file first.</p>
+                      </div>
+                      <div className="button-row">
                         <button onClick={handleImport} className="secondary-button">Import Content</button>
-                        <button onClick={handleReset} className="secondary-button">Reset to Default Content</button>
-                    </div>
+                      </div>
+                    </section>
+                    <section className="backup-section">
+                      <div>
+                        <p className="backup-title">Reset Defaults</p>
+                        <p className="body-copy">Always works locally and asks for confirmation before clearing local edits.</p>
+                      </div>
+                      <div className="button-row">
+                        <button onClick={handleReset} className="secondary-button danger-button">Reset Defaults</button>
+                      </div>
+                    </section>
+                    <section className="backup-section">
+                      <div>
+                        <p className="backup-title">Publish to GitHub</p>
+                        <p className="body-copy">Optional. Requires Netlify Functions plus server environment variables.</p>
+                      </div>
+                      <div className="button-row">
+                        <button onClick={onPublishContent} disabled={isSaving} className="secondary-button">{isSaving ? 'Publishing...' : 'Publish to GitHub'}</button>
+                      </div>
+                    </section>
                     <textarea
                       value={exportText}
                       onChange={(event) => setExportText(event.target.value)}
@@ -932,7 +1011,7 @@ export default function AdminPanel({
                       />
                       <span>Load content from file</span>
                     </label>
-                    <p className="body-copy">Local changes are saved in this browser only. Export content before clearing browser data.</p>
+                    <p className="body-copy">Local changes are saved in this browser first. Publish to GitHub only works when Netlify Functions and server environment variables are configured.</p>
                   </div>
                 </div>
               )}

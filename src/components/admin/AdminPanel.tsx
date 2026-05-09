@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
-import { BookOpen, CalendarClock, Download, Edit2, Layers, ScrollText, Sparkles, Trash2, X } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { useMemo, useState, type FormEvent, type ReactNode, type TextareaHTMLAttributes } from 'react';
+import { Download, Layers, ScrollText, Sparkles, Trash2, X } from 'lucide-react';
 import type { Category, Deity, HinduStory, PanchangContent, PoojaBidhi, Stotra } from '../../types';
-import type { CategoryInput, DeityInput, HinduStoryInput, PanchangContentInput, PoojaBidhiInput, StotraInput } from '../../services/localContentService';
+import type { CategoryInput, DeityInput, HinduStoryInput, PoojaBidhiInput, StotraInput } from '../../services/localContentService';
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -16,6 +15,7 @@ interface AdminPanelProps {
   message: string | null;
   errorMessage: string | null;
   localContentActive: boolean;
+  language: 'ne' | 'en';
   onClose: () => void;
   onSaveStotra: (input: StotraInput, id?: string) => boolean;
   onDeleteStotra: (id: string) => void;
@@ -27,7 +27,7 @@ interface AdminPanelProps {
   onDeletePoojaBidhi: (id: string) => void;
   onSaveStory: (input: HinduStoryInput, id?: string) => boolean;
   onDeleteStory: (id: string) => void;
-  onSavePanchangContent: (input: PanchangContentInput) => boolean;
+  onSavePanchangContent: (input: Partial<PanchangContent>) => boolean;
   onExportAllContent: () => string;
   onImportAllContent: (json: string) => boolean;
   onResetToDefaultContent: () => void;
@@ -35,98 +35,86 @@ interface AdminPanelProps {
   onLogoutAdmin: () => void;
 }
 
-type AdminTab = 'stotras' | 'deities' | 'pooja' | 'stories' | 'categories' | 'panchang' | 'tools';
-type AdminGroup = 'content' | 'setup' | 'backup';
+type Tab = 'deities' | 'content' | 'pooja' | 'stories' | 'categories' | 'backup';
 
-const emptyStotraForm: StotraInput = {
-  title: '',
-  alternateTitle: '',
-  deity: '',
-  category: '',
-  content: '',
-  nepaliMeaning: '',
-  wordMeaning: '',
-  benefits: '',
-  process: '',
-  source: '',
-  tags: [],
-  language: '',
-  script: '',
-  status: 'published',
-};
+const deityTypes: Array<NonNullable<Deity['type']>> = ['God', 'Goddess', 'Form', 'Other'];
+const emptyDeity: DeityInput = { name: '', type: 'Other', sanskritName: '', imageUrl: '', introduction: '', description: '', significance: '', mantra: '', tags: [] };
+const emptyContent: StotraInput = { title: '', alternateTitle: '', deity: '', category: 'Stotra', imageUrl: '', content: '', meaning: '', nepaliMeaning: '', wordMeaning: '', benefits: '', process: '', source: '', tags: [], status: 'published' };
+const emptyPooja: PoojaBidhiInput = { title: '', deity: '', occasion: '', overview: '', materials: [], steps: [], benefits: [], cautions: '', source: '', tags: [] };
+const emptyStory: HinduStoryInput = { title: '', deity: '', summary: '', story: '', lesson: '', source: '', tags: [] };
+const emptyCategory: CategoryInput = { name: '', description: '' };
 
-const emptyDeityForm: DeityInput = {
-  name: '',
-  sanskritName: '',
-  description: '',
-  significance: '',
-  mantra: '',
-  imageUrl: '',
-  tags: [],
-  theme: '',
-};
-
-const emptyPoojaForm: PoojaBidhiInput = {
-  title: '',
-  deity: '',
-  occasion: '',
-  overview: '',
-  materials: [],
-  steps: [],
-  benefits: [],
-  cautions: '',
-  source: '',
-  tags: [],
-};
-
-const emptyStoryForm: HinduStoryInput = {
-  title: '',
-  deity: '',
-  summary: '',
-  story: '',
-  lesson: '',
-  source: '',
-  tags: [],
-};
-
-const emptyCategoryForm: CategoryInput = {
-  name: '',
-  description: '',
-};
-
-const emptyPanchangForm: PanchangContent = {
-  introTitle: '',
-  intro: '',
-  terms: [],
-  dailyNotes: [],
-  disclaimer: '',
-};
-
-const normalize = (value: string) => value.trim().toLowerCase();
-const fromCommaList = (value: string): string[] => value.split(',').map((item) => item.trim()).filter(Boolean);
-const fromLineList = (value: string): string[] => value.split(/[\n,]/).map((item) => item.trim()).filter(Boolean);
-const toCommaList = (items: string[]): string => items.join(', ');
-const toLineList = (items: string[]): string => items.join('\n');
-const fromTermList = (value: string) =>
-  value
-    .split('\n')
-    .map((line) => {
-      const [title, ...textParts] = line.split(':');
-      const [description, practicalMeaning] = textParts.join(':').split('|');
-      const name = title?.trim() || '';
-      const cleanDescription = description?.trim() || '';
-      const cleanPracticalMeaning = practicalMeaning?.trim() || '';
-      return {
-        name,
-        title: name,
-        description: cleanDescription,
-        practicalMeaning: cleanPracticalMeaning || undefined,
-        text: cleanPracticalMeaning ? `${cleanDescription} Practical use: ${cleanPracticalMeaning}` : cleanDescription,
-      };
-    })
-    .filter((term) => term.name && term.description);
-const toTermList = (items: { name?: string; title?: string; description?: string; text?: string; practicalMeaning?: string }[]): string =>
-  items.map((item) => `${item.name || item.title}: ${item.description || item.text}${item.practicalMeaning ? ` | ${item.practicalMeaning}` : ''}`).join('\n');
+const linesFromText = (value: string) => value.split('\n').map((item) => item.trim()).filter(Boolean);
+const textFromList = (items?: string[]) => (items || []).join('\n');
+const tagsFromText = (value: string) => value.split(',').map((item) => item.trim()).filter(Boolean);
+const tagsToText = (items?: string[]) => (items || []).join(', ');
+const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+const adminLabels = {
+  en: {
+    save: 'Save',
+    edit: 'Edit',
+    delete: 'Delete',
+    search: 'Search',
+    deity: 'Deity',
+    category: 'Category',
+    meaning: 'Meaning',
+    benefits: 'Benefits',
+    source: 'Source',
+    tags: 'Tags',
+    introduction: 'Introduction',
+    significance: 'Significance',
+    mantra: 'Mantra',
+    process: 'How to recite/use',
+    logout: 'Logout',
+    export: 'Export JSON',
+    import: 'Import JSON',
+    reset: 'Reset Defaults',
+    publish: 'Publish to GitHub',
+    deitiesProfiles: 'Deities / Profiles',
+    devotionalContent: 'Devotional Content',
+    poojaBidhi: 'Pooja Bidhi',
+    categories: 'Categories',
+    backupPublish: 'Backup & Publish',
+    saveDeity: 'Save Deity',
+    saveCategory: 'Save Category',
+    saveContent: 'Save Devotional Content',
+    savePooja: 'Save Pooja Guide',
+    clear: 'Clear',
+    publishing: 'Publishing...',
+  },
+  ne: {
+    save: 'सेभ',
+    edit: 'सम्पादन',
+    delete: 'हटाउनुहोस्',
+    search: 'खोज्नुहोस्',
+    deity: 'देवता',
+    category: 'श्रेणी',
+    meaning: 'अर्थ',
+    benefits: 'लाभ',
+    source: 'स्रोत',
+    tags: 'ट्याग',
+    introduction: 'परिचय',
+    significance: 'महत्त्व',
+    mantra: 'मन्त्र',
+    process: 'पाठ गर्ने विधि',
+    logout: 'लगआउट',
+    export: 'JSON निर्यात',
+    import: 'JSON आयात',
+    reset: 'डिफल्टमा फर्काउनुहोस्',
+    publish: 'GitHub मा प्रकाशित',
+    deitiesProfiles: 'देवता / प्रोफाइल',
+    devotionalContent: 'भक्ति सामग्री',
+    poojaBidhi: 'पूजा विधि',
+    categories: 'श्रेणीहरू',
+    backupPublish: 'ब्याकअप र प्रकाशन',
+    saveDeity: 'देवता सेभ',
+    saveCategory: 'श्रेणी सेभ',
+    saveContent: 'भक्ति सामग्री सेभ',
+    savePooja: 'पूजा मार्गदर्शन सेभ',
+    clear: 'खाली',
+    publishing: 'प्रकाशन हुँदै...',
+  },
+} as const;
 
 export default function AdminPanel({
   isOpen,
@@ -135,11 +123,11 @@ export default function AdminPanel({
   deities,
   poojaBidhi,
   stories,
-  panchang,
   isSaving,
   message,
   errorMessage,
   localContentActive,
+  language,
   onClose,
   onSaveStotra,
   onDeleteStotra,
@@ -151,986 +139,420 @@ export default function AdminPanel({
   onDeletePoojaBidhi,
   onSaveStory,
   onDeleteStory,
-  onSavePanchangContent,
   onExportAllContent,
   onImportAllContent,
   onResetToDefaultContent,
   onPublishContent,
   onLogoutAdmin,
 }: AdminPanelProps) {
-  const [tab, setTab] = useState<AdminTab>('stotras');
-  const [group, setGroup] = useState<AdminGroup>('content');
-  const [validationMessage, setValidationMessage] = useState<string | null>(null);
-  const [exportText, setExportText] = useState('');
-  const [stotraForm, setStotraForm] = useState<StotraInput>(emptyStotraForm);
-  const [editingStotraId, setEditingStotraId] = useState<string | undefined>();
-  const [deityForm, setDeityForm] = useState<DeityInput>(emptyDeityForm);
-  const [editingDeityId, setEditingDeityId] = useState<string | undefined>();
-  const [poojaForm, setPoojaForm] = useState<PoojaBidhiInput>(emptyPoojaForm);
-  const [editingPoojaId, setEditingPoojaId] = useState<string | undefined>();
-  const [storyForm, setStoryForm] = useState<HinduStoryInput>(emptyStoryForm);
-  const [editingStoryId, setEditingStoryId] = useState<string | undefined>();
-  const [categoryForm, setCategoryForm] = useState<CategoryInput>(emptyCategoryForm);
-  const [editingCategoryId, setEditingCategoryId] = useState<string | undefined>();
-  const [panchangForm, setPanchangForm] = useState<PanchangContent>(panchang || emptyPanchangForm);
-  const [panchangTermsText, setPanchangTermsText] = useState(toTermList(panchang?.terms || []));
-  const [panchangNotesText, setPanchangNotesText] = useState(toTermList(panchang?.dailyNotes || []));
-  const [showInlineDeityForm, setShowInlineDeityForm] = useState(false);
-  const [showInlineCategoryForm, setShowInlineCategoryForm] = useState(false);
-  const [showInlinePoojaDeityForm, setShowInlinePoojaDeityForm] = useState(false);
-  const [inlineDeityForm, setInlineDeityForm] = useState<DeityInput>(emptyDeityForm);
-  const [inlinePoojaDeityForm, setInlinePoojaDeityForm] = useState<DeityInput>(emptyDeityForm);
-  const [inlineCategoryForm, setInlineCategoryForm] = useState<CategoryInput>(emptyCategoryForm);
+  const [tab, setTab] = useState<Tab>('deities');
+  const [notice, setNotice] = useState<string | null>(null);
+  const [jsonText, setJsonText] = useState('');
+  const [query, setQuery] = useState('');
+  const [deityForm, setDeityForm] = useState<DeityInput>(emptyDeity);
+  const [contentForm, setContentForm] = useState<StotraInput>(emptyContent);
+  const [poojaForm, setPoojaForm] = useState<PoojaBidhiInput>(emptyPooja);
+  const [poojaText, setPoojaText] = useState({ materials: '', steps: '', benefits: '' });
+  const [storyForm, setStoryForm] = useState<HinduStoryInput>(emptyStory);
+  const [categoryForm, setCategoryForm] = useState<CategoryInput>(emptyCategory);
+  const [editing, setEditing] = useState<{ type: Tab; id: string } | null>(null);
+  const [dismissedAlerts, setDismissedAlerts] = useState<Record<string, boolean>>({});
+  const labels = adminLabels[language];
+  const ui = language === 'ne'
+    ? {
+        kicker: 'स्थानीय सामग्री स्टुडियो',
+        title: 'Om Stotra Sagar सामग्री व्यवस्थापन',
+        subtitle: 'Save ले यो ब्राउजरमा तुरुन्तै लेख्छ। Publish ले केवल वैकल्पिक backend मार्फत GitHub मा लेख्छ।',
+        localActive: 'स्थानीय ब्राउजर सामग्री सक्रिय छ। तयार भएपछि export वा publish गर्नुहोस्।',
+        instantSave: 'Save ले यो ब्राउजरमा तुरुन्तै अपडेट गर्छ। Publish to GitHub वैकल्पिक र अलग छ।',
+        deityTitle: editing?.type === 'deities' ? 'देवता प्रोफाइल सम्पादन' : 'देवता प्रोफाइल थप्नुहोस्',
+        contentTitle: editing?.type === 'content' ? 'भक्तिपूर्ण सामग्री सम्पादन' : 'भक्तिपूर्ण सामग्री थप्नुहोस्',
+        poojaTitle: editing?.type === 'pooja' ? 'पूजा विधि सम्पादन' : 'पूजा विधि थप्नुहोस्',
+        categoryTitle: editing?.type === 'categories' ? 'श्रेणी सम्पादन' : 'श्रेणी थप्नुहोस्',
+        contentList: 'भक्तिपूर्ण सामग्री',
+        poojaList: 'पूजा विधि',
+        categoryList: 'श्रेणीहरू',
+      }
+    : {
+        kicker: 'Local Content Studio',
+        title: 'Manage Om Stotra Sagar content',
+        subtitle: 'Save writes to this browser. Publish writes to GitHub only through the optional backend.',
+        localActive: 'Local browser content is active. Export or publish it when ready.',
+        instantSave: 'Save updates this browser instantly. Publish to GitHub is optional and separate.',
+        deityTitle: editing?.type === 'deities' ? 'Edit Deity Profile' : 'Add Deity Profile',
+        contentTitle: editing?.type === 'content' ? 'Edit Devotional Content' : 'Add Devotional Content',
+        poojaTitle: editing?.type === 'pooja' ? 'Edit Pooja Bidhi' : 'Add Pooja Bidhi',
+        categoryTitle: editing?.type === 'categories' ? 'Edit Category' : 'Add Category',
+        contentList: 'Devotional Content',
+        poojaList: 'Pooja Bidhi',
+        categoryList: 'Categories',
+      };
 
-  const deityOptions = useMemo(
-    () => deities.filter((deity) => !stotraForm.deity || normalize(deity.name).includes(normalize(stotraForm.deity))).slice(0, 6),
-    [deities, stotraForm.deity]
-  );
-  const categoryOptions = useMemo(
-    () => categories.filter((category) => !stotraForm.category || normalize(category.name).includes(normalize(stotraForm.category))).slice(0, 6),
-    [categories, stotraForm.category]
-  );
-  const poojaDeityOptions = useMemo(
-    () => deities.filter((deity) => !poojaForm.deity || normalize(deity.name).includes(normalize(poojaForm.deity))).slice(0, 6),
-    [deities, poojaForm.deity]
-  );
-
-  useEffect(() => {
-    setPanchangForm(panchang || emptyPanchangForm);
-    setPanchangTermsText(toTermList(panchang?.terms || []));
-    setPanchangNotesText(toTermList(panchang?.dailyNotes || []));
-  }, [panchang]);
-
-  const setNotice = (value: string) => setValidationMessage(value);
-  const clearForms = () => {
-    setStotraForm(emptyStotraForm);
-    setEditingStotraId(undefined);
-    setDeityForm(emptyDeityForm);
-    setEditingDeityId(undefined);
-    setPoojaForm(emptyPoojaForm);
-    setEditingPoojaId(undefined);
-    setStoryForm(emptyStoryForm);
-    setEditingStoryId(undefined);
-    setCategoryForm(emptyCategoryForm);
-    setEditingCategoryId(undefined);
-    setPanchangForm(panchang || emptyPanchangForm);
-    setPanchangTermsText(toTermList(panchang?.terms || []));
-    setPanchangNotesText(toTermList(panchang?.dailyNotes || []));
-    setShowInlineDeityForm(false);
-    setShowInlineCategoryForm(false);
-    setShowInlinePoojaDeityForm(false);
-    setInlineDeityForm(emptyDeityForm);
-    setInlinePoojaDeityForm(emptyDeityForm);
-    setInlineCategoryForm(emptyCategoryForm);
+  const resetPoojaForm = (value: PoojaBidhiInput) => {
+    setPoojaForm(value);
+    setPoojaText({
+      materials: textFromList(value.materials),
+      steps: textFromList(value.steps),
+      benefits: textFromList(value.benefits),
+    });
   };
 
-  const submitStotra = (event: FormEvent) => {
-    event.preventDefault();
-    if (stotraForm.title.trim().length < 2) {
-      setNotice('Title must be at least 2 characters.');
-      return;
-    }
-    if (stotraForm.content.trim().length < 10) {
-      setNotice('Content must be at least 10 characters.');
-      return;
-    }
-    if (!stotraForm.deity.trim() || !stotraForm.category.trim()) {
-      setNotice('Deity and category are required.');
-      return;
-    }
-    if (!stotraForm.source?.trim()) {
-      setNotice('Source is recommended before publishing publicly.');
-    }
-    const saved = editingStotraId
-      ? onSaveStotra({ ...stotraForm, tags: fromCommaList(toCommaList(stotraForm.tags || [])) }, editingStotraId)
-      : onSaveStotra({ ...stotraForm, tags: fromCommaList(toCommaList(stotraForm.tags || [])) });
-    if (saved) {
-      setStotraForm(emptyStotraForm);
-      setEditingStotraId(undefined);
-      setValidationMessage(null);
-    }
-  };
+  const filteredContent = useMemo(() => {
+    const value = query.trim().toLowerCase();
+    if (!value) return stotras;
+    return stotras.filter((item) => [item.title, item.deity, item.category, item.content, item.meaning, item.nepaliMeaning, ...(item.tags || [])].some((part) => part?.toLowerCase().includes(value)));
+  }, [query, stotras]);
+
+  if (!isOpen) return null;
+
+  const duplicateDeity = (name: string, id?: string) => deities.some((item) => item.id !== id && sameName(item.name, name));
+  const duplicateCategory = (name: string, id?: string) => categories.some((item) => item.id !== id && sameName(item.name, name));
 
   const submitDeity = (event: FormEvent) => {
     event.preventDefault();
-    if (!deityForm.name.trim()) {
-      setNotice('Please enter a deity name.');
-      return;
-    }
-    if (!deityForm.description.trim() || !deityForm.significance.trim()) {
-      setNotice('Description and significance are required.');
-      return;
-    }
-    const saved = editingDeityId
-      ? onSaveDeity({ ...deityForm, tags: fromCommaList(toCommaList(deityForm.tags || [])) }, editingDeityId)
-      : onSaveDeity({ ...deityForm, tags: fromCommaList(toCommaList(deityForm.tags || [])) });
+    const id = editing?.type === 'deities' ? editing.id : undefined;
+    if (!deityForm.name.trim()) return setNotice('Name is required.');
+    if (duplicateDeity(deityForm.name, id)) return setNotice('A deity with this name already exists.');
+    const saved = onSaveDeity({ ...deityForm, description: deityForm.introduction || deityForm.description, tags: deityForm.tags || [] }, id);
     if (saved) {
-      setDeityForm(emptyDeityForm);
-      setEditingDeityId(undefined);
-      setValidationMessage(null);
+      setDeityForm(emptyDeity);
+      setEditing(null);
+      setNotice('Deity profile saved locally.');
     }
+  };
+
+  const submitContent = (event: FormEvent) => {
+    event.preventDefault();
+    const id = editing?.type === 'content' ? editing.id : undefined;
+    if (!contentForm.title.trim() || !contentForm.deity.trim() || !contentForm.category.trim() || !contentForm.content.trim()) return setNotice('Title, deity, category, and full text are required.');
+    if (contentForm.title.length > 120) return setNotice('Title must be 120 characters or fewer.');
+    if (contentForm.content.length > 5000) return setNotice('Content must be 5000 characters or fewer.');
+    if ((contentForm.meaning || contentForm.nepaliMeaning || '').length > 3000) return setNotice('Meaning must be 3000 characters or fewer.');
+    if ((contentForm.benefits || '').length > 1000) return setNotice('Benefits must be 1000 characters or fewer.');
+    onSaveStotra({ ...contentForm, nepaliMeaning: contentForm.meaning || contentForm.nepaliMeaning, tags: contentForm.tags || [] }, id);
+    setContentForm(emptyContent);
+    setEditing(null);
+    setNotice('Devotional content saved to this browser.');
   };
 
   const submitPooja = (event: FormEvent) => {
     event.preventDefault();
-    if (!poojaForm.title.trim() || !poojaForm.deity.trim() || !poojaForm.occasion.trim()) {
-      setNotice('Title, deity, and occasion are required.');
-      return;
-    }
-    if (!poojaForm.overview.trim() || poojaForm.materials.length === 0 || poojaForm.steps.length === 0 || poojaForm.benefits.length === 0) {
-      setNotice('Overview, materials, steps, and benefits are required.');
-      return;
-    }
-    const payload = {
+    const id = editing?.type === 'pooja' ? editing.id : undefined;
+    if (!poojaForm.title.trim() || !poojaForm.deity.trim() || !poojaForm.overview.trim()) return setNotice('Title, deity, and overview are required.');
+    onSavePoojaBidhi({
       ...poojaForm,
-      materials: fromLineList(toCommaList(poojaForm.materials || [])),
-      steps: fromLineList(toCommaList(poojaForm.steps || [])),
-      benefits: fromLineList(toCommaList(poojaForm.benefits || [])),
-      tags: fromCommaList(toCommaList(poojaForm.tags || [])),
-    };
-    const saved = editingPoojaId ? onSavePoojaBidhi(payload, editingPoojaId) : onSavePoojaBidhi(payload);
-    if (saved) {
-      setPoojaForm(emptyPoojaForm);
-      setEditingPoojaId(undefined);
-      setValidationMessage(null);
-    }
+      materials: linesFromText(poojaText.materials),
+      steps: linesFromText(poojaText.steps),
+      benefits: linesFromText(poojaText.benefits),
+    }, id);
+    setPoojaForm(emptyPooja);
+    setPoojaText({ materials: '', steps: '', benefits: '' });
+    setEditing(null);
+    setNotice('Pooja Bidhi saved to this browser.');
   };
 
   const submitStory = (event: FormEvent) => {
     event.preventDefault();
-    if (storyForm.title.trim().length < 2 || storyForm.summary.trim().length < 5 || storyForm.story.trim().length < 10 || storyForm.lesson.trim().length < 5) {
-      setNotice('Title, summary, story, and lesson are required.');
-      return;
-    }
-    if (!storyForm.source?.trim()) {
-      setNotice('Source is recommended before publishing publicly.');
-    }
-    const saved = editingStoryId
-      ? onSaveStory({ ...storyForm, tags: fromCommaList(toCommaList(storyForm.tags || [])) }, editingStoryId)
-      : onSaveStory({ ...storyForm, tags: fromCommaList(toCommaList(storyForm.tags || [])) });
-    if (saved) {
-      setStoryForm(emptyStoryForm);
-      setEditingStoryId(undefined);
-      setValidationMessage(null);
-    }
+    const id = editing?.type === 'stories' ? editing.id : undefined;
+    if (!storyForm.title.trim() || !storyForm.summary.trim() || !storyForm.story.trim()) return setNotice('Title, summary, and story are required.');
+    onSaveStory(storyForm, id);
+    setStoryForm(emptyStory);
+    setEditing(null);
+    setNotice('Story saved to this browser.');
   };
 
   const submitCategory = (event: FormEvent) => {
     event.preventDefault();
-    if (!categoryForm.name.trim()) {
-      setNotice('Please enter a category name.');
-      return;
-    }
-    const saved = editingCategoryId ? onSaveCategory(categoryForm, editingCategoryId) : onSaveCategory(categoryForm);
+    const id = editing?.type === 'categories' ? editing.id : undefined;
+    if (!categoryForm.name.trim()) return setNotice('Category name is required.');
+    if (duplicateCategory(categoryForm.name, id)) return setNotice('A category with this name already exists.');
+    const saved = onSaveCategory(categoryForm, id);
     if (saved) {
-      setCategoryForm(emptyCategoryForm);
-      setEditingCategoryId(undefined);
-      setValidationMessage(null);
+      setCategoryForm(emptyCategory);
+      setEditing(null);
+      setNotice('Category saved locally.');
     }
   };
 
-  const submitPanchang = (event: FormEvent) => {
-    event.preventDefault();
-    const terms = fromTermList(panchangTermsText);
-    const dailyNotes = fromTermList(panchangNotesText);
-    if (!panchangForm.introTitle.trim() || !panchangForm.intro.trim()) {
-      setNotice('Intro title and intro copy are required.');
-      return;
-    }
-    if (terms.length === 0 || dailyNotes.length === 0) {
-      setNotice('Add at least one term and one daily note in "Title: description" format.');
-      return;
-    }
-    const saved = onSavePanchangContent({ ...panchangForm, terms, dailyNotes });
-    if (saved) setValidationMessage(null);
+  const deleteDeity = (deity: Deity) => {
+    const hasRelated = stotras.some((item) => item.deity === deity.name) || poojaBidhi.some((item) => item.deity === deity.name) || stories.some((item) => item.deity === deity.name);
+    const warning = hasRelated ? 'This deity has related content. Deleting it may orphan related items. Delete anyway?' : `Delete ${deity.name}?`;
+    if (confirm(warning)) onDeleteDeity(deity.id);
   };
 
-  const createInlineDeity = (event: FormEvent) => {
-    event.preventDefault();
-    if (!inlineDeityForm.name.trim()) {
-      setNotice('Please enter a deity name.');
-      return;
-    }
-    if (!inlineDeityForm.description.trim() || !inlineDeityForm.significance.trim()) {
-      setNotice('Description and significance are required for a new deity.');
-      return;
-    }
-    const duplicate = deities.find((deity) => normalize(deity.name) === normalize(inlineDeityForm.name));
-    if (duplicate) {
-      setStotraForm((prev) => ({ ...prev, deity: duplicate.name }));
-      setInlineDeityForm(emptyDeityForm);
-      setShowInlineDeityForm(false);
-      setNotice(`Selected existing deity "${duplicate.name}".`);
-      return;
-    }
-    const saved = onSaveDeity({ ...inlineDeityForm, tags: fromCommaList(toCommaList(inlineDeityForm.tags || [])) });
-    if (saved) {
-      setStotraForm((prev) => ({ ...prev, deity: saved.name }));
-      setInlineDeityForm(emptyDeityForm);
-      setShowInlineDeityForm(false);
-      setNotice(`Deity "${saved.name}" added and selected.`);
-    }
-  };
-
-  const createInlineCategory = (event: FormEvent) => {
-    event.preventDefault();
-    if (!inlineCategoryForm.name.trim()) {
-      setNotice('Please enter a category name.');
-      return;
-    }
-    const duplicate = categories.find((category) => normalize(category.name) === normalize(inlineCategoryForm.name));
-    if (duplicate) {
-      setStotraForm((prev) => ({ ...prev, category: duplicate.name }));
-      setInlineCategoryForm(emptyCategoryForm);
-      setShowInlineCategoryForm(false);
-      setNotice(`Selected existing category "${duplicate.name}".`);
-      return;
-    }
-    const saved = onSaveCategory({ ...inlineCategoryForm });
-    if (saved) {
-      setStotraForm((prev) => ({ ...prev, category: saved.name }));
-      setInlineCategoryForm(emptyCategoryForm);
-      setShowInlineCategoryForm(false);
-      setNotice(`Category "${saved.name}" added and selected.`);
-    }
-  };
-
-  const createInlinePoojaDeity = (event: FormEvent) => {
-    event.preventDefault();
-    if (!inlinePoojaDeityForm.name.trim()) {
-      setNotice('Please enter a deity name.');
-      return;
-    }
-    if (!inlinePoojaDeityForm.description.trim() || !inlinePoojaDeityForm.significance.trim()) {
-      setNotice('Description and significance are required for a new deity.');
-      return;
-    }
-    const duplicate = deities.find((deity) => normalize(deity.name) === normalize(inlinePoojaDeityForm.name));
-    if (duplicate) {
-      setPoojaForm((prev) => ({ ...prev, deity: duplicate.name }));
-      setInlinePoojaDeityForm(emptyDeityForm);
-      setShowInlinePoojaDeityForm(false);
-      setNotice(`Selected existing deity "${duplicate.name}".`);
-      return;
-    }
-    const saved = onSaveDeity({ ...inlinePoojaDeityForm, tags: fromCommaList(toCommaList(inlinePoojaDeityForm.tags || [])) });
-    if (saved) {
-      setPoojaForm((prev) => ({ ...prev, deity: saved.name }));
-      setInlinePoojaDeityForm(emptyDeityForm);
-      setShowInlinePoojaDeityForm(false);
-      setNotice(`Deity "${saved.name}" added and selected.`);
-    }
-  };
-
-  const handleExport = () => {
-    setExportText(onExportAllContent());
-    setNotice('Content exported to the box below.');
-  };
-
-  const handleImport = () => {
-    if (!exportText.trim()) {
-      setNotice('Paste exported JSON or load a JSON file before importing.');
-      return;
-    }
-    const imported = onImportAllContent(exportText);
-    if (imported) {
-      setNotice('Content imported successfully.');
-    } else {
-      setNotice('Import failed. Please check the JSON format.');
-    }
-  };
-
-  const handleReset = () => {
-    if (!confirm('Reset all local content to the default starter content?')) return;
-    onResetToDefaultContent();
-    clearForms();
-    setExportText('');
-    setValidationMessage('Local content reset to default content.');
-  };
-
-  const chooseGroup = (nextGroup: AdminGroup) => {
-    setGroup(nextGroup);
-    setTab(nextGroup === 'content' ? 'stotras' : nextGroup === 'setup' ? 'deities' : 'tools');
+  const deleteCategory = (category: Category) => {
+    const used = stotras.some((item) => item.category === category.name);
+    const warning = used ? 'This category is used by devotional content. Deleting it may orphan related items. Delete anyway?' : `Delete ${category.name}?`;
+    if (confirm(warning)) onDeleteCategory(category.id);
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-deep-blue/72 backdrop-blur-sm" />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96, y: 18 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: 18 }}
-            className="admin-studio premium-shell admin-panel relative z-10 flex h-[92vh] w-full max-w-6xl flex-col overflow-hidden"
-          >
-            <header className="premium-header admin-hero">
-              <div className="admin-hero-copy">
-                <p className="section-kicker">Local Content Studio</p>
-                <h2 className="page-title">Manage devotional content locally</h2>
-                <p className="page-subtitle">Saved in this browser only. Export content to keep a backup.</p>
-              </div>
-              <div className="admin-hero-badges">
-                <span className="badge">Local-first</span>
-                <span className="badge">Export / Import</span>
-                <span className="badge">Optional GitHub Publish</span>
-              </div>
-              <button onClick={onLogoutAdmin} className="secondary-button">
-                Logout Admin
-              </button>
-              <button onClick={onClose} className="icon-button" aria-label="Close admin panel">
-                <X size={18} />
-              </button>
-            </header>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4">
+      <div onClick={onClose} className="absolute inset-0 bg-deep-blue/72 backdrop-blur-sm" />
+      <section className="admin-studio premium-shell admin-panel compact-admin relative z-10 flex h-[92vh] w-full max-w-6xl flex-col overflow-hidden">
+        <header className="premium-header admin-hero compact-admin-header">
+          <div>
+            <p className="section-kicker">{ui.kicker}</p>
+            <h2 className="compact-admin-title">{ui.title}</h2>
+            <p className="compact-admin-subtitle">{ui.subtitle}</p>
+          </div>
+          <button onClick={onLogoutAdmin} className="secondary-button">{labels.logout}</button>
+          <button onClick={onClose} className="icon-button" aria-label="Close admin"><X size={18} /></button>
+        </header>
 
-            <div className="admin-tabs nav-menu">
-              <TabButton active={group === 'content'} onClick={() => chooseGroup('content')} icon={<ScrollText size={16} />} label="Content" />
-              <TabButton active={group === 'setup'} onClick={() => chooseGroup('setup')} icon={<Layers size={16} />} label="Library Setup" />
-              <TabButton active={group === 'backup'} onClick={() => chooseGroup('backup')} icon={<Download size={16} />} label="Backup & Publish" />
+        <nav className="admin-tabs nav-menu compact-tabs" aria-label="Admin sections">
+          <TabButton active={tab === 'deities'} onClick={() => setTab('deities')} icon={<Sparkles size={15} />} label={labels.deitiesProfiles} />
+          <TabButton active={tab === 'content'} onClick={() => setTab('content')} icon={<ScrollText size={15} />} label={labels.devotionalContent} />
+          <TabButton active={tab === 'pooja'} onClick={() => setTab('pooja')} icon={<Layers size={15} />} label={labels.poojaBidhi} />
+          <TabButton active={tab === 'categories'} onClick={() => setTab('categories')} icon={<Layers size={15} />} label={labels.categories} />
+          <TabButton active={tab === 'backup'} onClick={() => setTab('backup')} icon={<Download size={15} />} label={labels.backupPublish} />
+        </nav>
+
+        <div className="admin-body compact-admin-body">
+          <div className="admin-banner-stack">
+            {!dismissedAlerts[`info:${ui.instantSave}`] && (
+              <Message
+                tone="info"
+                text={ui.instantSave}
+                onDismiss={() => setDismissedAlerts((prev) => ({ ...prev, [`info:${ui.instantSave}`]: true }))}
+              />
+            )}
+            {localContentActive && !dismissedAlerts[`neutral:${ui.localActive}`] && (
+              <Message
+                tone="neutral"
+                text={ui.localActive}
+                onDismiss={() => setDismissedAlerts((prev) => ({ ...prev, [`neutral:${ui.localActive}`]: true }))}
+              />
+            )}
+          </div>
+          {message && !dismissedAlerts[`success:${message}`] && (
+            <Message tone="success" text={message} onDismiss={() => setDismissedAlerts((prev) => ({ ...prev, [`success:${message}`]: true }))} />
+          )}
+          {errorMessage && !dismissedAlerts[`error:${errorMessage}`] && (
+            <Message tone="error" text={errorMessage} onDismiss={() => setDismissedAlerts((prev) => ({ ...prev, [`error:${errorMessage}`]: true }))} />
+          )}
+          {notice && !dismissedAlerts[`neutral:${notice}`] && (
+            <Message tone="neutral" text={notice} onDismiss={() => setDismissedAlerts((prev) => ({ ...prev, [`neutral:${notice}`]: true }))} />
+          )}
+
+          {tab === 'deities' && (
+            <div className="admin-grid compact-admin-grid">
+              <form onSubmit={submitDeity} className="admin-card compact-form">
+                <SectionTitle title={ui.deityTitle} />
+                <input className="admin-input compact-input" placeholder="Name" value={deityForm.name} onChange={(e) => setDeityForm((p) => ({ ...p, name: e.target.value }))} />
+                <select className="admin-input compact-input" value={deityForm.type || 'Other'} onChange={(e) => setDeityForm((p) => ({ ...p, type: e.target.value as Deity['type'] }))}>{deityTypes.map((type) => <option key={type}>{type}</option>)}</select>
+                <input className="admin-input compact-input" placeholder="Sanskrit name" value={deityForm.sanskritName || ''} onChange={(e) => setDeityForm((p) => ({ ...p, sanskritName: e.target.value }))} />
+                <input className="admin-input compact-input" placeholder="Image URL optional" value={deityForm.imageUrl || ''} onChange={(e) => setDeityForm((p) => ({ ...p, imageUrl: e.target.value }))} />
+                <textarea className="admin-input compact-textarea" rows={7} placeholder={labels.introduction} value={deityForm.introduction || deityForm.description || ''} onChange={(e) => setDeityForm((p) => ({ ...p, introduction: e.target.value, description: e.target.value }))} />
+                <textarea className="admin-input compact-textarea" rows={7} placeholder={labels.significance} value={deityForm.significance} onChange={(e) => setDeityForm((p) => ({ ...p, significance: e.target.value }))} />
+                <textarea className="admin-input compact-textarea" rows={3} placeholder={labels.mantra} value={deityForm.mantra || ''} onChange={(e) => setDeityForm((p) => ({ ...p, mantra: e.target.value }))} />
+                <input className="admin-input compact-input" placeholder={`${labels.tags}, comma-separated`} value={tagsToText(deityForm.tags)} onChange={(e) => setDeityForm((p) => ({ ...p, tags: tagsFromText(e.target.value) }))} />
+                <FormActions isSaving={isSaving} label={labels.saveDeity} clearLabel={labels.clear} onCancel={() => { setDeityForm(emptyDeity); setEditing(null); }} />
+              </form>
+              <RecordList title={labels.deitiesProfiles}>{deities.map((deity) => <Record key={deity.id} title={deity.name} subtitle={`${deity.type || 'Other'} - ${deity.introduction || deity.description}`} editLabel={labels.edit} onEdit={() => { setDeityForm({ ...deity, introduction: deity.introduction || deity.description }); setEditing({ type: 'deities', id: deity.id }); }} onDelete={() => deleteDeity(deity)} />)}</RecordList>
             </div>
+          )}
 
-            <div className="admin-subtabs nav-menu">
-              {group === 'content' && (
-                <>
-                  <TabButton active={tab === 'stotras'} onClick={() => setTab('stotras')} icon={<ScrollText size={16} />} label="Stotras" />
-                  <TabButton active={tab === 'pooja'} onClick={() => setTab('pooja')} icon={<BookOpen size={16} />} label="Pooja Bidhi" />
-                  <TabButton active={tab === 'stories'} onClick={() => setTab('stories')} icon={<BookOpen size={16} />} label="Stories" />
-                </>
-              )}
-              {group === 'setup' && (
-                <>
-                  <TabButton active={tab === 'deities'} onClick={() => setTab('deities')} icon={<Sparkles size={16} />} label="Deities" />
-                  <TabButton active={tab === 'categories'} onClick={() => setTab('categories')} icon={<Layers size={16} />} label="Categories" />
-                  <TabButton active={tab === 'panchang'} onClick={() => setTab('panchang')} icon={<CalendarClock size={16} />} label="Panchang Guide" />
-                </>
-              )}
+          {tab === 'content' && (
+            <div className="admin-grid compact-admin-grid">
+              <form onSubmit={submitContent} className="admin-card compact-form">
+                <SectionTitle title={ui.contentTitle} />
+                <div className="field-group">
+                  <input className={`admin-input compact-input ${contentForm.title.length > 120 ? 'field-error' : ''}`} placeholder="Title" value={contentForm.title} maxLength={170} onChange={(e) => setContentForm((p) => ({ ...p, title: e.target.value }))} />
+                  <span className={`char-count ${contentForm.title.length > 120 ? 'char-count-error' : ''}`}>{contentForm.title.length} / 120</span>
+                </div>
+                <input className="admin-input compact-input" placeholder="Alternate title" value={contentForm.alternateTitle || ''} onChange={(e) => setContentForm((p) => ({ ...p, alternateTitle: e.target.value }))} />
+                <Picker value={contentForm.deity} options={deities.map((d) => d.name)} placeholder={labels.deity} onChange={(value) => setContentForm((p) => ({ ...p, deity: value }))} onCreate={(name) => { const saved = onSaveDeity({ ...emptyDeity, name, introduction: `${name} profile introduction.`, description: `${name} profile introduction.`, significance: 'Add significance before publishing.', tags: [name.toLowerCase()] }); if (saved) setContentForm((p) => ({ ...p, deity: saved.name })); }} />
+                <Picker value={contentForm.category} options={categories.map((c) => c.name)} placeholder={labels.category} onChange={(value) => setContentForm((p) => ({ ...p, category: value }))} onCreate={(name) => { const saved = onSaveCategory({ name, description: '' }); if (saved) setContentForm((p) => ({ ...p, category: saved.name })); }} />
+                <input className="admin-input compact-input" placeholder="Image URL optional" value={contentForm.imageUrl || ''} onChange={(e) => setContentForm((p) => ({ ...p, imageUrl: e.target.value }))} />
+                <CharCountTextarea label="Content / full text" required maxLength={5000} rows={14} placeholder="Content / full text" value={contentForm.content} onChange={(e) => setContentForm((p) => ({ ...p, content: e.target.value }))} />
+                <CharCountTextarea label={labels.meaning} maxLength={3000} rows={5} placeholder={labels.meaning} value={contentForm.meaning || contentForm.nepaliMeaning || ''} onChange={(e) => setContentForm((p) => ({ ...p, meaning: e.target.value, nepaliMeaning: e.target.value }))} />
+                <textarea className="admin-input compact-textarea" rows={4} placeholder="Word meaning" value={contentForm.wordMeaning || ''} onChange={(e) => setContentForm((p) => ({ ...p, wordMeaning: e.target.value }))} />
+                <CharCountTextarea label={labels.benefits} maxLength={1000} rows={4} placeholder={labels.benefits} value={contentForm.benefits || ''} onChange={(e) => setContentForm((p) => ({ ...p, benefits: e.target.value }))} />
+                <textarea className="admin-input compact-textarea" rows={4} placeholder={labels.process} value={contentForm.process || ''} onChange={(e) => setContentForm((p) => ({ ...p, process: e.target.value }))} />
+                <input className="admin-input compact-input" placeholder={labels.source} value={contentForm.source || ''} onChange={(e) => setContentForm((p) => ({ ...p, source: e.target.value }))} />
+                <input className="admin-input compact-input" placeholder={`${labels.tags}, comma-separated`} value={tagsToText(contentForm.tags)} onChange={(e) => setContentForm((p) => ({ ...p, tags: tagsFromText(e.target.value) }))} />
+                <FormActions isSaving={isSaving} label={labels.saveContent} clearLabel={labels.clear} onCancel={() => { setContentForm(emptyContent); setEditing(null); }} />
+              </form>
+              <RecordList title={ui.contentList} toolbar={<input className="admin-input compact-input" placeholder={labels.search} value={query} onChange={(e) => setQuery(e.target.value)} />}>{filteredContent.map((item) => <Record key={item.id} title={item.title} subtitle={`${item.deity} - ${item.category}`} editLabel={labels.edit} onEdit={() => { setContentForm({ ...item, meaning: item.meaning || item.nepaliMeaning }); setEditing({ type: 'content', id: item.id }); }} onDelete={() => { if (confirm(`Delete ${item.title}?`)) onDeleteStotra(item.id); }} />)}</RecordList>
             </div>
+          )}
 
-            <div className="admin-body">
-              <div className="studio-banner">
-                <p>Local admin changes are saved only in this browser. Use Export Content to keep a backup.</p>
-                {localContentActive && <p>Local browser content is active. Export or publish it when ready.</p>}
+          {tab === 'pooja' && (
+            <div className="admin-grid compact-admin-grid">
+              <form onSubmit={submitPooja} className="admin-card compact-form">
+                <SectionTitle title={ui.poojaTitle} />
+                <input className="admin-input compact-input" placeholder="Title" value={poojaForm.title} onChange={(e) => setPoojaForm((p) => ({ ...p, title: e.target.value }))} />
+                <Picker value={poojaForm.deity} options={deities.map((d) => d.name)} placeholder={labels.deity} onChange={(value) => setPoojaForm((p) => ({ ...p, deity: value }))} onCreate={(name) => { const saved = onSaveDeity({ ...emptyDeity, name, introduction: `${name} profile introduction.`, description: `${name} profile introduction.`, significance: 'Add significance before publishing.', tags: [name.toLowerCase()] }); if (saved) setPoojaForm((p) => ({ ...p, deity: saved.name })); }} />
+                <input className="admin-input compact-input" placeholder="Occasion" value={poojaForm.occasion} onChange={(e) => setPoojaForm((p) => ({ ...p, occasion: e.target.value }))} />
+                <textarea className="admin-input compact-textarea" rows={5} placeholder="Overview" value={poojaForm.overview} onChange={(e) => setPoojaForm((p) => ({ ...p, overview: e.target.value }))} />
+                <textarea className="admin-input compact-textarea" rows={7} placeholder="Materials / Samagri" value={poojaText.materials} onChange={(e) => setPoojaText((p) => ({ ...p, materials: e.target.value }))} />
+                <textarea className="admin-input compact-textarea" rows={8} placeholder="Steps" value={poojaText.steps} onChange={(e) => setPoojaText((p) => ({ ...p, steps: e.target.value }))} />
+                <textarea className="admin-input compact-textarea" rows={5} placeholder={labels.benefits} value={poojaText.benefits} onChange={(e) => setPoojaText((p) => ({ ...p, benefits: e.target.value }))} />
+                <input className="admin-input compact-input" placeholder="Cautions" value={poojaForm.cautions || ''} onChange={(e) => setPoojaForm((p) => ({ ...p, cautions: e.target.value }))} />
+                <input className="admin-input compact-input" placeholder={labels.source} value={poojaForm.source || ''} onChange={(e) => setPoojaForm((p) => ({ ...p, source: e.target.value }))} />
+                <input className="admin-input compact-input" placeholder={`${labels.tags}, comma-separated`} value={tagsToText(poojaForm.tags)} onChange={(e) => setPoojaForm((p) => ({ ...p, tags: tagsFromText(e.target.value) }))} />
+                <FormActions isSaving={isSaving} label={labels.savePooja} clearLabel={labels.clear} onCancel={() => { setPoojaForm(emptyPooja); setPoojaText({ materials: '', steps: '', benefits: '' }); setEditing(null); }} />
+              </form>
+              <RecordList title={ui.poojaList}>{poojaBidhi.map((item) => <Record key={item.id} title={item.title} subtitle={`${item.deity} - ${item.occasion}`} onEdit={() => { resetPoojaForm(item); setEditing({ type: 'pooja', id: item.id }); }} onDelete={() => { if (confirm(`Delete ${item.title}?`)) onDeletePoojaBidhi(item.id); }} />)}</RecordList>
+            </div>
+          )}
+
+          {tab === 'categories' && (
+            <div className="admin-grid compact-admin-grid">
+              <form onSubmit={submitCategory} className="admin-card compact-form">
+                <SectionTitle title={ui.categoryTitle} />
+                <input className="admin-input compact-input" placeholder="Name" value={categoryForm.name} onChange={(e) => setCategoryForm((p) => ({ ...p, name: e.target.value }))} />
+                <textarea className="admin-input compact-textarea" rows={4} placeholder="Description" value={categoryForm.description || ''} onChange={(e) => setCategoryForm((p) => ({ ...p, description: e.target.value }))} />
+                <FormActions isSaving={isSaving} label={labels.saveCategory} clearLabel={labels.clear} onCancel={() => { setCategoryForm(emptyCategory); setEditing(null); }} />
+              </form>
+              <RecordList title={ui.categoryList}>{categories.map((category) => <Record key={category.id} title={category.name} subtitle={category.description || ''} onEdit={() => { setCategoryForm(category); setEditing({ type: 'categories', id: category.id }); }} onDelete={() => deleteCategory(category)} />)}</RecordList>
+            </div>
+          )}
+
+          {tab === 'backup' && (
+            <div className="admin-tools-grid">
+              <div className="admin-card backup-card compact-form">
+                <SectionTitle title={labels.backupPublish} />
+                <BackupAction title={labels.export} text={language === 'ne' ? 'ब्याकअप मात्र। सामान्य सम्पादनका लागि export आवश्यक छैन।' : 'Backup only. Normal editing does not require export.'} button={<button onClick={() => { setJsonText(onExportAllContent()); setNotice(language === 'ne' ? 'सामग्री तलको बाकसमा export गरियो।' : 'Content exported to the box below.'); }} className="action-button">{labels.export}</button>} />
+                <BackupAction title={labels.import} text={language === 'ne' ? 'यो ब्राउजरमा backup पुनर्स्थापित गर्नुहोस्।' : 'Restore a backup into this browser.'} button={<button onClick={() => onImportAllContent(jsonText) && setNotice(language === 'ne' ? 'सामग्री स्थानीय रूपमा import गरियो।' : 'Content imported locally.')} className="secondary-button">{labels.import}</button>} />
+                <BackupAction title={labels.reset} text={language === 'ne' ? 'पुष्टि पछि bundled defaults पुनर्स्थापित हुन्छ।' : 'Restores bundled defaults after confirmation.'} button={<button onClick={() => { if (confirm(language === 'ne' ? 'सबै स्थानीय सामग्रीलाई default मा फर्काउने?' : 'Reset all local content to defaults?')) onResetToDefaultContent(); }} className="secondary-button danger-button">{labels.reset}</button>} />
+                <BackupAction title={labels.publish} text={language === 'ne' ? 'Netlify Functions मार्फत वैकल्पिक remote publishing।' : 'Optional remote publishing through Netlify Functions.'} button={<button onClick={onPublishContent} disabled={isSaving} className="secondary-button">{isSaving ? labels.publishing : labels.publish}</button>} />
+                <textarea className="admin-input admin-json compact-textarea" value={jsonText} onChange={(e) => setJsonText(e.target.value)} placeholder="Exported JSON or paste import JSON here" />
+                <p className="body-copy">{language === 'ne' ? 'स्थानीय save हरू यो ब्राउजरमा तुरुन्तै देखिन्छन्। live backend का लागि तयार भएपछि मात्र Publish प्रयोग गर्नुहोस्।' : 'Local saves appear immediately in this browser. Use Publish to GitHub when the content is ready for the live site backend.'}</p>
+                <p className="body-copy">{language === 'ne' ? 'Backend नभए Publish ले “Backend not configured” देखाउँछ। Export/import भने स्थानीय रूपमा काम गर्छ।' : 'If backend is missing, Publish shows: Backend not configured. Export/import still works locally.'}</p>
               </div>
-
-              {message && <MessageBanner tone="success" text={message} />}
-              {errorMessage && <MessageBanner tone="error" text={errorMessage} />}
-              {validationMessage && <MessageBanner tone="neutral" text={validationMessage} />}
-
-              {tab === 'stotras' && (
-                <div className="admin-grid">
-                  <form onSubmit={submitStotra} className="admin-card premium-form">
-                    <div className="section-header">
-                      <div>
-                        <p className="section-kicker">Stotras</p>
-                        <h3 className="section-heading">{editingStotraId ? 'Edit Stotra' : 'Add Stotra'}</h3>
-                      </div>
-                      {editingStotraId && (
-                        <button type="button" onClick={() => { setEditingStotraId(undefined); setStotraForm(emptyStotraForm); }} className="secondary-button">
-                          Cancel edit
-                        </button>
-                      )}
-                    </div>
-
-                    <SectionBand title="Basic Details">
-                      <div className="form-stack">
-                        <input value={stotraForm.title} onChange={(event) => setStotraForm((prev) => ({ ...prev, title: event.target.value }))} placeholder="Title" className="admin-input" />
-                        <input value={stotraForm.alternateTitle || ''} onChange={(event) => setStotraForm((prev) => ({ ...prev, alternateTitle: event.target.value }))} placeholder="Alternate title" className="admin-input" />
-                      </div>
-                    </SectionBand>
-
-                    <SectionBand title="Deity & Category">
-                      <div className="picker-grid">
-                        <PickerField
-                          label="Deity"
-                          value={stotraForm.deity}
-                          onChange={(value) => setStotraForm((prev) => ({ ...prev, deity: value }))}
-                          placeholder="Search or type deity"
-                          suggestions={deityOptions.map((deity) => deity.name)}
-                          actionLabel={showInlineDeityForm ? 'Hide New Deity Form' : 'Add New Deity'}
-                          actionOnClick={() => setShowInlineDeityForm((open) => !open)}
-                        />
-
-                        <PickerField
-                          label="Category"
-                          value={stotraForm.category}
-                          onChange={(value) => setStotraForm((prev) => ({ ...prev, category: value }))}
-                          placeholder="Search or type category"
-                          suggestions={categoryOptions.map((category) => category.name)}
-                          actionLabel={showInlineCategoryForm ? 'Hide New Category Form' : 'Add New Category'}
-                          actionOnClick={() => setShowInlineCategoryForm((open) => !open)}
-                        />
-                      </div>
-
-                      {showInlineDeityForm && (
-                        <InlinePanel title="Add New Deity" onSubmit={createInlineDeity}>
-                          <input value={inlineDeityForm.name} onChange={(event) => setInlineDeityForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Deity name" className="admin-input" />
-                          <input value={inlineDeityForm.sanskritName || ''} onChange={(event) => setInlineDeityForm((prev) => ({ ...prev, sanskritName: event.target.value }))} placeholder="Sanskrit name (optional)" className="admin-input" />
-                          <textarea value={inlineDeityForm.description} onChange={(event) => setInlineDeityForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Short description" rows={3} className="admin-input" />
-                          <textarea value={inlineDeityForm.significance} onChange={(event) => setInlineDeityForm((prev) => ({ ...prev, significance: event.target.value }))} placeholder="Significance" rows={3} className="admin-input" />
-                          <input value={inlineDeityForm.mantra || ''} onChange={(event) => setInlineDeityForm((prev) => ({ ...prev, mantra: event.target.value }))} placeholder="Mantra (optional)" className="admin-input" />
-                          <input value={toCommaList(inlineDeityForm.tags || [])} onChange={(event) => setInlineDeityForm((prev) => ({ ...prev, tags: fromCommaList(event.target.value) }))} placeholder="Tags, comma-separated" className="admin-input" />
-                          <div className="button-row">
-                            <button type="submit" disabled={isSaving} className="action-button">Save deity</button>
-                          </div>
-                        </InlinePanel>
-                      )}
-
-                      {showInlineCategoryForm && (
-                        <InlinePanel title="Add New Category" onSubmit={createInlineCategory}>
-                          <input value={inlineCategoryForm.name} onChange={(event) => setInlineCategoryForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Category name" className="admin-input" />
-                          <input value={inlineCategoryForm.description || ''} onChange={(event) => setInlineCategoryForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Description (optional)" className="admin-input" />
-                          <div className="button-row">
-                            <button type="submit" disabled={isSaving} className="action-button">Save category</button>
-                          </div>
-                        </InlinePanel>
-                      )}
-
-                      <div className="picker-grid">
-                        <input value={stotraForm.deity} onChange={(event) => setStotraForm((prev) => ({ ...prev, deity: event.target.value }))} placeholder="Selected deity" className="admin-input" />
-                        <input value={stotraForm.category} onChange={(event) => setStotraForm((prev) => ({ ...prev, category: event.target.value }))} placeholder="Selected category" className="admin-input" />
-                      </div>
-                    </SectionBand>
-
-                    <SectionBand title="Content">
-                      <div className="form-stack">
-                        <textarea value={stotraForm.content} onChange={(event) => setStotraForm((prev) => ({ ...prev, content: event.target.value }))} placeholder="Stotra text or verified excerpt" rows={16} className="admin-input" />
-                        <textarea value={stotraForm.process || ''} onChange={(event) => setStotraForm((prev) => ({ ...prev, process: event.target.value }))} placeholder="How to Recite" rows={4} className="admin-input" />
-                      </div>
-                    </SectionBand>
-
-                    <SectionBand title="Meaning & Benefits">
-                      <div className="form-stack">
-                        <textarea value={stotraForm.nepaliMeaning || ''} onChange={(event) => setStotraForm((prev) => ({ ...prev, nepaliMeaning: event.target.value }))} placeholder="Meaning" rows={5} className="admin-input" />
-                        <textarea value={stotraForm.wordMeaning || ''} onChange={(event) => setStotraForm((prev) => ({ ...prev, wordMeaning: event.target.value }))} placeholder="Word meaning" rows={5} className="admin-input" />
-                        <textarea value={stotraForm.benefits || ''} onChange={(event) => setStotraForm((prev) => ({ ...prev, benefits: event.target.value }))} placeholder="Benefits" rows={4} className="admin-input" />
-                      </div>
-                    </SectionBand>
-
-                    <SectionBand title="Source & Tags">
-                      <div className="form-stack">
-                        <input value={stotraForm.source || ''} onChange={(event) => setStotraForm((prev) => ({ ...prev, source: event.target.value }))} placeholder="Source note" className="admin-input" />
-                        <input value={toCommaList(stotraForm.tags || [])} onChange={(event) => setStotraForm((prev) => ({ ...prev, tags: fromCommaList(event.target.value) }))} placeholder="Tags, comma-separated" className="admin-input" />
-                      </div>
-                    </SectionBand>
-
-                    <div className="button-row">
-                      <button disabled={isSaving} className="action-button">
-                        {isSaving ? 'Saving...' : 'Save Stotra'}
-                      </button>
-                    </div>
-                  </form>
-
-                  <AdminList title="Existing stotras">
-                    {stotras.map((stotra) => (
-                      <RecordCard key={stotra.id} title={stotra.title} subtitle={`${stotra.deity} • ${stotra.category}`} tags={stotra.tags}>
-                        <button onClick={() => {
-                          setEditingStotraId(stotra.id);
-                          setStotraForm({
-                            title: stotra.title,
-                            alternateTitle: stotra.alternateTitle || '',
-                            deity: stotra.deity,
-                            category: stotra.category,
-                            content: stotra.content,
-                            nepaliMeaning: stotra.nepaliMeaning || '',
-                            wordMeaning: stotra.wordMeaning || '',
-                            benefits: stotra.benefits || '',
-                            process: stotra.process || '',
-                            source: stotra.source || '',
-                            tags: stotra.tags || [],
-                            language: stotra.language || '',
-                            script: stotra.script || '',
-                            status: stotra.status || 'published',
-                          });
-                          setValidationMessage(null);
-                        }} className="icon-button" aria-label={`Edit ${stotra.title}`}><Edit2 size={17} /></button>
-                        <button onClick={() => onDeleteStotra(stotra.id)} className="icon-button" aria-label={`Delete ${stotra.title}`}><Trash2 size={17} /></button>
-                      </RecordCard>
-                    ))}
-                  </AdminList>
-                </div>
-              )}
-
-              {tab === 'deities' && (
-                <div className="admin-grid">
-                  <form onSubmit={submitDeity} className="admin-card premium-form">
-                    <div className="section-header">
-                      <div>
-                        <p className="section-kicker">Deities</p>
-                        <h3 className="section-heading">{editingDeityId ? 'Edit Deity' : 'Add Deity'}</h3>
-                      </div>
-                      {editingDeityId && (
-                        <button type="button" onClick={() => { setEditingDeityId(undefined); setDeityForm(emptyDeityForm); }} className="secondary-button">
-                          Cancel edit
-                        </button>
-                      )}
-                    </div>
-                    <SectionBand title="Basic Details">
-                      <div className="form-stack">
-                        <input value={deityForm.name} onChange={(event) => setDeityForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Name" className="admin-input" />
-                        <input value={deityForm.sanskritName || ''} onChange={(event) => setDeityForm((prev) => ({ ...prev, sanskritName: event.target.value }))} placeholder="Sanskrit name" className="admin-input" />
-                      </div>
-                    </SectionBand>
-                    <SectionBand title="Description & Significance">
-                      <div className="form-stack">
-                        <textarea value={deityForm.description} onChange={(event) => setDeityForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Description" rows={3} className="admin-input" />
-                        <textarea value={deityForm.significance} onChange={(event) => setDeityForm((prev) => ({ ...prev, significance: event.target.value }))} placeholder="Significance" rows={4} className="admin-input" />
-                      </div>
-                    </SectionBand>
-                    <SectionBand title="Mantra & Visuals">
-                      <div className="form-stack">
-                        <input value={deityForm.mantra || ''} onChange={(event) => setDeityForm((prev) => ({ ...prev, mantra: event.target.value }))} placeholder="Mantra" className="admin-input" />
-                        <input value={deityForm.imageUrl || ''} onChange={(event) => setDeityForm((prev) => ({ ...prev, imageUrl: event.target.value }))} placeholder="Optional image URL" className="admin-input" />
-                        <input value={toCommaList(deityForm.tags || [])} onChange={(event) => setDeityForm((prev) => ({ ...prev, tags: fromCommaList(event.target.value) }))} placeholder="Tags, comma-separated" className="admin-input" />
-                      </div>
-                    </SectionBand>
-                    <div className="button-row">
-                      <button disabled={isSaving} className="action-button">{isSaving ? 'Saving...' : 'Save Deity'}</button>
-                    </div>
-                  </form>
-
-                  <AdminList title="Existing deities">
-                    {deities.map((deity) => (
-                      <RecordCard key={deity.id} title={deity.name} subtitle={deity.description} tags={deity.tags}>
-                        <button onClick={() => {
-                          setEditingDeityId(deity.id);
-                          setDeityForm({
-                            name: deity.name,
-                            sanskritName: deity.sanskritName || '',
-                            description: deity.description,
-                            significance: deity.significance,
-                            mantra: deity.mantra || '',
-                            imageUrl: deity.imageUrl || '',
-                            tags: deity.tags || [],
-                            theme: deity.theme || '',
-                          });
-                          setValidationMessage(null);
-                        }} className="icon-button" aria-label={`Edit ${deity.name}`}><Edit2 size={17} /></button>
-                        <button onClick={() => onDeleteDeity(deity.id)} className="icon-button" aria-label={`Delete ${deity.name}`}><Trash2 size={17} /></button>
-                      </RecordCard>
-                    ))}
-                  </AdminList>
-                </div>
-              )}
-
-              {tab === 'categories' && (
-                <div className="admin-grid">
-                  <form onSubmit={submitCategory} className="admin-card premium-form">
-                    <div className="section-header">
-                      <div>
-                        <p className="section-kicker">Categories</p>
-                        <h3 className="section-heading">{editingCategoryId ? 'Edit Category' : 'Add Category'}</h3>
-                      </div>
-                      {editingCategoryId && (
-                        <button type="button" onClick={() => { setEditingCategoryId(undefined); setCategoryForm(emptyCategoryForm); }} className="secondary-button">
-                          Cancel edit
-                        </button>
-                      )}
-                    </div>
-                    <SectionBand title="Category Details">
-                      <div className="form-stack">
-                        <input value={categoryForm.name} onChange={(event) => setCategoryForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Category name" className="admin-input" />
-                        <input value={categoryForm.description || ''} onChange={(event) => setCategoryForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Description" className="admin-input" />
-                      </div>
-                    </SectionBand>
-                    <div className="button-row">
-                      <button disabled={isSaving} className="action-button">{isSaving ? 'Saving...' : 'Save Category'}</button>
-                    </div>
-                  </form>
-
-                  <AdminList title="Existing categories">
-                    {categories.map((category) => (
-                      <RecordCard key={category.id} title={category.name} subtitle={category.description || 'No description'} tags={[]}>
-                        <button onClick={() => {
-                          setEditingCategoryId(category.id);
-                          setCategoryForm({ name: category.name, description: category.description || '' });
-                          setValidationMessage(null);
-                        }} className="icon-button" aria-label={`Edit ${category.name}`}><Edit2 size={17} /></button>
-                        <button onClick={() => onDeleteCategory(category.id)} className="icon-button" aria-label={`Delete ${category.name}`}><Trash2 size={17} /></button>
-                      </RecordCard>
-                    ))}
-                  </AdminList>
-                </div>
-              )}
-
-              {tab === 'pooja' && (
-                <div className="admin-grid">
-                  <form onSubmit={submitPooja} className="admin-card premium-form">
-                    <div className="section-header">
-                      <div>
-                        <p className="section-kicker">Pooja Bidhi</p>
-                        <h3 className="section-heading">{editingPoojaId ? 'Edit Pooja Bidhi' : 'Add Pooja Bidhi'}</h3>
-                      </div>
-                      {editingPoojaId && (
-                        <button type="button" onClick={() => { setEditingPoojaId(undefined); setPoojaForm(emptyPoojaForm); }} className="secondary-button">
-                          Cancel edit
-                        </button>
-                      )}
-                    </div>
-                    <SectionBand title="Basic Details">
-                      <div className="form-stack">
-                        <input value={poojaForm.title} onChange={(event) => setPoojaForm((prev) => ({ ...prev, title: event.target.value }))} placeholder="Title" className="admin-input" />
-                        <PickerField
-                          label="Deity"
-                          value={poojaForm.deity}
-                          onChange={(value) => setPoojaForm((prev) => ({ ...prev, deity: value }))}
-                          placeholder="Search or type deity"
-                          suggestions={poojaDeityOptions.map((deity) => deity.name)}
-                          actionLabel={showInlinePoojaDeityForm ? 'Hide New Deity Form' : 'Add New Deity'}
-                          actionOnClick={() => setShowInlinePoojaDeityForm((open) => !open)}
-                        />
-                        {showInlinePoojaDeityForm && (
-                          <InlinePanel title="Add New Deity" onSubmit={createInlinePoojaDeity}>
-                            <input value={inlinePoojaDeityForm.name} onChange={(event) => setInlinePoojaDeityForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Deity name" className="admin-input" />
-                            <input value={inlinePoojaDeityForm.sanskritName || ''} onChange={(event) => setInlinePoojaDeityForm((prev) => ({ ...prev, sanskritName: event.target.value }))} placeholder="Sanskrit name (optional)" className="admin-input" />
-                            <textarea value={inlinePoojaDeityForm.description} onChange={(event) => setInlinePoojaDeityForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Short description" rows={3} className="admin-input" />
-                            <textarea value={inlinePoojaDeityForm.significance} onChange={(event) => setInlinePoojaDeityForm((prev) => ({ ...prev, significance: event.target.value }))} placeholder="Significance" rows={3} className="admin-input" />
-                            <input value={inlinePoojaDeityForm.mantra || ''} onChange={(event) => setInlinePoojaDeityForm((prev) => ({ ...prev, mantra: event.target.value }))} placeholder="Mantra (optional)" className="admin-input" />
-                            <input value={toCommaList(inlinePoojaDeityForm.tags || [])} onChange={(event) => setInlinePoojaDeityForm((prev) => ({ ...prev, tags: fromCommaList(event.target.value) }))} placeholder="Tags, comma-separated" className="admin-input" />
-                            <div className="button-row">
-                              <button type="submit" disabled={isSaving} className="action-button">Save deity</button>
-                            </div>
-                          </InlinePanel>
-                        )}
-                        <input value={poojaForm.occasion} onChange={(event) => setPoojaForm((prev) => ({ ...prev, occasion: event.target.value }))} placeholder="Occasion" className="admin-input" />
-                      </div>
-                    </SectionBand>
-                    <SectionBand title="Guide">
-                      <div className="form-stack">
-                        <textarea value={poojaForm.overview} onChange={(event) => setPoojaForm((prev) => ({ ...prev, overview: event.target.value }))} placeholder="Overview" rows={3} className="admin-input" />
-                        <textarea value={toLineList(poojaForm.materials || [])} onChange={(event) => setPoojaForm((prev) => ({ ...prev, materials: fromLineList(event.target.value) }))} placeholder="Materials, one per line or comma separated" rows={8} className="admin-input" />
-                        <textarea value={toLineList(poojaForm.steps || [])} onChange={(event) => setPoojaForm((prev) => ({ ...prev, steps: fromLineList(event.target.value) }))} placeholder="Steps, one per line or comma separated" rows={10} className="admin-input" />
-                        <textarea value={toLineList(poojaForm.benefits || [])} onChange={(event) => setPoojaForm((prev) => ({ ...prev, benefits: fromLineList(event.target.value) }))} placeholder="Benefits, one per line or comma separated" rows={6} className="admin-input" />
-                      </div>
-                    </SectionBand>
-                    <SectionBand title="Notes">
-                      <div className="form-stack">
-                        <input value={poojaForm.cautions || ''} onChange={(event) => setPoojaForm((prev) => ({ ...prev, cautions: event.target.value }))} placeholder="Cautions / note" className="admin-input" />
-                        <input value={poojaForm.source || ''} onChange={(event) => setPoojaForm((prev) => ({ ...prev, source: event.target.value }))} placeholder="Source note (recommended)" className="admin-input" />
-                        <input value={toCommaList(poojaForm.tags || [])} onChange={(event) => setPoojaForm((prev) => ({ ...prev, tags: fromCommaList(event.target.value) }))} placeholder="Tags, comma-separated" className="admin-input" />
-                      </div>
-                    </SectionBand>
-                    <div className="button-row">
-                      <button disabled={isSaving} className="action-button">{isSaving ? 'Saving...' : 'Save Pooja Bidhi'}</button>
-                    </div>
-                  </form>
-
-                  <AdminList title="Existing pooja bidhi">
-                    {poojaBidhi.map((item) => (
-                      <RecordCard key={item.id} title={item.title} subtitle={`${item.deity} • ${item.occasion}`} tags={item.tags}>
-                        <button onClick={() => {
-                          setEditingPoojaId(item.id);
-                          setPoojaForm({
-                            title: item.title,
-                            deity: item.deity,
-                            occasion: item.occasion,
-                            overview: item.overview,
-                            materials: item.materials,
-                            steps: item.steps,
-                            benefits: item.benefits,
-                            cautions: item.cautions || '',
-                            source: item.source || '',
-                            tags: item.tags || [],
-                          });
-                          setValidationMessage(null);
-                        }} className="icon-button" aria-label={`Edit ${item.title}`}><Edit2 size={17} /></button>
-                        <button onClick={() => onDeletePoojaBidhi(item.id)} className="icon-button" aria-label={`Delete ${item.title}`}><Trash2 size={17} /></button>
-                      </RecordCard>
-                    ))}
-                  </AdminList>
-                </div>
-              )}
-
-              {tab === 'stories' && (
-                <div className="admin-grid">
-                  <form onSubmit={submitStory} className="admin-card premium-form">
-                    <div className="section-header">
-                      <div>
-                        <p className="section-kicker">Stories</p>
-                        <h3 className="section-heading">{editingStoryId ? 'Edit Story' : 'Add Story'}</h3>
-                      </div>
-                      {editingStoryId && (
-                        <button type="button" onClick={() => { setEditingStoryId(undefined); setStoryForm(emptyStoryForm); }} className="secondary-button">
-                          Cancel edit
-                        </button>
-                      )}
-                    </div>
-                    <SectionBand title="Basic Details">
-                      <div className="form-stack">
-                        <input value={storyForm.title} onChange={(event) => setStoryForm((prev) => ({ ...prev, title: event.target.value }))} placeholder="Title" className="admin-input" />
-                        <input value={storyForm.deity || ''} onChange={(event) => setStoryForm((prev) => ({ ...prev, deity: event.target.value }))} placeholder="Linked deity (optional)" className="admin-input" />
-                        <textarea value={storyForm.summary} onChange={(event) => setStoryForm((prev) => ({ ...prev, summary: event.target.value }))} placeholder="Summary" rows={3} className="admin-input" />
-                      </div>
-                    </SectionBand>
-                    <SectionBand title="Story & Lesson">
-                      <div className="form-stack">
-                        <textarea value={storyForm.story} onChange={(event) => setStoryForm((prev) => ({ ...prev, story: event.target.value }))} placeholder="Story" rows={12} className="admin-input" />
-                        <textarea value={storyForm.lesson} onChange={(event) => setStoryForm((prev) => ({ ...prev, lesson: event.target.value }))} placeholder="Lesson" rows={4} className="admin-input" />
-                        <input value={storyForm.source || ''} onChange={(event) => setStoryForm((prev) => ({ ...prev, source: event.target.value }))} placeholder="Source note" className="admin-input" />
-                        <input value={toCommaList(storyForm.tags || [])} onChange={(event) => setStoryForm((prev) => ({ ...prev, tags: fromCommaList(event.target.value) }))} placeholder="Tags, comma-separated" className="admin-input" />
-                      </div>
-                    </SectionBand>
-                    <div className="button-row">
-                      <button disabled={isSaving} className="action-button">{isSaving ? 'Saving...' : 'Save Story'}</button>
-                    </div>
-                  </form>
-
-                  <AdminList title="Existing stories">
-                    {stories.map((story) => (
-                      <RecordCard key={story.id} title={story.title} subtitle={story.summary} tags={story.tags}>
-                        <button onClick={() => {
-                          setEditingStoryId(story.id);
-                          setStoryForm({
-                            title: story.title,
-                            deity: story.deity || '',
-                            summary: story.summary,
-                            story: story.story,
-                            lesson: story.lesson,
-                            source: story.source || '',
-                            tags: story.tags || [],
-                          });
-                          setValidationMessage(null);
-                        }} className="icon-button" aria-label={`Edit ${story.title}`}><Edit2 size={17} /></button>
-                        <button onClick={() => onDeleteStory(story.id)} className="icon-button" aria-label={`Delete ${story.title}`}><Trash2 size={17} /></button>
-                      </RecordCard>
-                    ))}
-                  </AdminList>
-                </div>
-              )}
-
-              {tab === 'panchang' && (
-                <div className="admin-tools-grid">
-                  <form onSubmit={submitPanchang} className="admin-card premium-form">
-                    <div className="section-header">
-                      <div>
-                        <p className="section-kicker">Panchang</p>
-                        <h3 className="section-heading">Edit Panchang Guide</h3>
-                      </div>
-                    </div>
-                    <SectionBand title="Educational Intro">
-                      <div className="form-stack">
-                        <input value={panchangForm.introTitle} onChange={(event) => setPanchangForm((prev) => ({ ...prev, introTitle: event.target.value }))} placeholder="Intro title" className="admin-input" />
-                        <textarea value={panchangForm.intro} onChange={(event) => setPanchangForm((prev) => ({ ...prev, intro: event.target.value }))} placeholder="Intro copy" rows={4} className="admin-input" />
-                      </div>
-                    </SectionBand>
-                    <SectionBand title="Terms">
-                      <textarea
-                        value={panchangTermsText}
-                        onChange={(event) => setPanchangTermsText(event.target.value)}
-                        placeholder="Tithi: Lunar day used in Hindu calendrical tradition."
-                        rows={12}
-                        className="admin-input"
-                      />
-                    </SectionBand>
-                    <SectionBand title="Daily Notes">
-                      <textarea
-                        value={panchangNotesText}
-                        onChange={(event) => setPanchangNotesText(event.target.value)}
-                        placeholder="Morning reflection: Short prayer or stotra reading."
-                        rows={9}
-                        className="admin-input"
-                      />
-                    </SectionBand>
-                    <SectionBand title="Disclaimer">
-                      <textarea value={panchangForm.disclaimer} onChange={(event) => setPanchangForm((prev) => ({ ...prev, disclaimer: event.target.value }))} placeholder="Disclaimer" rows={4} className="admin-input" />
-                    </SectionBand>
-                    <div className="button-row">
-                      <button disabled={isSaving} className="action-button">{isSaving ? 'Saving...' : 'Save Panchang Guide'}</button>
-                    </div>
-                  </form>
-                </div>
-              )}
-
-              {tab === 'tools' && (
-                <div className="admin-tools-grid">
-                  <div className="stats-grid">
-                    <MetricCard label="Stotras" value={stotras.length} />
-                    <MetricCard label="Deities" value={deities.length} />
-                    <MetricCard label="Pooja Bidhi" value={poojaBidhi.length} />
-                    <MetricCard label="Stories" value={stories.length} />
-                    <MetricCard label="Panchang Terms" value={panchang.terms.length} />
-                  </div>
-
-                  <div className="admin-card backup-card">
-                    <div className="section-header">
-                      <div>
-                        <p className="section-kicker">Backup &amp; Publish</p>
-                        <h3 className="section-heading">Portable local content controls</h3>
-                      </div>
-                    </div>
-                    <section className="backup-section">
-                      <div>
-                        <p className="backup-title">Export JSON</p>
-                        <p className="body-copy">Always works locally. Use this before moving browsers or accounts.</p>
-                      </div>
-                      <div className="button-row">
-                        <button onClick={handleExport} className="action-button">Export Content</button>
-                      </div>
-                    </section>
-                    <section className="backup-section">
-                      <div>
-                        <p className="backup-title">Import JSON</p>
-                        <p className="body-copy">Always works locally. Paste JSON below or load a file first.</p>
-                      </div>
-                      <div className="button-row">
-                        <button onClick={handleImport} className="secondary-button">Import Content</button>
-                      </div>
-                    </section>
-                    <section className="backup-section">
-                      <div>
-                        <p className="backup-title">Reset Defaults</p>
-                        <p className="body-copy">Always works locally and asks for confirmation before clearing local edits.</p>
-                      </div>
-                      <div className="button-row">
-                        <button onClick={handleReset} className="secondary-button danger-button">Reset Defaults</button>
-                      </div>
-                    </section>
-                    <section className="backup-section">
-                      <div>
-                        <p className="backup-title">Publish to GitHub</p>
-                        <p className="body-copy">Optional. Requires Netlify Functions plus server environment variables.</p>
-                      </div>
-                      <div className="button-row">
-                        <button onClick={onPublishContent} disabled={isSaving} className="secondary-button">{isSaving ? 'Publishing...' : 'Publish to GitHub'}</button>
-                      </div>
-                    </section>
-                    <textarea
-                      value={exportText}
-                      onChange={(event) => setExportText(event.target.value)}
-                      className="admin-input admin-json"
-                      placeholder="Exported content or paste JSON here to import"
-                    />
-                    <label className="file-import">
-                      <input
-                        type="file"
-                        accept="application/json"
-                        onChange={async (event) => {
-                          const file = event.target.files?.[0];
-                          if (!file) return;
-                          setExportText(await file.text());
-                        }}
-                      />
-                      <span>Load content from file</span>
-                    </label>
-                    <p className="body-copy">Local changes are saved in this browser first. Publish to GitHub only works when Netlify Functions and server environment variables are configured.</p>
-                  </div>
-                </div>
-              )}
             </div>
-          </motion.div>
+          )}
         </div>
-      )}
-    </AnimatePresence>
+      </section>
+    </div>
   );
 }
 
 function TabButton({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: ReactNode; label: string }) {
-  return (
-    <button onClick={onClick} className={`nav-item ${active ? 'nav-item-active' : ''}`}>
-      {icon}
-      <span>{label}</span>
-    </button>
-  );
+  return <button onClick={onClick} className={`nav-item ${active ? 'nav-item-active' : ''}`}>{icon}<span>{label}</span></button>;
 }
 
-function SectionBand({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="section-band">
-      <p className="section-kicker">{title}</p>
-      <div className="section-band-content">{children}</div>
-    </section>
-  );
+function SectionTitle({ title }: { title: string }) {
+  return <h3 className="compact-section-title">{title}</h3>;
 }
 
-function InlinePanel({ title, onSubmit, children }: { title: string; onSubmit: (event: FormEvent) => void; children: ReactNode }) {
+function CharCountTextarea({
+  value,
+  onChange,
+  maxLength,
+  label,
+  required,
+  className = '',
+  ...rest
+}: TextareaHTMLAttributes<HTMLTextAreaElement> & {
+  label: string;
+  maxLength: number;
+  required?: boolean;
+}) {
+  const count = value ? String(value).length : 0;
+  const isOver = count > maxLength;
+
   return (
-    <div className="inline-panel">
-      <p className="section-kicker">{title}</p>
-      <form onSubmit={onSubmit} className="form-stack">
-        {children}
-      </form>
+    <div className="field-group">
+      <label className="field-label">{label}{required && ' *'}</label>
+      <textarea
+        value={value}
+        onChange={onChange}
+        maxLength={maxLength + 50}
+        {...rest}
+        className={`admin-input compact-textarea admin-textarea ${className} ${isOver ? 'field-error' : ''}`}
+      />
+      <span className={`char-count ${isOver ? 'char-count-error' : ''}`}>
+        {count} / {maxLength}
+      </span>
     </div>
   );
 }
 
-function PickerField({
-  label,
-  value,
-  onChange,
-  placeholder,
-  suggestions,
-  actionLabel,
-  actionOnClick,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-  suggestions: string[];
-  actionLabel: string;
-  actionOnClick: () => void;
-}) {
+function FormActions({ isSaving, label, clearLabel, onCancel }: { isSaving: boolean; label: string; clearLabel: string; onCancel: () => void }) {
+  return <div className="button-row"><button disabled={isSaving} className="action-button compact-save">{isSaving ? 'Saving...' : label}</button><button type="button" onClick={onCancel} className="secondary-button">{clearLabel}</button></div>;
+}
+
+function Picker({ value, options, placeholder, optional = false, onChange, onCreate }: { value: string; options: string[]; placeholder: string; optional?: boolean; onChange: (value: string) => void; onCreate: (value: string) => void }) {
+  const hasMatchingOption = options.some((option) => sameName(option, value));
+  const [isCreating, setIsCreating] = useState(false);
+  const [draft, setDraft] = useState('');
   return (
-    <div className="picker-field">
-      <p className="field-label">{label}</p>
-      <input value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} className="admin-input" />
-      <div className="picker-actions">
-        <button type="button" onClick={actionOnClick} className="secondary-button">{actionLabel}</button>
+    <div className="picker-field compact-picker">
+      <select
+        className="admin-input compact-input admin-select"
+        value={hasMatchingOption ? value : ''}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setIsCreating(false);
+        }}
+      >
+        <option value="">{placeholder}</option>
+        {options.map((option) => <option key={option} value={option}>{option}</option>)}
+      </select>
+      <div className="button-row">
+        {optional && <button type="button" className="secondary-button" onClick={() => onChange('')}>No deity</button>}
+        {!isCreating ? (
+          <button type="button" className="secondary-button" onClick={() => { setDraft(''); setIsCreating(true); }}>
+            New {placeholder}
+          </button>
+        ) : (
+          <button type="button" className="secondary-button" onClick={() => { setDraft(''); setIsCreating(false); }}>
+            Cancel
+          </button>
+        )}
       </div>
-      {suggestions.length > 0 && (
-        <div className="picker-suggestions">
-          {suggestions.map((suggestion) => (
-            <button key={suggestion} type="button" onClick={() => onChange(suggestion)} className="picker-suggestion">
-              {suggestion}
-            </button>
-          ))}
+      {isCreating && (
+        <div className="button-row compact-create-row">
+          <input
+            className="admin-input compact-input"
+            placeholder={`Type new ${placeholder.toLowerCase()}`}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+          <button
+            type="button"
+            className="action-button"
+            onClick={() => {
+              const next = draft.trim();
+              if (!next) return;
+              onCreate(next);
+              onChange(next);
+              setDraft('');
+              setIsCreating(false);
+            }}
+          >
+            Create
+          </button>
         </div>
       )}
     </div>
   );
 }
 
-function AdminList({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <div className="admin-card admin-list">
-      <div className="section-header">
-        <div>
-          <p className="section-kicker">Library</p>
-          <h3 className="section-heading">{title}</h3>
-        </div>
-      </div>
-      <div className="record-list">{children}</div>
-    </div>
-  );
+function RecordList({ title, toolbar, children }: { title: string; toolbar?: ReactNode; children: ReactNode }) {
+  return <section className="admin-card admin-list compact-list"><div className="section-header"><SectionTitle title={title} />{toolbar}</div><div className="record-list">{children}</div></section>;
 }
 
-function RecordCard({ title, subtitle, tags, children }: { key?: string; title: string; subtitle?: string; tags: string[]; children: ReactNode }) {
-  return (
-    <div className="record-card">
-      <div className="record-card-copy">
-        <p className="record-title">{title}</p>
-        {subtitle && <p className="record-subtitle">{subtitle}</p>}
-        {tags.length > 0 && (
-          <div className="tag-row">
-            {tags.slice(0, 3).map((tag) => (
-              <span key={tag} className="tag-chip tag-chip-muted">#{tag}</span>
-            ))}
-          </div>
-        )}
-      </div>
-      <div className="record-actions">{children}</div>
-    </div>
-  );
+function Record({ title, subtitle, editLabel = 'Edit', onEdit, onDelete }: { key?: string; title: string; subtitle: string; editLabel?: string; onEdit: () => void; onDelete: () => void }) {
+  return <article className="record-card compact-record"><div className="record-card-copy"><p className="record-title">{title}</p><p className="record-subtitle">{subtitle}</p></div><div className="record-actions"><button onClick={onEdit} className="secondary-button">{editLabel}</button><button onClick={onDelete} className="icon-button" aria-label={`Delete ${title}`}><Trash2 size={16} /></button></div></article>;
 }
 
-function MetricCard({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="metric-card">
-      <p className="section-kicker">{label}</p>
-      <p className="metric-value">{value}</p>
-    </div>
-  );
+function BackupAction({ title, text, button }: { title: string; text: string; button: ReactNode }) {
+  return <section className="backup-section"><div><p className="backup-title">{title}</p><p className="body-copy">{text}</p></div>{button}</section>;
 }
 
-function MessageBanner({ tone, text }: { tone: 'success' | 'error' | 'neutral'; text: string }) {
-  return <div className={`message-banner message-${tone}`}>{text}</div>;
+function Message({ tone, text, onDismiss }: { tone: 'success' | 'error' | 'neutral' | 'info'; text: string; onDismiss?: () => void }) {
+  return (
+    <div className={`message-banner message-${tone}`}>
+      <span>{text}</span>
+      {onDismiss && (
+        <button type="button" className="message-close" onClick={onDismiss} aria-label="Dismiss message">
+          <X size={14} />
+        </button>
+      )}
+    </div>
+  );
 }

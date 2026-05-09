@@ -13,4 +13,16 @@ export default defineConfig({
   server: {
     hmr: true,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom'],
+          motion: ['motion'],
+          lucide: ['lucide-react'],
+          datefns: ['date-fns'],
+        },
+      },
+    },
+  },
 });

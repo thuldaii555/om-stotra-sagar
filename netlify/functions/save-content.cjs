@@ -1,4 +1,5 @@
-const requiredGitHubEnv = ['GITHUB_TOKEN', 'GITHUB_OWNER', 'GITHUB_REPO', 'GITHUB_BRANCH', 'GITHUB_CONTENT_PATH'];
+const CONTENT_PATH = 'data/om-stotra-content.json';
+const requiredGitHubEnv = ['GITHUB_TOKEN', 'GITHUB_OWNER', 'GITHUB_REPO', 'GITHUB_BRANCH'];
 
 exports.handler = async function handler(event) {
   if (event.httpMethod !== 'POST') {
@@ -28,7 +29,7 @@ exports.handler = async function handler(event) {
   }
 
   const content = payload.content;
-  const validationError = validateContent(content);
+  const validationError = getValidationError(content);
   if (validationError) {
     return json(400, { error: validationError });
   }
@@ -36,7 +37,7 @@ exports.handler = async function handler(event) {
   const owner = process.env.GITHUB_OWNER;
   const repo = process.env.GITHUB_REPO;
   const branch = process.env.GITHUB_BRANCH;
-  const path = process.env.GITHUB_CONTENT_PATH;
+  const path = CONTENT_PATH;
   const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponentPath(path)}`;
 
   try {
@@ -72,12 +73,14 @@ exports.handler = async function handler(event) {
   }
 };
 
-function validateContent(content) {
+/** Returns an error string if invalid, or null if valid. */
+function getValidationError(content) {
   if (!content || typeof content !== 'object') return 'Content payload is required.';
-  const requiredArrays = ['stotras', 'deities', 'categories', 'poojaBidhi', 'stories'];
+  const requiredArrays = ['deities', 'categories', 'poojaBidhi', 'stories'];
   for (const key of requiredArrays) {
     if (!Array.isArray(content[key])) return `Content field "${key}" must be an array.`;
   }
+  if (!Array.isArray(content.stotras) && !Array.isArray(content.devotionalContent)) return 'Devotional content is required.';
   if (!content.panchang || !Array.isArray(content.panchang.terms) || !Array.isArray(content.panchang.dailyNotes)) return 'Panchang content is required.';
   return null;
 }

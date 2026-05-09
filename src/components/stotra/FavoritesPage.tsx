@@ -15,7 +15,7 @@ export default function FavoritesPage({ favoriteStotras, favoriteStotraIds, onOp
       <section className="page-hero editorial-card">
         <p className="page-eyebrow">Saved locally</p>
         <h1 className="page-title">Favorites</h1>
-        <p className="page-subtitle">Keep the stotras you return to most often in one quiet place.</p>
+        <p className="page-subtitle">Keep the devotional readings you return to most often in one quiet place.</p>
       </section>
 
       {favoriteStotras.length === 0 ? (
@@ -26,7 +26,7 @@ export default function FavoritesPage({ favoriteStotras, favoriteStotraIds, onOp
             Use the bookmark button on a stotra to save it here. Your favorites stay in this browser and can be revisited anytime.
           </p>
           <button onClick={onBrowseStotras} className="action-button">
-            Browse stotras
+            Open Library
           </button>
         </div>
       ) : (

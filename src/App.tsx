@@ -1,47 +1,34 @@
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import AppShell, { type AppView } from './components/layout/AppShell';
 import HomePage from './components/home/HomePage';
 import StotraReader, { type ReaderFontSize } from './components/stotra/StotraReader';
-import StotrasPage from './components/stotra/StotrasPage';
-import FavoritesPage from './components/stotra/FavoritesPage';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import StateMessage from './components/common/StateMessage';
-import Panchang from './components/Panchang';
-import GodsPage from './components/gods/GodsPage';
-import PoojaPage from './components/pooja/PoojaPage';
-import StoriesPage from './components/stories/StoriesPage';
-import AdminPanel from './components/admin/AdminPanel';
 import { loadRemoteContent, publishContentToGitHub } from './services/contentBackendService';
 import {
   addHistory,
   clearFavorites,
   clearHistory,
-  exportAllContent,
   getContentBundle,
   getContentSourceInfo,
   getFavoriteIds,
+  getHistory,
   getReaderFontSize,
-  importAllContent,
+  normalizeCategoryInput,
+  normalizeContentBundle,
+  normalizeContentName,
+  normalizeDeityInput,
+  normalizePanchangContentInput,
+  normalizePoojaBidhiInput,
+  normalizeStoryInput,
+  normalizeStotraInput,
+  persistContentBundle,
   removeFavorite,
-  resetToDefaultContent,
-  saveCategory,
-  saveDeity,
-  savePanchangContent,
-  savePoojaBidhi,
-  saveStory,
-  saveStotra,
   seedRemoteContentIfNoLocal,
   setReaderFontSize as saveReaderFontSize,
   toggleFavorite,
-  updateCategory,
-  updateDeity,
-  updatePoojaBidhi,
-  updateStory,
-  updateStotra,
-  deleteCategory,
-  deleteDeity,
-  deletePoojaBidhi,
-  deleteStory,
-  deleteStotra,
+  createUniqueId,
   type CategoryInput,
   type DeityInput,
   type HinduStoryInput,
@@ -49,8 +36,16 @@ import {
   type PoojaBidhiInput,
   type StotraInput,
 } from './services/localContentService';
-import { DEFAULT_CATEGORIES, DEFAULT_DEITIES, DEFAULT_PANCHANG_CONTENT, DEFAULT_POOJA_BIDHI, DEFAULT_STORIES, DEFAULT_STOTRAS } from './data/defaultContent';
-import type { Category, Deity, Stotra } from './types';
+import { DEFAULT_CONTENT, DEFAULT_PANCHANG_CONTENT } from './data/defaultContent';
+import type { Category, ContentBundle, Deity, HistoryItem, PoojaBidhi, Stotra } from './types';
+
+const StotrasPage = lazy(() => import('./components/stotra/StotrasPage'));
+const FavoritesPage = lazy(() => import('./components/stotra/FavoritesPage'));
+const Panchang = lazy(() => import('./components/Panchang'));
+const GodsPage = lazy(() => import('./components/gods/GodsPage'));
+const PoojaPage = lazy(() => import('./components/pooja/PoojaPage'));
+const StoriesPage = lazy(() => import('./components/stories/StoriesPage'));
+const AdminPanel = lazy(() => import('./components/admin/AdminPanel'));
 
 interface ContentStatus {
   kind: 'neutral' | 'error';
@@ -59,8 +54,88 @@ interface ContentStatus {
 
 const normalizeSearch = (value: string): string => value.trim().toLowerCase();
 const ADMIN_SESSION_KEY = 'om-stotra-sagar-admin-session';
+const LANGUAGE_KEY = 'om-stotra-sagar-language';
+const ADMIN_SESSION_DURATION_MS = 30 * 60 * 1000;
+const THEME_KEY = 'om-stotra-sagar-theme';
 const ADMIN_PASSCODE = import.meta.env.VITE_ADMIN_PASSCODE as string | undefined;
-// TODO: Add an English/Nepali language switcher in a future release.
+type Language = 'ne' | 'en';
+type Theme = 'light' | 'dark' | 'system';
+
+const translations = {
+  en: {
+    home: 'Home',
+    library: 'Library',
+    gods: 'Gods',
+    pooja: 'Pooja Bidhi',
+    stories: 'Stories',
+    panchang: 'Panchang',
+    favorites: 'Favorites',
+    admin: 'Admin',
+    search: 'Search',
+    more: 'More',
+  },
+  ne: {
+    stories: 'कथाहरू',
+    home: 'गृह',
+    library: 'पुस्तकालय',
+    gods: 'देवता',
+    pooja: 'पूजा विधि',
+    panchang: 'पञ्चाङ्ग',
+    favorites: 'मनपर्ने',
+    admin: 'एडमिन',
+    search: 'खोज्नुहोस्',
+    more: 'थप',
+  },
+} as const;
+
+const getSavedLanguage = (): Language => {
+  if (typeof localStorage === 'undefined') return 'ne';
+  return localStorage.getItem(LANGUAGE_KEY) === 'en' ? 'en' : 'ne';
+};
+
+const getSavedTheme = (): Theme => {
+  if (typeof localStorage === 'undefined') return 'system';
+  const saved = localStorage.getItem(THEME_KEY);
+  return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system';
+};
+
+const resolveTheme = (theme: Theme): 'light' | 'dark' => {
+  if (theme !== 'system') return theme;
+  if (typeof window === 'undefined') return 'light';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+};
+
+const getAdminSessionTimestamp = (): number => {
+  if (typeof sessionStorage === 'undefined') return 0;
+  const raw = sessionStorage.getItem(ADMIN_SESSION_KEY);
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const isAdminSessionActive = (): boolean => {
+  const timestamp = getAdminSessionTimestamp();
+  return timestamp > 0 && Date.now() - timestamp < ADMIN_SESSION_DURATION_MS;
+};
+
+const replaceById = <T extends { id: string }>(items: T[], nextItem: T): T[] => {
+  const index = items.findIndex((item) => item.id === nextItem.id);
+  if (index === -1) return [...items, nextItem];
+  const copy = [...items];
+  copy[index] = nextItem;
+  return copy;
+};
+
+const removeById = <T extends { id: string }>(items: T[], id: string): T[] => items.filter((item) => item.id !== id);
+
+const upsertByName = <T extends { id: string; name: string }>(items: T[], nextItem: T): { items: T[]; savedItem: T } => {
+  const index = items.findIndex((item) => normalizeContentName(item.name) === normalizeContentName(nextItem.name));
+  if (index === -1) return { items: [...items, nextItem], savedItem: nextItem };
+
+  const savedItem = { ...items[index], ...nextItem, id: items[index].id };
+  const copy = [...items];
+  copy[index] = savedItem;
+  return { items: copy, savedItem };
+};
 
 export default function App() {
   const [content, setContent] = useState(() => getContentBundle());
@@ -71,17 +146,21 @@ export default function App() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [selectedStotra, setSelectedStotra] = useState<Stotra | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(getFavoriteIds());
+  const [history, setHistory] = useState<HistoryItem[]>(() => getHistory());
   const [readerFontSize, setReaderFontSizeState] = useState<ReaderFontSize>(getReaderFontSize());
+  const [selectedPoojaId, setSelectedPoojaId] = useState<string | null>(null);
   const [status, setStatus] = useState<ContentStatus | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [contentSourceInfo, setContentSourceInfo] = useState(() => getContentSourceInfo());
-  const [adminUnlocked, setAdminUnlocked] = useState(() => typeof sessionStorage !== 'undefined' && sessionStorage.getItem(ADMIN_SESSION_KEY) === 'unlocked');
+  const [adminUnlocked, setAdminUnlocked] = useState(() => isAdminSessionActive());
+  const [language, setLanguage] = useState<Language>(() => getSavedLanguage());
+  const [theme, setTheme] = useState<Theme>(() => getSavedTheme());
 
-  const stotras = content.stotras.length > 0 ? content.stotras : DEFAULT_STOTRAS;
-  const categories = content.categories.length > 0 ? content.categories : DEFAULT_CATEGORIES;
-  const deities = content.deities.length > 0 ? content.deities : DEFAULT_DEITIES;
-  const poojaBidhi = content.poojaBidhi.length > 0 ? content.poojaBidhi : DEFAULT_POOJA_BIDHI;
-  const stories = content.stories.length > 0 ? content.stories : DEFAULT_STORIES;
+  const stotras = content.stotras;
+  const categories = content.categories;
+  const deities = content.deities;
+  const poojaBidhi = content.poojaBidhi;
+  const stories = content.stories;
   const panchang = content.panchang ?? DEFAULT_PANCHANG_CONTENT;
 
   const favoriteStotras = useMemo(
@@ -100,12 +179,13 @@ export default function App() {
         stotra.category.toLowerCase().includes(queryText) ||
         stotra.content.toLowerCase().includes(queryText) ||
         (stotra.nepaliMeaning?.toLowerCase().includes(queryText) ?? false) ||
+        (stotra.meaning?.toLowerCase().includes(queryText) ?? false) ||
         (stotra.wordMeaning?.toLowerCase().includes(queryText) ?? false) ||
         (stotra.benefits?.toLowerCase().includes(queryText) ?? false) ||
         (stotra.process?.toLowerCase().includes(queryText) ?? false) ||
         (stotra.tags?.some((tag) => tag.toLowerCase().includes(queryText)) ?? false);
-      const matchesDeity = !activeDeity || stotra.deity === activeDeity;
-      const matchesCategory = activeCategory === 'All' || stotra.category === activeCategory;
+      const matchesDeity = !activeDeity || normalizeSearch(stotra.deity) === normalizeSearch(activeDeity);
+      const matchesCategory = activeCategory === 'All' || normalizeSearch(stotra.category) === normalizeSearch(activeCategory);
 
       return matchesSearch && matchesDeity && matchesCategory;
     });
@@ -114,6 +194,59 @@ export default function App() {
   useEffect(() => {
     saveReaderFontSize(readerFontSize);
   }, [readerFontSize]);
+
+  useEffect(() => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(LANGUAGE_KEY, language);
+    }
+  }, [language]);
+
+  useEffect(() => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(THEME_KEY, theme);
+    }
+
+    const applyTheme = () => {
+      document.documentElement.dataset.theme = resolveTheme(theme);
+    };
+    applyTheme();
+
+    if (theme !== 'system') return;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    media.addEventListener('change', applyTheme);
+    return () => media.removeEventListener('change', applyTheme);
+  }, [theme]);
+
+  useEffect(() => {
+    if (!adminUnlocked || typeof sessionStorage === 'undefined') return;
+
+    const expireSession = () => {
+      sessionStorage.removeItem(ADMIN_SESSION_KEY);
+      setAdminUnlocked(false);
+      setMessage('Admin session expired after 30 minutes of inactivity.', 'error');
+      handleViewChange('home');
+    };
+    const refreshSession = () => {
+      if (!isAdminSessionActive()) {
+        expireSession();
+        return;
+      }
+      sessionStorage.setItem(ADMIN_SESSION_KEY, String(Date.now()));
+    };
+    const checkSession = () => {
+      if (!isAdminSessionActive()) {
+        expireSession();
+      }
+    };
+    const events = ['click', 'keydown', 'mousemove', 'scroll'] as const;
+    events.forEach((eventName) => window.addEventListener(eventName, refreshSession, { passive: true }));
+    const timer = window.setInterval(checkSession, 30_000);
+
+    return () => {
+      events.forEach((eventName) => window.removeEventListener(eventName, refreshSession));
+      window.clearInterval(timer);
+    };
+  }, [adminUnlocked]);
 
   useEffect(() => {
     let isMounted = true;
@@ -134,10 +267,14 @@ export default function App() {
     };
   }, []);
 
-  const syncContent = () => {
-    setContent(getContentBundle());
+  const updateContent = (nextContentOrUpdater: ContentBundle | ((current: ContentBundle) => ContentBundle), source: 'local' | 'remote' = 'local'): ContentBundle => {
+    const current = normalizeContentBundle(content);
+    const rawNext = typeof nextContentOrUpdater === 'function' ? nextContentOrUpdater(current) : nextContentOrUpdater;
+    const next = persistContentBundle(normalizeContentBundle(rawNext), source);
+    setContent(next);
     setFavoriteIds(getFavoriteIds());
     setContentSourceInfo(getContentSourceInfo());
+    return next;
   };
 
   const setMessage = (text: string, kind: ContentStatus['kind'] = 'neutral') => {
@@ -153,6 +290,8 @@ export default function App() {
       setActiveCategory('All');
       setActiveDeity(null);
       clearMessage();
+    } else if (view !== 'pooja') {
+      setSelectedPoojaId(null);
     }
   };
 
@@ -166,7 +305,13 @@ export default function App() {
 
   const handleOpenStotra = (stotra: Stotra) => {
     setSelectedStotra(stotra);
-    addHistory(stotra);
+    setHistory(addHistory(stotra));
+  };
+
+  const handleOpenPooja = (pooja: PoojaBidhi) => {
+    setActiveDeity(pooja.deity);
+    setSelectedPoojaId(pooja.id);
+    handleViewChange('pooja');
   };
 
   const handleToggleFavorite = (stotra: Stotra) => {
@@ -201,13 +346,16 @@ export default function App() {
   const handleSaveStotra = (input: StotraInput, id?: string): boolean => {
     setIsSaving(true);
     try {
-      id ? updateStotra(id, input) : saveStotra(input);
-      syncContent();
-      setMessage('Stotra saved locally.');
+      const next = normalizeStotraInput({ ...input, id: id || input.id || createUniqueId('stotra') }, id);
+      updateContent((bundle) => ({
+        ...bundle,
+        stotras: replaceById(bundle.stotras, next),
+      }));
+      setMessage('Devotional content saved.');
       return true;
     } catch (error) {
       console.error('Save stotra failed:', error);
-      setMessage('Could not save the stotra.', 'error');
+      setMessage('Could not save devotional content.', 'error');
       return false;
     } finally {
       setIsSaving(false);
@@ -216,27 +364,36 @@ export default function App() {
 
   const handleDeleteStotra = (id: string) => {
     if (!confirm('Delete this stotra from local content?')) return;
-    deleteStotra(id);
+    updateContent((bundle) => ({
+      ...bundle,
+      stotras: removeById(bundle.stotras, id),
+    }));
     removeFavorite(id);
-    syncContent();
+    setFavoriteIds(getFavoriteIds());
     setSelectedStotra((current) => (current?.id === id ? null : current));
-    setMessage('Stotra deleted locally.');
+    setMessage('Devotional content deleted.');
   };
 
   const handleSaveCategory = (input: CategoryInput, id?: string): Category | null => {
     setIsSaving(true);
     try {
       const previous = id ? content.categories.find((category) => category.id === id) : undefined;
-      const savedCategory = id ? updateCategory(id, input) : saveCategory(input);
-      if (previous && previous.name !== savedCategory.name) {
-        content.stotras
-          .filter((stotra) => stotra.category === previous.name)
-          .forEach((stotra) => {
-            updateStotra(stotra.id, { ...stotra, category: savedCategory.name });
-          });
-      }
-      syncContent();
-      setMessage('Category saved locally.');
+      const next = normalizeCategoryInput({ ...input, id: id || input.id || createUniqueId('category') }, id);
+      let savedCategory = next;
+      updateContent((bundle) => {
+        const result = id
+          ? { items: replaceById(bundle.categories, next), savedItem: next }
+          : upsertByName(bundle.categories, next);
+        savedCategory = result.savedItem;
+        return {
+          ...bundle,
+          categories: result.items,
+          stotras: previous && normalizeContentName(previous.name) !== normalizeContentName(savedCategory.name)
+            ? bundle.stotras.map((stotra) => normalizeContentName(stotra.category) === normalizeContentName(previous.name) ? { ...stotra, category: savedCategory.name } : stotra)
+            : bundle.stotras,
+        };
+      });
+      setMessage('Category saved.');
       return savedCategory;
     } catch (error) {
       console.error('Save category failed:', error);
@@ -249,30 +406,42 @@ export default function App() {
 
   const handleDeleteCategory = (id: string) => {
     const category = content.categories.find((item) => item.id === id);
-    if (category && content.stotras.some((stotra) => stotra.category === category.name)) {
-      setMessage('Move or update stotras using this category before deleting it.', 'error');
+    if (category && content.stotras.some((stotra) => normalizeContentName(stotra.category) === normalizeContentName(category.name))) {
+      setMessage('Move or update devotional content using this category before deleting it.', 'error');
       return;
     }
     if (!confirm('Delete this category from local content?')) return;
-    deleteCategory(id);
-    syncContent();
-    setMessage('Category deleted locally.');
+    updateContent((bundle) => ({
+      ...bundle,
+      categories: removeById(bundle.categories, id),
+    }));
+    setMessage('Category deleted.');
   };
 
   const handleSaveDeity = (input: DeityInput, id?: string): Deity | null => {
     setIsSaving(true);
     try {
       const previous = id ? content.deities.find((deity) => deity.id === id) : undefined;
-      const savedDeity = id ? updateDeity(id, input) : saveDeity(input);
-      if (previous && previous.name !== savedDeity.name) {
-        content.stotras
-          .filter((stotra) => stotra.deity === previous.name)
-          .forEach((stotra) => {
-            updateStotra(stotra.id, { ...stotra, deity: savedDeity.name });
-          });
-      }
-      syncContent();
-      setMessage('Deity saved locally.');
+      const next = normalizeDeityInput({ ...input, id: id || input.id || createUniqueId('deity') }, id);
+      let savedDeity = next;
+      updateContent((bundle) => {
+        const result = id
+          ? { items: replaceById(bundle.deities, next), savedItem: next }
+          : upsertByName(bundle.deities, next);
+        savedDeity = result.savedItem;
+        const renamed = previous && normalizeContentName(previous.name) !== normalizeContentName(savedDeity.name);
+        return {
+          ...bundle,
+          deities: result.items,
+          stotras: renamed
+            ? bundle.stotras.map((stotra) => normalizeContentName(stotra.deity) === normalizeContentName(previous.name) ? { ...stotra, deity: savedDeity.name } : stotra)
+            : bundle.stotras,
+          poojaBidhi: renamed
+            ? bundle.poojaBidhi.map((item) => normalizeContentName(item.deity) === normalizeContentName(previous.name) ? { ...item, deity: savedDeity.name } : item)
+            : bundle.poojaBidhi,
+        };
+      });
+      setMessage('Deity saved.');
       return savedDeity;
     } catch (error) {
       console.error('Save deity failed:', error);
@@ -285,22 +454,27 @@ export default function App() {
 
   const handleDeleteDeity = (id: string) => {
     const deity = content.deities.find((item) => item.id === id);
-    if (deity && content.stotras.some((stotra) => stotra.deity === deity.name)) {
-      setMessage('Move or update stotras using this deity before deleting it.', 'error');
+    if (deity && content.stotras.some((stotra) => normalizeContentName(stotra.deity) === normalizeContentName(deity.name))) {
+      setMessage('Move or update related content using this deity before deleting it.', 'error');
       return;
     }
     if (!confirm('Delete this deity from local content?')) return;
-    deleteDeity(id);
-    syncContent();
-    setMessage('Deity deleted locally.');
+    updateContent((bundle) => ({
+      ...bundle,
+      deities: removeById(bundle.deities, id),
+    }));
+    setMessage('Deity deleted.');
   };
 
   const handleSavePoojaBidhi = (input: PoojaBidhiInput, id?: string): boolean => {
     setIsSaving(true);
     try {
-      id ? updatePoojaBidhi(id, input) : savePoojaBidhi(input);
-      syncContent();
-      setMessage('Pooja Bidhi saved locally.');
+      const next = normalizePoojaBidhiInput({ ...input, id: id || input.id || createUniqueId('pooja') }, id);
+      updateContent((bundle) => ({
+        ...bundle,
+        poojaBidhi: replaceById(bundle.poojaBidhi, next),
+      }));
+      setMessage('Pooja guide saved.');
       return true;
     } catch (error) {
       console.error('Save pooja failed:', error);
@@ -313,16 +487,21 @@ export default function App() {
 
   const handleDeletePoojaBidhi = (id: string) => {
     if (!confirm('Delete this pooja guide from local content?')) return;
-    deletePoojaBidhi(id);
-    syncContent();
-    setMessage('Pooja Bidhi deleted locally.');
+    updateContent((bundle) => ({
+      ...bundle,
+      poojaBidhi: removeById(bundle.poojaBidhi, id),
+    }));
+    setMessage('Pooja guide deleted.');
   };
 
   const handleSaveStory = (input: HinduStoryInput, id?: string): boolean => {
     setIsSaving(true);
     try {
-      id ? updateStory(id, input) : saveStory(input);
-      syncContent();
+      const next = normalizeStoryInput({ ...input, id: id || input.id || createUniqueId('story') }, id);
+      updateContent((bundle) => ({
+        ...bundle,
+        stories: replaceById(bundle.stories, next),
+      }));
       setMessage('Story saved locally.');
       return true;
     } catch (error) {
@@ -337,8 +516,11 @@ export default function App() {
   const handleSavePanchangContent = (input: PanchangContentInput): boolean => {
     setIsSaving(true);
     try {
-      savePanchangContent(input);
-      syncContent();
+      const next = normalizePanchangContentInput(input);
+      updateContent((bundle) => ({
+        ...bundle,
+        panchang: next,
+      }));
       setMessage('Panchang guide saved locally.');
       return true;
     } catch (error) {
@@ -352,18 +534,20 @@ export default function App() {
 
   const handleDeleteStory = (id: string) => {
     if (!confirm('Delete this story from local content?')) return;
-    deleteStory(id);
-    syncContent();
+    updateContent((bundle) => ({
+      ...bundle,
+      stories: removeById(bundle.stories, id),
+    }));
     setMessage('Story deleted locally.');
   };
 
-  const handleExportAllContent = () => exportAllContent();
+  const handleExportAllContent = () => JSON.stringify(normalizeContentBundle(content), null, 2);
 
   const handleImportAllContent = (json: string): boolean => {
     setIsSaving(true);
     try {
-      importAllContent(json);
-      syncContent();
+      const parsed = JSON.parse(json) as Partial<ContentBundle>;
+      updateContent(normalizeContentBundle(parsed));
       setMessage('Content imported successfully.');
       return true;
     } catch (error) {
@@ -378,10 +562,10 @@ export default function App() {
   const handleResetToDefaultContent = () => {
     setIsSaving(true);
     try {
-      resetToDefaultContent();
+      updateContent(normalizeContentBundle(DEFAULT_CONTENT));
       clearFavorites();
       clearHistory();
-      syncContent();
+      setFavoriteIds(getFavoriteIds());
       setSelectedStotra(null);
       setActiveView('home');
       setActiveCategory('All');
@@ -401,7 +585,7 @@ export default function App() {
       setMessage('Invalid admin passcode.', 'error');
       return false;
     }
-    sessionStorage.setItem(ADMIN_SESSION_KEY, 'unlocked');
+    sessionStorage.setItem(ADMIN_SESSION_KEY, String(Date.now()));
     setAdminUnlocked(true);
     setMessage('Admin unlocked for this browser session.');
     return true;
@@ -422,7 +606,7 @@ export default function App() {
     }
     setIsSaving(true);
     try {
-      const result = await publishContentToGitHub(getContentBundle(), password);
+      const result = await publishContentToGitHub(normalizeContentBundle(content), password);
       setMessage(result.message, result.ok ? 'neutral' : 'error');
       return result.ok;
     } finally {
@@ -430,13 +614,12 @@ export default function App() {
     }
   };
 
-  const handleBrowseStotras = (deity: string) => {
-    setActiveDeity(deity);
-    setActiveView('stotras');
+  const handleNavigate = (view: 'stotras' | 'gods' | 'pooja' | 'panchang') => {
+    handleViewChange(view);
   };
 
-  const handleNavigate = (view: 'stotras' | 'gods' | 'pooja' | 'stories' | 'panchang') => {
-    handleViewChange(view);
+  const handleThemeChange = () => {
+    setTheme((current) => resolveTheme(current) === 'dark' ? 'light' : 'dark');
   };
 
   return (
@@ -447,13 +630,32 @@ export default function App() {
       onSearchChange={handleSearchChange}
       onViewChange={handleViewChange}
       onToggleMenu={() => setIsMenuOpen((open) => !open)}
+      language={language}
+      labels={translations[language]}
+      onLanguageChange={setLanguage}
+      theme={resolveTheme(theme)}
+      onThemeChange={handleThemeChange}
     >
       {status && activeView !== 'admin' && (
-        <div className="page-container pt-6">
+        <div className="page-container pt-6" role="status" aria-live="polite" aria-atomic="true">
           <StateMessage title={status.kind === 'error' ? 'Notice' : 'Update'} message={status.text} tone={status.kind === 'error' ? 'error' : 'neutral'} />
         </div>
       )}
 
+      <ErrorBoundary key={activeView} name={activeView}>
+      <Suspense fallback={
+        <div className="page-container page-shell" style={{ textAlign: 'center', paddingTop: '4rem' }}>
+          <div className="loading-spinner" aria-label="Loading..." />
+        </div>
+      }>
+      <AnimatePresence mode="wait">
+      <motion.div
+        key={activeView}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.22, ease: 'easeOut' }}
+      >
       {activeView === 'stotras' ? (
         <StotrasPage
           stotras={stotras}
@@ -465,6 +667,7 @@ export default function App() {
           activeCategory={activeCategory}
           isLoading={false}
           favoriteStotraIds={favoriteIds}
+          language={language}
           onSearchChange={handleSearchChange}
           onDeityChange={setActiveDeity}
           onCategoryChange={setActiveCategory}
@@ -475,16 +678,22 @@ export default function App() {
         <GodsPage
           deities={deities}
           stotras={stotras}
-          poojaGuideCount={poojaBidhi.length}
-          onBrowseStotras={handleBrowseStotras}
+          poojaBidhi={poojaBidhi}
+          language={language}
+          activeDeity={activeDeity}
+          onOpenContent={handleOpenStotra}
+          onOpenPooja={(deity) => {
+            setActiveDeity(deity);
+            handleViewChange('pooja');
+          }}
           onOpenAdmin={() => handleViewChange('admin')}
         />
       ) : activeView === 'pooja' ? (
-        <PoojaPage poojaBidhi={poojaBidhi} />
+        <PoojaPage poojaBidhi={poojaBidhi} activeDeity={activeDeity} selectedPoojaId={selectedPoojaId} language={language} />
       ) : activeView === 'stories' ? (
         <StoriesPage stories={stories} />
       ) : activeView === 'panchang' ? (
-        <Panchang content={panchang} />
+        <Panchang content={panchang} language={language} />
       ) : activeView === 'favorites' ? (
         <FavoritesPage
           favoriteStotras={favoriteStotras}
@@ -507,6 +716,7 @@ export default function App() {
             message={status?.kind === 'neutral' ? status.text : null}
             errorMessage={status?.kind === 'error' ? status.text : null}
             localContentActive={contentSourceInfo.hasLocalContent}
+            language={language}
             onClose={() => handleViewChange('home')}
             onLogoutAdmin={handleAdminLogout}
             onSaveStotra={handleSaveStotra}
@@ -546,14 +756,21 @@ export default function App() {
           activeCategory={activeCategory}
           isLoading={false}
           favoriteStotraIds={favoriteIds}
+          history={history}
+          language={language}
           onSearchChange={handleSearchChange}
           onDeityChange={setActiveDeity}
+          onOpenPooja={handleOpenPooja}
           onCategoryChange={setActiveCategory}
           onNavigate={handleNavigate}
           onOpenStotra={handleOpenStotra}
           onToggleFavorite={handleToggleFavorite}
         />
       )}
+      </motion.div>
+      </AnimatePresence>
+      </Suspense>
+      </ErrorBoundary>
 
       <StotraReader
         stotra={selectedStotra}

@@ -1,14 +1,5 @@
 import { DEFAULT_CONTENT } from '../data/defaultContent';
-import type { Category, Deity, HinduStory, HistoryItem, PanchangContent, PanchangTerm, PoojaBidhi, Stotra } from '../types';
-
-type ContentBundle = {
-  stotras: Stotra[];
-  deities: Deity[];
-  categories: Category[];
-  poojaBidhi: PoojaBidhi[];
-  stories: HinduStory[];
-  panchang: PanchangContent;
-};
+import type { Category, ContentBundle, Deity, HinduStory, HistoryItem, PanchangContent, PanchangTerm, PoojaBidhi, Stotra } from '../types';
 
 export type StotraInput = Omit<Stotra, 'id'> & { id?: string };
 export type DeityInput = Omit<Deity, 'id'> & { id?: string };
@@ -46,7 +37,20 @@ const cleanOptionalText = (value?: string): string | undefined => {
 const cleanTags = (tags?: string[]): string[] =>
   (tags || []).map((tag) => tag.trim()).filter(Boolean);
 
-const normalizeName = (value: string): string => cleanText(value).toLowerCase();
+export const normalizeContentName = (value: string): string => cleanText(value).toLowerCase();
+const normalizeCategoryName = (value?: string): string => {
+  const category = cleanText(value);
+  const lower = category.toLowerCase();
+  if (lower === 'stotram' || lower === 'stotra') return 'Stotra';
+  if (lower === 'kavach' || lower === 'kavacham') return 'Kavacham';
+  if (lower === 'pooja vidhi') return 'Pooja Bidhi';
+  if (lower === 'katha') return 'Story';
+  if (lower === 'prayer' || lower === 'vandana' || lower === 'sahasranama') return 'Other';
+  if (['chalisa', 'aarti', 'ashtakam', 'mantra', 'vrat katha', 'story', 'other'].includes(lower)) {
+    return category.charAt(0).toUpperCase() + category.slice(1);
+  }
+  return category || 'Other';
+};
 
 const ensureArray = <T,>(value: unknown): T[] => Array.isArray(value) ? value as T[] : [];
 
@@ -72,17 +76,23 @@ const writeStorage = <T,>(key: string, value: T): T => {
   return value;
 };
 
-const normalizeStotra = (stotra: Partial<Stotra> & { id?: string }, fallbackId?: string): Stotra => ({
+export const normalizeStotraInput = (stotra: Partial<Stotra> & { id?: string }, fallbackId?: string): Stotra => ({
   id: stotra.id || fallbackId || createId('stotra'),
   title: cleanText(stotra.title),
+  titleNe: cleanOptionalText(stotra.titleNe),
   alternateTitle: cleanOptionalText(stotra.alternateTitle),
   deity: cleanText(stotra.deity),
-  category: cleanText(stotra.category),
+  category: normalizeCategoryName(stotra.category),
+  imageUrl: cleanOptionalText(stotra.imageUrl),
   content: cleanText(stotra.content),
-  nepaliMeaning: cleanOptionalText(stotra.nepaliMeaning),
+  meaning: cleanOptionalText(stotra.meaning || stotra.nepaliMeaning),
+  meaningNe: cleanOptionalText(stotra.meaningNe),
+  nepaliMeaning: cleanOptionalText(stotra.meaning || stotra.nepaliMeaning),
   wordMeaning: cleanOptionalText(stotra.wordMeaning),
   benefits: cleanOptionalText(stotra.benefits),
+  benefitsNe: cleanOptionalText(stotra.benefitsNe),
   process: cleanOptionalText(stotra.process),
+  processNe: cleanOptionalText(stotra.processNe),
   source: cleanOptionalText(stotra.source),
   tags: cleanTags(stotra.tags),
   language: cleanOptionalText(stotra.language),
@@ -90,25 +100,29 @@ const normalizeStotra = (stotra: Partial<Stotra> & { id?: string }, fallbackId?:
   status: stotra.status,
 });
 
-const normalizeDeity = (deity: Partial<Deity> & { id?: string }, fallbackId?: string): Deity => ({
+export const normalizeDeityInput = (deity: Partial<Deity> & { id?: string }, fallbackId?: string): Deity => ({
   id: deity.id || fallbackId || createId('deity'),
   name: cleanText(deity.name),
+  type: deity.type === 'God' || deity.type === 'Goddess' || deity.type === 'Form' || deity.type === 'Other' ? deity.type : 'Other',
   sanskritName: cleanOptionalText(deity.sanskritName),
-  description: cleanText(deity.description),
+  introduction: cleanText(deity.introduction || deity.description),
+  introductionNe: cleanOptionalText(deity.introductionNe),
+  description: cleanText(deity.introduction || deity.description),
   significance: cleanText(deity.significance),
+  significanceNe: cleanOptionalText(deity.significanceNe),
   mantra: cleanOptionalText(deity.mantra),
   imageUrl: cleanOptionalText(deity.imageUrl),
   tags: cleanTags(deity.tags),
   theme: cleanOptionalText(deity.theme),
 });
 
-const normalizeCategory = (category: Partial<Category> & { id?: string }, fallbackId?: string): Category => ({
+export const normalizeCategoryInput = (category: Partial<Category> & { id?: string }, fallbackId?: string): Category => ({
   id: category.id || fallbackId || createId('category'),
   name: cleanText(category.name),
   description: cleanOptionalText(category.description),
 });
 
-const normalizePoojaBidhi = (item: Partial<PoojaBidhi> & { id?: string }, fallbackId?: string): PoojaBidhi => ({
+export const normalizePoojaBidhiInput = (item: Partial<PoojaBidhi> & { id?: string }, fallbackId?: string): PoojaBidhi => ({
   id: item.id || fallbackId || createId('pooja'),
   title: cleanText(item.title),
   deity: cleanText(item.deity),
@@ -122,7 +136,7 @@ const normalizePoojaBidhi = (item: Partial<PoojaBidhi> & { id?: string }, fallba
   tags: cleanTags(item.tags),
 });
 
-const normalizeStory = (story: Partial<HinduStory> & { id?: string }, fallbackId?: string): HinduStory => ({
+export const normalizeStoryInput = (story: Partial<HinduStory> & { id?: string }, fallbackId?: string): HinduStory => ({
   id: story.id || fallbackId || createId('story'),
   title: cleanText(story.title),
   deity: cleanOptionalText(story.deity),
@@ -147,7 +161,7 @@ const normalizePanchangTerm = (term: Partial<PanchangTerm>): PanchangTerm => {
   };
 };
 
-const normalizePanchangContent = (content: Partial<PanchangContent> | undefined): PanchangContent => {
+export const normalizePanchangContentInput = (content: Partial<PanchangContent> | undefined): PanchangContent => {
   const fallback = DEFAULT_CONTENT.panchang;
   const next = content ?? {};
   const terms = ensureArray<Partial<PanchangTerm>>(next.terms).map(normalizePanchangTerm).filter((term) => term.name && term.description);
@@ -162,16 +176,34 @@ const normalizePanchangContent = (content: Partial<PanchangContent> | undefined)
   };
 };
 
-const normalizeBundle = (bundle: Partial<ContentBundle> | null): ContentBundle => {
+export const normalizeContentBundle = (bundle: Partial<ContentBundle> | null): ContentBundle => {
   const resolved = bundle ?? {};
+  const devotionalItems = [...ensureArray<Partial<Stotra>>(resolved.stotras), ...ensureArray<Partial<Stotra>>(resolved.devotionalContent)];
+  const seenDevotionalIds = new Set<string>();
+  const stotras = devotionalItems
+    .map((item, index) => normalizeStotraInput(item, `content-${index + 1}`))
+    .filter((item) => item.title && item.deity && item.category && item.content)
+    .filter((item) => {
+      if (seenDevotionalIds.has(item.id)) return false;
+      seenDevotionalIds.add(item.id);
+      return true;
+    });
+
+  const baseCategories = ensureArray<Partial<Category>>(resolved.categories)
+    .map((item, index) => normalizeCategoryInput(item, `category-${index + 1}`))
+    .filter((item) => item.name);
+  const categories = stotras.reduce<Category[]>((items, item) => {
+    if (items.some((category) => normalizeContentName(category.name) === normalizeContentName(item.category))) return items;
+    return [...items, normalizeCategoryInput({ name: item.category, description: '' })];
+  }, baseCategories);
 
   return {
-    stotras: ensureArray<Partial<Stotra>>(resolved.stotras).map((item, index) => normalizeStotra(item, `stotra-${index + 1}`)).filter((item) => item.title && item.deity && item.category && item.content),
-    deities: ensureArray<Partial<Deity>>(resolved.deities).map((item, index) => normalizeDeity(item, `deity-${index + 1}`)).filter((item) => item.name && item.description && item.significance),
-    categories: ensureArray<Partial<Category>>(resolved.categories).map((item, index) => normalizeCategory(item, `category-${index + 1}`)).filter((item) => item.name),
-    poojaBidhi: ensureArray<Partial<PoojaBidhi>>(resolved.poojaBidhi).map((item, index) => normalizePoojaBidhi(item, `pooja-${index + 1}`)).filter((item) => item.title && item.deity && item.occasion && item.overview),
-    stories: ensureArray<Partial<HinduStory>>(resolved.stories).map((item, index) => normalizeStory(item, `story-${index + 1}`)).filter((item) => item.title && item.story && item.lesson),
-    panchang: normalizePanchangContent(resolved.panchang),
+    stotras,
+    deities: ensureArray<Partial<Deity>>(resolved.deities).map((item, index) => normalizeDeityInput(item, `deity-${index + 1}`)).filter((item) => item.name),
+    categories,
+    poojaBidhi: ensureArray<Partial<PoojaBidhi>>(resolved.poojaBidhi).map((item, index) => normalizePoojaBidhiInput(item, `pooja-${index + 1}`)).filter((item) => item.title && item.deity && item.occasion && item.overview),
+    stories: ensureArray<Partial<HinduStory>>(resolved.stories).map((item, index) => normalizeStoryInput(item, `story-${index + 1}`)).filter((item) => item.title && item.story && item.lesson),
+    panchang: normalizePanchangContentInput(resolved.panchang),
   };
 };
 
@@ -179,19 +211,20 @@ const readBundle = (): ContentBundle => {
   const stored = readStorage<Partial<ContentBundle> | null>(CONTENT_KEY, null);
 
   if (!stored) {
-    return normalizeBundle(DEFAULT_CONTENT);
+    return normalizeContentBundle(DEFAULT_CONTENT);
   }
 
-  return normalizeBundle(stored);
+  return normalizeContentBundle(stored);
 };
 
-const persistBundle = (bundle: ContentBundle, source: ContentSource = 'local'): ContentBundle => {
-  writeStorage(CONTENT_KEY, bundle);
+export const persistContentBundle = (bundle: ContentBundle, source: ContentSource = 'local'): ContentBundle => {
+  const normalized = normalizeContentBundle(bundle);
+  writeStorage(CONTENT_KEY, normalized);
   writeStorage<ContentMetadata>(CONTENT_META_KEY, { source, updatedAt: new Date().toISOString() });
-  return bundle;
+  return normalized;
 };
 
-const updateBundle = (updater: (bundle: ContentBundle) => ContentBundle): ContentBundle => persistBundle(updater(readBundle()));
+const updateBundle = (updater: (bundle: ContentBundle) => ContentBundle): ContentBundle => persistContentBundle(updater(readBundle()));
 
 const replaceItem = <T extends { id: string }>(items: T[], nextItem: T): T[] => {
   const index = items.findIndex((item) => item.id === nextItem.id);
@@ -204,7 +237,7 @@ const replaceItem = <T extends { id: string }>(items: T[], nextItem: T): T[] => 
 const removeItem = <T extends { id: string }>(items: T[], id: string): T[] => items.filter((item) => item.id !== id);
 
 const upsertByCaseInsensitiveName = <T extends { id: string; name: string }>(items: T[], nextItem: T): { items: T[]; savedItem: T } => {
-  const index = items.findIndex((item) => normalizeName(item.name) === normalizeName(nextItem.name));
+  const index = items.findIndex((item) => normalizeContentName(item.name) === normalizeContentName(nextItem.name));
   if (index === -1) {
     return { items: [...items, nextItem], savedItem: nextItem };
   }
@@ -264,11 +297,15 @@ export function getContentSourceInfo(): { hasLocalContent: boolean; source: Cont
 
 export function seedRemoteContentIfNoLocal(bundle: ContentBundle): boolean {
   if (hasLocalContentBundle()) return false;
-  persistBundle(normalizeBundle(bundle), 'remote');
+  persistContentBundle(normalizeContentBundle(bundle), 'remote');
   return true;
 }
 
 export function getStotras(): Stotra[] {
+  return readBundle().stotras;
+}
+
+export function getDevotionalContent(): Stotra[] {
   return readBundle().stotras;
 }
 
@@ -293,7 +330,7 @@ export function getPanchangContent(): PanchangContent {
 }
 
 export function saveStotra(input: StotraInput): Stotra {
-  const next = normalizeStotra(input);
+  const next = normalizeStotraInput(input);
   updateBundle((bundle) => ({
     ...bundle,
     stotras: replaceItem(bundle.stotras, next),
@@ -301,8 +338,12 @@ export function saveStotra(input: StotraInput): Stotra {
   return next;
 }
 
+export const saveDevotionalContent = saveStotra;
+export const updateDevotionalContent = updateStotra;
+export const deleteDevotionalContent = deleteStotra;
+
 export function updateStotra(id: string, input: StotraInput): Stotra {
-  const next = normalizeStotra({ ...input, id }, id);
+  const next = normalizeStotraInput({ ...input, id }, id);
   updateBundle((bundle) => ({
     ...bundle,
     stotras: replaceItem(bundle.stotras, next),
@@ -318,7 +359,7 @@ export function deleteStotra(id: string): void {
 }
 
 export function saveCategory(input: CategoryInput): Category {
-  const next = normalizeCategory(input);
+  const next = normalizeCategoryInput(input);
   let saved = next;
   updateBundle((bundle) => {
     const result = upsertByCaseInsensitiveName(bundle.categories, next);
@@ -332,7 +373,7 @@ export function saveCategory(input: CategoryInput): Category {
 }
 
 export function updateCategory(id: string, input: CategoryInput): Category {
-  const next = normalizeCategory({ ...input, id }, id);
+  const next = normalizeCategoryInput({ ...input, id }, id);
   updateBundle((bundle) => ({
     ...bundle,
     categories: replaceItem(bundle.categories, next),
@@ -348,7 +389,7 @@ export function deleteCategory(id: string): void {
 }
 
 export function saveDeity(input: DeityInput): Deity {
-  const next = normalizeDeity(input);
+  const next = normalizeDeityInput(input);
   let saved = next;
   updateBundle((bundle) => {
     const result = upsertByCaseInsensitiveName(bundle.deities, next);
@@ -362,7 +403,7 @@ export function saveDeity(input: DeityInput): Deity {
 }
 
 export function updateDeity(id: string, input: DeityInput): Deity {
-  const next = normalizeDeity({ ...input, id }, id);
+  const next = normalizeDeityInput({ ...input, id }, id);
   updateBundle((bundle) => ({
     ...bundle,
     deities: replaceItem(bundle.deities, next),
@@ -378,7 +419,7 @@ export function deleteDeity(id: string): void {
 }
 
 export function savePoojaBidhi(input: PoojaBidhiInput): PoojaBidhi {
-  const next = normalizePoojaBidhi(input);
+  const next = normalizePoojaBidhiInput(input);
   updateBundle((bundle) => ({
     ...bundle,
     poojaBidhi: replaceItem(bundle.poojaBidhi, next),
@@ -387,7 +428,7 @@ export function savePoojaBidhi(input: PoojaBidhiInput): PoojaBidhi {
 }
 
 export function updatePoojaBidhi(id: string, input: PoojaBidhiInput): PoojaBidhi {
-  const next = normalizePoojaBidhi({ ...input, id }, id);
+  const next = normalizePoojaBidhiInput({ ...input, id }, id);
   updateBundle((bundle) => ({
     ...bundle,
     poojaBidhi: replaceItem(bundle.poojaBidhi, next),
@@ -403,7 +444,7 @@ export function deletePoojaBidhi(id: string): void {
 }
 
 export function saveStory(input: HinduStoryInput): HinduStory {
-  const next = normalizeStory(input);
+  const next = normalizeStoryInput(input);
   updateBundle((bundle) => ({
     ...bundle,
     stories: replaceItem(bundle.stories, next),
@@ -412,7 +453,7 @@ export function saveStory(input: HinduStoryInput): HinduStory {
 }
 
 export function updateStory(id: string, input: HinduStoryInput): HinduStory {
-  const next = normalizeStory({ ...input, id }, id);
+  const next = normalizeStoryInput({ ...input, id }, id);
   updateBundle((bundle) => ({
     ...bundle,
     stories: replaceItem(bundle.stories, next),
@@ -428,7 +469,7 @@ export function deleteStory(id: string): void {
 }
 
 export function savePanchangContent(input: PanchangContentInput): PanchangContent {
-  const next = normalizePanchangContent(input);
+  const next = normalizePanchangContentInput(input);
   updateBundle((bundle) => ({
     ...bundle,
     panchang: next,
@@ -442,14 +483,14 @@ export function exportAllContent(): string {
 
 export function importAllContent(json: string, source: ContentSource = 'local'): ContentBundle {
   const parsed = JSON.parse(json) as Partial<ContentBundle>;
-  const next = normalizeBundle(parsed);
-  persistBundle(next, source);
+  const next = normalizeContentBundle(parsed);
+  persistContentBundle(next, source);
   return next;
 }
 
 export function resetToDefaultContent(): ContentBundle {
-  const next = normalizeBundle(DEFAULT_CONTENT);
-  persistBundle(next);
+  const next = normalizeContentBundle(DEFAULT_CONTENT);
+  persistContentBundle(next);
   return next;
 }
 

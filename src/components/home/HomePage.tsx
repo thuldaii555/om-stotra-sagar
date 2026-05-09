@@ -1,5 +1,6 @@
-import { ArrowRight, BookOpen, Calendar, Feather, Heart, Search, Sparkles, ScrollText, ShieldCheck, Users } from 'lucide-react';
-import type { Category, Deity, HinduStory, PoojaBidhi, Stotra } from '../../types';
+import { useMemo, useState } from 'react';
+import { CalendarDays, ChevronRight, Feather, ScrollText, Search, Sparkles } from 'lucide-react';
+import type { Category, Deity, HinduStory, HistoryItem, PoojaBidhi, Stotra } from '../../types';
 import StateMessage from '../common/StateMessage';
 
 interface HomePageProps {
@@ -14,421 +15,444 @@ interface HomePageProps {
   activeCategory: string;
   isLoading: boolean;
   favoriteStotraIds: string[];
+  history: HistoryItem[];
+  language: 'ne' | 'en';
   onSearchChange: (value: string) => void;
   onDeityChange: (deity: string | null) => void;
+  onOpenPooja: (pooja: PoojaBidhi) => void;
   onCategoryChange: (category: string) => void;
-  onNavigate: (view: 'stotras' | 'gods' | 'pooja' | 'stories' | 'panchang') => void;
+  onNavigate: (view: 'stotras' | 'gods' | 'pooja' | 'panchang') => void;
   onOpenStotra: (stotra: Stotra) => void;
   onToggleFavorite: (stotra: Stotra) => void;
 }
 
+const getDailyStoraIndex = (stotras: Stotra[]): number => {
+  if (stotras.length === 0) return 0;
+  const today = new Date();
+  const dayOfYear = Math.floor(
+    (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
+  );
+  return dayOfYear % stotras.length;
+};
+
+const VARA_INFO = [
+  { day: 'Sunday', varaName: 'आइतबार (Ravivar)', deity: 'Surya Dev' },
+  { day: 'Monday', varaName: 'सोमबार (Somvar)', deity: 'Lord Shiva' },
+  { day: 'Tuesday', varaName: 'मंगलबार (Mangalvar)', deity: 'Lord Hanuman & Devi' },
+  { day: 'Wednesday', varaName: 'बुधबार (Budhvar)', deity: 'Lord Ganesha & Vishnu' },
+  { day: 'Thursday', varaName: 'बिहिबार (Brihaspativar)', deity: 'Lord Vishnu & Guru' },
+  { day: 'Friday', varaName: 'शुक्रबार (Shukravar)', deity: 'Devi Lakshmi & Devi' },
+  { day: 'Saturday', varaName: 'शनिबार (Shanivar)', deity: 'Lord Shani & Hanuman' },
+] as const;
+
 export default function HomePage({
   stotras,
   deities,
-  categories,
   poojaBidhi,
-  stories,
   filteredStotras,
-  searchQuery,
-  activeDeity,
-  activeCategory,
   isLoading,
-  favoriteStotraIds,
-  onSearchChange,
+  history,
+  language,
   onDeityChange,
-  onCategoryChange,
+  onOpenPooja,
   onNavigate,
   onOpenStotra,
-  onToggleFavorite,
 }: HomePageProps) {
-  const hasFilters = Boolean(searchQuery || activeDeity || activeCategory !== 'All');
-  const journeyCards = [
-    {
-      title: 'Stotra Library',
-      description: 'Read devotional texts with meanings, benefits, sources, and print-ready reading mode.',
-      icon: <ScrollText size={24} />,
-      view: 'stotras' as const,
-    },
-    {
-      title: 'Gods & Goddesses',
-      description: 'Explore devotional profiles, symbolism, mantras, and related readings.',
-      icon: <Sparkles size={24} />,
-      view: 'gods' as const,
-    },
-    {
-      title: 'Pooja Bidhi',
-      description: 'Follow simple ritual guidance with samagri, steps, and practical cautions.',
-      icon: <Feather size={24} />,
-      view: 'pooja' as const,
-    },
-    {
-      title: 'Sacred Stories',
-      description: 'Read short family-friendly Hindu stories with a clear devotional lesson.',
-      icon: <BookOpen size={24} />,
-      view: 'stories' as const,
-    },
-    {
-      title: 'Panchang Guide',
-      description: 'Use the educational Panchang guide for day-to-day timing concepts.',
-      icon: <Calendar size={24} />,
-      view: 'panchang' as const,
-    },
-  ];
+  const [homeSearch, setHomeSearch] = useState('');
+  const featuredContent = (filteredStotras.length > 0 ? filteredStotras : stotras).slice(0, 5);
+  const dailyStotra = stotras.length > 0 ? stotras[getDailyStoraIndex(stotras)] : null;
+  const vara = VARA_INFO[new Date().getDay()];
+  const recentStotras = history
+    .slice(0, 3)
+    .map((item) => stotras.find((stotra) => stotra.id === item.stotraId))
+    .filter((stotra): stotra is Stotra => Boolean(stotra));
+  const copy = language === 'ne'
+    ? {
+        title: 'ओम स्तोत्र सागर',
+        tagline: 'पवित्र ग्रन्थ, देवता परिचय, र पूजा मार्गदर्शन — नेपाली र संस्कृतमा।',
+        dailyStotra: 'आजको स्तोत्र',
+        recentlyRead: 'हालै पढिएको',
+        featured: 'चयनित स्तोत्रहरू',
+        explore: 'अन्वेषण',
+        deityProfiles: 'देवता प्रोफाइल',
+        godsCount: 'देवता र देवीहरू',
+        poojaGuides: 'पूजा मार्गदर्शन',
+        ritualGuides: 'पूजा विधि',
+        almanac: 'पञ्चाङ्ग',
+        almanacGuide: 'हिन्दू पात्रो मार्गदर्शन',
+        search: 'पुस्तकालय खोज्नुहोस्',
+        noContent: 'अहिलेसम्म सामग्री छैन',
+        noContentCopy: 'Admin बाट जाँचिएको सामग्री थप्नुहोस् वा starter collection पुनर्स्थापित गर्नुहोस्।',
+        loadingTitle: 'सामग्री लोड हुँदैछ',
+        loadingMessage: 'भक्तिपूर्ण पुस्तकालय तयार हुँदैछ।',
+        featuredInLibrary: 'पुस्तकालयमा',
+      }
+    : {
+        title: 'Om Stotra Sagar',
+        tagline: 'Sacred texts, deity guides, and pooja wisdom — in Nepali and Sanskrit.',
+        dailyStotra: "Today's Stotra",
+        recentlyRead: 'Recently Read',
+        featured: 'Featured Stotras',
+        explore: 'Explore',
+        deityProfiles: 'Deity Profiles',
+        godsCount: 'gods and goddesses',
+        poojaGuides: 'Pooja Guides',
+        ritualGuides: 'ritual guides',
+        almanac: 'Panchang',
+        almanacGuide: 'Hindu almanac guide',
+        search: 'Search the library',
+        noContent: 'No content available',
+        noContentCopy: 'Add content from Admin or restore the starter bundle.',
+        loadingTitle: 'Loading content',
+        loadingMessage: 'Preparing the local devotional library.',
+        featuredInLibrary: 'in library',
+      };
 
-  const benefitCards = [
-    {
-      title: 'Works without login',
-      description: 'Open the site immediately and start reading with no account setup.',
-      icon: <ShieldCheck size={22} />,
-    },
-    {
-      title: 'Read with meaning',
-      description: 'Stotras include meaning, benefits, source notes, and reading guidance when available.',
-      icon: <BookOpen size={22} />,
-    },
-    {
-      title: 'Save favorites locally',
-      description: 'Keep a personal reading list in the browser and return to it later.',
-      icon: <Heart size={22} />,
-    },
-    {
-      title: 'Family-friendly learning',
-      description: 'Explore devotional content, pooja guidance, and stories in a calm, respectful format.',
-      icon: <Users size={22} />,
-    },
-  ];
+  const homeSearchQuery = homeSearch.trim().toLowerCase();
+  const homeSearchResults = useMemo(() => {
+    if (!homeSearchQuery) return null;
+    const matches = (value?: string) => Boolean(value && value.toLowerCase().includes(homeSearchQuery));
+    const deityResults = deities.filter((deity) => (
+      matches(deity.name)
+      || matches(deity.sanskritName)
+      || matches(deity.introduction)
+      || matches(deity.description)
+      || matches(deity.significance)
+      || matches(deity.mantra)
+      || deity.tags.some((tag) => tag.toLowerCase().includes(homeSearchQuery))
+    )).slice(0, 4);
+    const textResults = stotras.filter((stotra) => (
+      matches(stotra.title)
+      || matches(stotra.alternateTitle)
+      || matches(stotra.deity)
+      || matches(stotra.category)
+      || matches(stotra.content)
+      || matches(stotra.meaning)
+      || matches(stotra.nepaliMeaning)
+      || matches(stotra.benefits)
+      || stotra.tags.some((tag) => tag.toLowerCase().includes(homeSearchQuery))
+    )).slice(0, 4);
+    const poojaResults = poojaBidhi.filter((pooja) => (
+      matches(pooja.title)
+      || matches(pooja.deity)
+      || matches(pooja.occasion)
+      || matches(pooja.overview)
+      || pooja.materials.some((item) => item.toLowerCase().includes(homeSearchQuery))
+      || pooja.steps.some((item) => item.toLowerCase().includes(homeSearchQuery))
+      || pooja.benefits.some((item) => item.toLowerCase().includes(homeSearchQuery))
+      || pooja.tags.some((tag) => tag.toLowerCase().includes(homeSearchQuery))
+    )).slice(0, 4);
+    const panchangMatches = /panchang|almanac|tithi|nakshatra|yoga|karana|rahu/i.test(homeSearchQuery);
+    return { deityResults, textResults, poojaResults, panchangMatches };
+  }, [deities, homeSearchQuery, poojaBidhi, stotras]);
+  const hasHomeSearch = Boolean(homeSearchQuery);
+  const totalResults = homeSearchResults
+    ? homeSearchResults.deityResults.length + homeSearchResults.textResults.length + homeSearchResults.poojaResults.length + (homeSearchResults.panchangMatches ? 1 : 0)
+    : 0;
+
+  const searchCopy = language === 'ne'
+    ? {
+        title: 'खोज परिणाम',
+        deities: 'देवताहरू',
+        texts: 'भक्तिपूर्ण सामग्री',
+        pooja: 'पूजा विधि',
+        panchang: 'पञ्चाङ्ग',
+        noResults: 'मिल्ने सामग्री भेटिएन।',
+        clear: 'खोज खाली गर्नुहोस्',
+      }
+    : {
+        title: 'Search results',
+        deities: 'Deities',
+        texts: 'Devotional texts',
+        pooja: 'Pooja guides',
+        panchang: 'Panchang',
+        noResults: 'No matching content found.',
+        clear: 'Clear search',
+      };
+
+  const truncate = (value: string, limit = 120) => (value.length > limit ? `${value.slice(0, limit).trimEnd()}…` : value);
 
   return (
     <>
-      <section className="page-shell hero-section hero-banner">
-        <div className="page-container hero-stage">
-          <div className="hero-copy page-hero editorial-card premium-hero-card">
-            <div className="page-eyebrow">Sanatan Devotional Library</div>
-            <h1 className="page-title">A sacred space for stotras, pooja, and reflection</h1>
-            <p className="page-subtitle">
-              Read devotional texts, understand their meaning, explore deities, follow simple pooja guidance, and learn timeless Hindu stories in one calm place.
-            </p>
+      <section className="home-hero-v2">
+        <div className="home-hero-inner">
+          <div className="home-om-mark" aria-hidden="true">ॐ</div>
 
-            <div className="button-row">
-              <button onClick={() => onNavigate('stotras')} className="action-button">
-                Browse Stotras
-              </button>
-              <button onClick={() => onNavigate('pooja')} className="secondary-button">
-                Explore Pooja Bidhi
-              </button>
-            </div>
-
-            <div className="hero-search-row">
-              <div className="search-wrap hero-search-wrap">
-                <input
-                  type="text"
-                  aria-label="Search stotras from home"
-                  placeholder="Search stotras, deities, aartis, mantras..."
-                  value={searchQuery}
-                  onChange={(event) => onSearchChange(event.target.value)}
-                  onFocus={() => onNavigate('stotras')}
-                  className="search-bar"
-                />
-                <Search className="search-icon" size={16} />
-              </div>
-            </div>
-
-            <div className="hero-note-card devotional-note editorial-card">
-              <p className="page-eyebrow">Opening line</p>
-              <p className="hero-sanskrit">ॐ नमः शिवाय</p>
-              <p className="body-copy">Begin with stillness, devotion, and clarity.</p>
-            </div>
-
-            <div className="hero-category-strip">
-              <p className="hero-strip-label">Popular categories</p>
-              <div className="chip-row">
-                {categories.slice(0, 6).map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => {
-                      onCategoryChange(category.name);
-                      onNavigate('stotras');
-                    }}
-                    className="tag-chip tag-chip-muted"
-                  >
-                    {category.name}
-                  </button>
-                ))}
-              </div>
-            </div>
+          <div className="home-vara-chip">
+            <span className="vara-day-name">{vara.varaName}</span>
+            <span className="vara-sep">·</span>
+            <span className="vara-deity-name">{vara.deity}</span>
           </div>
 
-          <aside className="hero-visual hero-visual-card visual-card premium-visual-card">
-            <div className="hero-visual-arch">
-              <div className="hero-arch-line" />
-              <div className="hero-arch-window">
-                <div className="symbol-medallion hero-medallion">ॐ</div>
-                <div className="hero-visual-copy">
-                  <p className="hero-panel-label">Read • Reflect • Preserve</p>
-                  <p className="body-copy">
-                    A devotional library designed for quiet reading, respectful learning, and daily return.
-                  </p>
-                </div>
-              </div>
+            <h1 className="home-title-v2">{copy.title}</h1>
+            <p className="home-tagline-v2">{copy.tagline}</p>
+
+            <div className="home-nav-pills">
+              <button onClick={() => onNavigate('stotras')} className="home-pill">
+                <ScrollText size={15} /> {language === 'ne' ? 'पुस्तकालय' : 'Library'}
+              </button>
+              <button onClick={() => onNavigate('gods')} className="home-pill">
+                <Sparkles size={15} /> {language === 'ne' ? 'देवता' : 'Gods'}
+              </button>
+              <button onClick={() => onNavigate('pooja')} className="home-pill">
+                <Feather size={15} /> {language === 'ne' ? 'पूजा' : 'Pooja'}
+              </button>
+              <button onClick={() => onNavigate('panchang')} className="home-pill">
+                <CalendarDays size={15} /> {language === 'ne' ? 'पञ्चाङ्ग' : 'Panchang'}
+              </button>
             </div>
 
-            <div className="hero-stats">
-              <StatBadge label="Stotras" value={`${Math.max(stotras.length, 20)}+`} />
-              <StatBadge label="Deities" value={String(deities.length)} />
-              <StatBadge label="Pooja Guides" value={String(poojaBidhi.length)} />
-              <StatBadge label="Stories" value={String(stories.length)} />
+            <div className="search-wrap search-wrap-wide home-search-wrap">
+              <input
+                value={homeSearch}
+                onChange={(event) => setHomeSearch(event.target.value)}
+                placeholder={copy.search}
+                aria-label={copy.search}
+                className="search-bar"
+              />
+              <Search className="search-icon" size={18} />
             </div>
 
-            <div className="hero-mini-grid">
-              {journeyCards.slice(0, 4).map((card) => (
-                <button key={card.title} onClick={() => onNavigate(card.view)} className="visual-mini-card">
-                  <span className="mini-icon">{card.icon}</span>
-                  <span className="mini-title">{card.title}</span>
-                  <span className="mini-copy">{card.description}</span>
-                </button>
-              ))}
-            </div>
-          </aside>
-        </div>
-      </section>
-
-      <main className="page-container home-page">
-        <section className="section-band">
-          <div className="section-band-content">
-            <div>
-              <p className="section-kicker">Start here</p>
-              <h2 className="section-heading">Explore your devotional path</h2>
-              <p className="section-subtitle">Five curated entry points designed for devotional reading, learning, and practice.</p>
-            </div>
-          </div>
-          <div className="card-grid journey-grid">
-            {journeyCards.map((card) => (
-              <button key={card.title} onClick={() => onNavigate(card.view)} className="feature-card devotional-card journey-card">
-                <div className="card-image-surface gradient-saffron">
-                  <div className="card-image-medallion">{card.icon}</div>
-                </div>
-                <div className="card-body">
-                  <div className="card-header-row">
-                    <h3 className="card-title">{card.title}</h3>
-                    <ArrowRight size={18} className="muted-arrow" />
+            {hasHomeSearch ? (
+              <section className="home-search-results-panel">
+                <div className="home-search-results-header">
+                  <div>
+                    <h2 className="home-section-title">{searchCopy.title}</h2>
+                    <p className="home-section-sub">{totalResults} {language === 'ne' ? 'परिणाम' : 'results'}</p>
                   </div>
-                  <p className="card-copy">{card.description}</p>
-                  <span className="soft-cta">Open section</span>
+                  <button type="button" className="secondary-button" onClick={() => setHomeSearch('')}>
+                    {searchCopy.clear}
+                  </button>
                 </div>
-              </button>
-            ))}
+
+                {homeSearchResults && totalResults > 0 ? (
+                  <div className="home-search-groups">
+                    {homeSearchResults.deityResults.length > 0 && (
+                      <section className="home-search-group">
+                        <p className="section-kicker">{searchCopy.deities}</p>
+                        <div className="home-search-list">
+                          {homeSearchResults.deityResults.map((deity) => (
+                            <button
+                              key={deity.id}
+                              className="home-search-item"
+                              onClick={() => {
+                                onDeityChange(deity.name);
+                                setHomeSearch('');
+                                onNavigate('gods');
+                              }}
+                            >
+                              <div className="home-search-item-copy">
+                                <p className="home-search-item-title">{deity.name}</p>
+                                <p className="home-search-item-meta">{deity.type || 'Other'}</p>
+                                <p className="home-search-item-preview">{truncate([deity.introduction, deity.significance, deity.mantra].filter(Boolean).join(' · ') || deity.description || '', 120)}</p>
+                              </div>
+                              <ChevronRight size={16} className="home-search-item-arrow" />
+                            </button>
+                          ))}
+                        </div>
+                      </section>
+                    )}
+
+                    {homeSearchResults.textResults.length > 0 && (
+                      <section className="home-search-group">
+                        <p className="section-kicker">{searchCopy.texts}</p>
+                        <div className="home-search-list">
+                          {homeSearchResults.textResults.map((stotra) => (
+                            <button
+                              key={stotra.id}
+                              className="home-search-item"
+                              onClick={() => {
+                                setHomeSearch('');
+                                onOpenStotra(stotra);
+                              }}
+                            >
+                              <div className="home-search-item-copy">
+                                <p className="home-search-item-title">{stotra.title}</p>
+                                <p className="home-search-item-meta">{stotra.deity} · {stotra.category}</p>
+                                <p className="home-search-item-preview">{truncate(stotra.content || stotra.meaning || stotra.nepaliMeaning || stotra.benefits || '', 120)}</p>
+                              </div>
+                              <ChevronRight size={16} className="home-search-item-arrow" />
+                            </button>
+                          ))}
+                        </div>
+                      </section>
+                    )}
+
+                    {homeSearchResults.poojaResults.length > 0 && (
+                      <section className="home-search-group">
+                        <p className="section-kicker">{searchCopy.pooja}</p>
+                        <div className="home-search-list">
+                          {homeSearchResults.poojaResults.map((pooja) => (
+                            <button
+                              key={pooja.id}
+                              className="home-search-item"
+                              onClick={() => {
+                                setHomeSearch('');
+                                onOpenPooja(pooja);
+                              }}
+                            >
+                              <div className="home-search-item-copy">
+                                <p className="home-search-item-title">{pooja.title}</p>
+                                <p className="home-search-item-meta">{pooja.deity} · {pooja.occasion || copy.poojaGuides}</p>
+                                <p className="home-search-item-preview">{truncate([pooja.overview, pooja.materials[0], pooja.steps[0]].filter(Boolean).join(' · ') || '', 120)}</p>
+                              </div>
+                              <ChevronRight size={16} className="home-search-item-arrow" />
+                            </button>
+                          ))}
+                        </div>
+                      </section>
+                    )}
+
+                    {homeSearchResults.panchangMatches && (
+                      <section className="home-search-group">
+                        <p className="section-kicker">{searchCopy.panchang}</p>
+                        <button
+                          className="home-search-item"
+                          onClick={() => {
+                            setHomeSearch('');
+                            onNavigate('panchang');
+                          }}
+                        >
+                          <div className="home-search-item-copy">
+                            <p className="home-search-item-title">{searchCopy.panchang}</p>
+                            <p className="home-search-item-meta">Panchang page</p>
+                            <p className="home-search-item-preview">{language === 'ne' ? 'वर्तमान मिति, समय, र उपलब्ध गणनाहरू हेर्नुहोस्।' : 'Open the current date, time, and available calculation notes.'}</p>
+                          </div>
+                          <ChevronRight size={16} className="home-search-item-arrow" />
+                        </button>
+                      </section>
+                    )}
+                  </div>
+                ) : (
+                  <StateMessage title={searchCopy.noResults} message={language === 'ne' ? 'अर्को शब्द प्रयोग गर्नुहोस् वा खोज खाली गर्नुहोस्।' : 'Try another word or clear the search.'} />
+                )}
+              </section>
+            ) : null}
           </div>
         </section>
 
-        <section className="section-band">
-          <div className="section-band-content">
-            <div>
-              <p className="section-kicker">Featured stotras</p>
-              <h2 className="section-heading">Start with the most visited readings</h2>
-              <p className="section-subtitle">Three editorial cards to begin reading right away.</p>
-            </div>
-            <button onClick={() => onNavigate('stotras')} className="secondary-button">
-              View all stotras
+      {!hasHomeSearch && (
+      <section className="home-deity-row-v2">
+        <div className="home-deity-scroll">
+          {deities.slice(0, 8).map((deity) => (
+            <button
+              key={deity.id}
+              onClick={() => {
+                onDeityChange(deity.name);
+                onNavigate('gods');
+              }}
+              className="deity-pill-v2"
+            >
+              <span className="deity-pill-initial">{deity.sanskritName?.charAt(0) || deity.name.charAt(0)}</span>
+              <span className="deity-pill-name">{deity.name}</span>
             </button>
+          ))}
+        </div>
+      </section>
+      )}
+
+      {!hasHomeSearch && (
+      <main className="home-content-v2">
+        {dailyStotra && (
+          <section>
+            <div className="home-section-header">
+              <h2 className="home-section-title">{copy.dailyStotra}</h2>
+            </div>
+            <p className="today-stotra-label">{copy.dailyStotra}</p>
+            <button onClick={() => onOpenStotra(dailyStotra)} className="stotra-list-item today-stotra-card">
+              <p className="today-stotra-badge">{copy.dailyStotra}</p>
+              <div className="stotra-list-initial">{dailyStotra.title.charAt(0)}</div>
+              <div className="stotra-list-body">
+                <p className="today-stotra-title">{dailyStotra.title}</p>
+                <p className="today-stotra-meta">{dailyStotra.deity} · {dailyStotra.category}</p>
+              </div>
+              <ChevronRight size={16} className="stotra-list-arrow" />
+            </button>
+          </section>
+        )}
+
+        {recentStotras.length > 0 && (
+          <section>
+            <div className="home-section-header">
+              <h2 className="home-section-title">{copy.recentlyRead}</h2>
+            </div>
+            <div className="stotra-list-compact">
+              {recentStotras.map((stotra) => (
+                <button key={stotra.id} onClick={() => onOpenStotra(stotra)} className="stotra-list-item">
+                  <div className="stotra-list-initial">{stotra.title.charAt(0)}</div>
+                  <div className="stotra-list-body">
+                    <p className="stotra-list-title">{stotra.title}</p>
+                    <p className="stotra-list-meta">{stotra.deity} · {stotra.category}</p>
+                  </div>
+                  <ChevronRight size={16} className="stotra-list-arrow" />
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section>
+          <div className="home-section-header">
+            <h2 className="home-section-title">{copy.featured}</h2>
+            <span className="home-section-sub">{stotras.length} {copy.featuredInLibrary}</span>
           </div>
           {isLoading ? (
-            <StateMessage title="Loading content" message="Preparing the local devotional library." />
+            <StateMessage title={copy.loadingTitle} message={copy.loadingMessage} />
           ) : stotras.length === 0 ? (
-            <StateMessage title="No stotras available" message="Add content from Admin or restore the starter bundle." />
+            <StateMessage title={copy.noContent} message={copy.noContentCopy} />
           ) : (
-            <div className="card-grid featured-story-grid">
-              {(filteredStotras.length > 0 ? filteredStotras : stotras).slice(0, 3).map((stotra) => (
-                <StotraSpotlightCard
+            <div className="stotra-list-compact">
+              {featuredContent.map((stotra) => (
+                <button
                   key={stotra.id}
-                  stotra={stotra}
-                  isFavorite={favoriteStotraIds.includes(stotra.id)}
-                  onOpen={onOpenStotra}
-                  onToggleFavorite={onToggleFavorite}
-                />
+                  onClick={() => onOpenStotra(stotra)}
+                  className="stotra-list-item"
+                >
+                  <div className="stotra-list-initial">{stotra.title.charAt(0)}</div>
+                  <div className="stotra-list-body">
+                    <p className="stotra-list-title">{stotra.title}</p>
+                    <p className="stotra-list-meta">{stotra.deity} · {stotra.category}</p>
+                  </div>
+                  <ChevronRight size={16} className="stotra-list-arrow" />
+                </button>
               ))}
             </div>
           )}
         </section>
 
-        <section className="section-band">
-          <div className="section-band-content">
-            <div>
-              <p className="section-kicker">Explore by deity</p>
-              <h2 className="section-heading">Featured deities</h2>
-              <p className="section-subtitle">A compact gallery of the main devotional forms in the library.</p>
-            </div>
+        <section>
+          <div className="home-section-header">
+            <h2 className="home-section-title">{copy.explore}</h2>
           </div>
-          <div className="card-grid deity-showcase-grid">
-            {deities.slice(0, 6).map((deity, index) => (
-              <button
-                key={deity.id}
-                onClick={() => {
-                  onDeityChange(activeDeity === deity.name ? null : deity.name);
-                  onNavigate('stotras');
-                }}
-                className={`deity-card-premium deity-showcase-card ${activeDeity === deity.name ? 'deity-card-active' : ''}`}
-              >
-                <div className={`deity-card-top visual-gradient-${showcaseGradient(index)}`}>
-                  <div className="symbol-medallion deity-medallion">{deity.sanskritName?.trim().charAt(0) || 'ॐ'}</div>
-                  <div className="deity-meta">
-                    <h3 className="card-title">{deity.name}</h3>
-                    {deity.sanskritName && <p className="devanagari-line">{deity.sanskritName}</p>}
-                  </div>
-                </div>
-                <p className="card-copy">{deity.description}</p>
-                <span className="soft-cta">View Stotras</span>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="section-band split-band">
-          <div className="feature-panel devotional-card">
-            <div className="card-image-surface gradient-gold">
-              <div className="card-image-medallion">ॐ</div>
-            </div>
-            <div className="card-body">
-              <p className="section-kicker">Pooja Bidhi</p>
-              <h2 className="section-heading">Simple guidance for daily and festive puja</h2>
-              <p className="section-subtitle">Browse short ritual guides with samagri, steps, benefits, and cautions.</p>
-              <button onClick={() => onNavigate('pooja')} className="secondary-button">
-                Open Pooja Bidhi
-              </button>
-            </div>
-          </div>
-
-          <div className="feature-panel devotional-card">
-            <div className="card-image-surface gradient-indigo">
-              <div className="card-image-medallion">✦</div>
-            </div>
-            <div className="card-body">
-              <p className="section-kicker">Sacred Stories</p>
-              <h2 className="section-heading">Family-friendly stories with a clear lesson</h2>
-              <p className="section-subtitle">Read short Hindu stories that are calm, warm, and respectful for all ages.</p>
-              <button onClick={() => onNavigate('stories')} className="secondary-button">
-                Open Stories
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section className="section-band">
-          <div className="section-band-content">
-            <div>
-              <p className="section-kicker">Why use this site</p>
-              <h2 className="section-heading">A calm devotional reading space</h2>
-              <p className="section-subtitle">Designed for respectful, practical, and family-friendly browsing.</p>
-            </div>
-          </div>
-          <div className="card-grid benefit-grid">
-            {benefitCards.map((card) => (
-              <div key={card.title} className="benefit-card editorial-card">
-                <div className="benefit-icon">{card.icon}</div>
-                <h3 className="card-title">{card.title}</h3>
-                <p className="card-copy">{card.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {stories.length > 0 && (
-          <section className="section-band">
-            <div className="section-band-content">
+          <div className="home-quicklinks">
+            <button onClick={() => onNavigate('gods')} className="home-quicklink-item">
+              <Sparkles size={18} className="ql-icon" />
               <div>
-                <p className="section-kicker">More to explore</p>
-                <h2 className="section-heading">Stories, timing, and reflection</h2>
-                <p className="section-subtitle">Continue into the full library whenever you are ready.</p>
+                <p className="ql-title">{copy.deityProfiles}</p>
+                <p className="ql-sub">{deities.length} {copy.godsCount}</p>
               </div>
-            </div>
-            <div className="card-grid split-mini-grid">
-              <button onClick={() => onNavigate('panchang')} className="feature-card devotional-card mini-feature-card">
-                <div className="card-image-surface gradient-emerald">
-                  <div className="card-image-medallion">☼</div>
-                </div>
-                <div className="card-body">
-                  <h3 className="card-title">Panchang Guide</h3>
-                  <p className="card-copy">A clear educational guide to the daily timing terms used in devotional life.</p>
-                </div>
-              </button>
-
-              <button onClick={() => onNavigate('stories')} className="feature-card devotional-card mini-feature-card">
-                <div className="card-image-surface gradient-rose">
-                  <div className="card-image-medallion">✦</div>
-                </div>
-                <div className="card-body">
-                  <h3 className="card-title">Story Archive</h3>
-                  <p className="card-copy">Short sacred stories that are simple, warm, and meaningful for family reading.</p>
-                </div>
-              </button>
-            </div>
-          </section>
-        )}
-
-        {hasFilters && filteredStotras.length === 0 && !isLoading ? (
-          <StateMessage title="No matching stotras" message="Try another search term or clear the deity and category filters." />
-        ) : null}
+              <ChevronRight size={16} className="ql-arrow" />
+            </button>
+            <button onClick={() => onNavigate('pooja')} className="home-quicklink-item">
+              <Feather size={18} className="ql-icon" />
+              <div>
+                <p className="ql-title">{copy.poojaGuides}</p>
+                <p className="ql-sub">{poojaBidhi.length} {copy.ritualGuides}</p>
+              </div>
+              <ChevronRight size={16} className="ql-arrow" />
+            </button>
+            <button onClick={() => onNavigate('panchang')} className="home-quicklink-item">
+              <CalendarDays size={18} className="ql-icon" />
+              <div>
+                <p className="ql-title">{copy.almanac}</p>
+                <p className="ql-sub">{copy.almanacGuide}</p>
+              </div>
+              <ChevronRight size={16} className="ql-arrow" />
+            </button>
+          </div>
+        </section>
       </main>
+      )}
     </>
   );
-}
-
-function StotraSpotlightCard({
-  key: _key,
-  stotra,
-  isFavorite,
-  onOpen,
-  onToggleFavorite,
-}: {
-  key?: string;
-  stotra: Stotra;
-  isFavorite: boolean;
-  onOpen: (stotra: Stotra) => void;
-  onToggleFavorite: (stotra: Stotra) => void;
-}) {
-  const tags = stotra.tags.slice(0, 3);
-
-  return (
-    <article className="feature-card devotional-card stotra-spotlight-card">
-      <div className="card-image-surface gradient-saffron">
-        <div className="card-image-medallion">ॐ</div>
-      </div>
-      <div className="card-body">
-        <span className="badge badge-chip">{stotra.category}</span>
-        <h3 className="card-title">{stotra.title}</h3>
-        <p className="card-copy">{stotra.deity}</p>
-        <p className="card-copy stotra-preview">{stotra.content}</p>
-        {tags.length > 0 && (
-          <div className="chip-row">
-            {tags.map((tag) => (
-              <span key={tag} className="tag-chip tag-chip-muted">
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
-        <div className="spotlight-actions">
-          <button onClick={() => onOpen(stotra)} className="action-button">
-            Read Stotra
-          </button>
-          <button onClick={() => onToggleFavorite(stotra)} className={`secondary-button ${isFavorite ? 'chip-active' : ''}`}>
-            {isFavorite ? 'Saved' : 'Favorite'}
-          </button>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-function StatBadge({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="stat-badge">
-      <span className="stat-value">{value}</span>
-      <span className="stat-label">{label}</span>
-    </div>
-  );
-}
-
-function showcaseGradient(index: number) {
-  const palette = ['saffron', 'sand', 'emerald', 'indigo', 'rose', 'gold'];
-  return palette[index % palette.length];
 }

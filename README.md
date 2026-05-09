@@ -1,5 +1,9 @@
 # Om Stotra Sagar
 
+![Built with React](https://img.shields.io/badge/React-19-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)
+![Deployed on Netlify](https://img.shields.io/badge/Netlify-deployed-brightgreen)
+
 Om Stotra Sagar is an English-first, local-first Hindu devotional reading website for stotras, deity profiles, pooja guidance, stories, Panchang learning, and personal favorites.
 
 It works as a static browser app by default. Firebase, login, and a required backend are not used.

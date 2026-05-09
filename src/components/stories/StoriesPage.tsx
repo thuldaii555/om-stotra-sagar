@@ -2,9 +2,11 @@ import type { HinduStory } from '../../types';
 
 interface StoriesPageProps {
   stories: HinduStory[];
+  activeDeity?: string | null;
 }
 
-export default function StoriesPage({ stories }: StoriesPageProps) {
+export default function StoriesPage({ stories, activeDeity }: StoriesPageProps) {
+  const visibleStories = activeDeity ? stories.filter((story) => story.deity === activeDeity) : stories;
   return (
     <main className="page-container page-shell stories-page">
       <section className="page-hero editorial-card">
@@ -16,7 +18,7 @@ export default function StoriesPage({ stories }: StoriesPageProps) {
       </section>
 
       <div className="content-grid story-grid">
-        {stories.map((story) => (
+        {visibleStories.map((story) => (
           <article key={story.id} className="story-card story-feature-card visual-card">
             <header className="story-header">
               <div>

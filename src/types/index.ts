@@ -1,14 +1,20 @@
 export interface Stotra {
   id: string;
   title: string;
+  titleNe?: string;
   alternateTitle?: string;
   deity: string;
   category: string;
+  imageUrl?: string;
   content: string;
+  meaning?: string;
+  meaningNe?: string;
   nepaliMeaning?: string;
   wordMeaning?: string;
   benefits?: string;
+  benefitsNe?: string;
   process?: string;
+  processNe?: string;
   source?: string;
   tags: string[];
   language?: string;
@@ -19,9 +25,13 @@ export interface Stotra {
 export interface Deity {
   id: string;
   name: string;
+  type?: 'God' | 'Goddess' | 'Form' | 'Other';
   sanskritName?: string;
+  introduction?: string;
+  introductionNe?: string;
   description: string;
   significance: string;
+  significanceNe?: string;
   mantra?: string;
   imageUrl?: string;
   tags: string[];
@@ -67,6 +77,45 @@ export interface PanchangTerm {
   text?: string;
 }
 
+export interface PanchangRequest {
+  date: string;
+  lat: number;
+  lng: number;
+  timezone: string;
+  language?: 'ne' | 'en';
+}
+
+export interface PanchangField {
+  name: string;
+  start?: string;
+  end?: string;
+}
+
+export interface PanchangLocation {
+  city?: string;
+  latitude?: number;
+  longitude?: number;
+  timezone: string;
+}
+
+export interface PanchangResult {
+  configured: boolean;
+  provider?: string;
+  date: string;
+  location?: PanchangLocation;
+  sunrise?: PanchangField | null;
+  sunset?: PanchangField | null;
+  tithi?: PanchangField | null;
+  nakshatra?: PanchangField | null;
+  yoga?: PanchangField | null;
+  karana?: PanchangField | null;
+  paksha?: PanchangField | null;
+  lunarMonth?: PanchangField | null;
+  rahuKaal?: PanchangField | null;
+  rawSummary?: string;
+  message?: string;
+}
+
 export interface PanchangContent {
   introTitle: string;
   intro: string;
@@ -84,6 +133,7 @@ export interface HistoryItem {
 
 export interface ContentBundle {
   stotras: Stotra[];
+  devotionalContent?: Stotra[];
   deities: Deity[];
   categories: Category[];
   poojaBidhi: PoojaBidhi[];

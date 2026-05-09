@@ -1,4 +1,5 @@
-const requiredEnv = ['GITHUB_TOKEN', 'GITHUB_OWNER', 'GITHUB_REPO', 'GITHUB_BRANCH', 'GITHUB_CONTENT_PATH'];
+const CONTENT_PATH = 'data/om-stotra-content.json';
+const requiredEnv = ['GITHUB_TOKEN', 'GITHUB_OWNER', 'GITHUB_REPO', 'GITHUB_BRANCH'];
 
 exports.handler = async function handler() {
   const missing = requiredEnv.filter((key) => !process.env[key]);
@@ -9,7 +10,7 @@ exports.handler = async function handler() {
   const owner = process.env.GITHUB_OWNER;
   const repo = process.env.GITHUB_REPO;
   const branch = process.env.GITHUB_BRANCH;
-  const path = process.env.GITHUB_CONTENT_PATH;
+  const path = CONTENT_PATH;
   const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponentPath(path)}?ref=${encodeURIComponent(branch)}`;
 
   try {
@@ -28,8 +29,9 @@ exports.handler = async function handler() {
     const file = await response.json();
     const decoded = Buffer.from(file.content || '', 'base64').toString('utf8');
     const content = JSON.parse(decoded);
-    if (validateContent(content)) {
-      return json(200, { content: null, message: 'Remote content is not valid.' });
+    const validationError = getValidationError(content);
+    if (validationError) {
+      return json(200, { content: null, message: `Remote content is not valid: ${validationError}` });
     }
     return json(200, { content });
   } catch {
@@ -37,11 +39,15 @@ exports.handler = async function handler() {
   }
 };
 
-function validateContent(content) {
+/** Returns an error string if invalid, or null if valid. */
+function getValidationError(content) {
   if (!content || typeof content !== 'object') return 'Content payload is required.';
-  const requiredArrays = ['stotras', 'deities', 'categories', 'poojaBidhi', 'stories'];
+  const requiredArrays = ['deities', 'categories', 'poojaBidhi', 'stories'];
   for (const key of requiredArrays) {
     if (!Array.isArray(content[key])) return `Content field "${key}" must be an array.`;
+  }
+  if (!Array.isArray(content.stotras) && !Array.isArray(content.devotionalContent)) {
+    return 'Devotional content is required.';
   }
   if (!content.panchang || !Array.isArray(content.panchang.terms) || !Array.isArray(content.panchang.dailyNotes)) {
     return 'Panchang content is required.';

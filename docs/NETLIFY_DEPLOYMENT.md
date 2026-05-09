@@ -31,11 +31,16 @@ GITHUB_OWNER=
 GITHUB_REPO=
 GITHUB_BRANCH=main
 GITHUB_CONTENT_PATH=data/om-stotra-content.json
+PANCHANG_API_PROVIDER=generic
+PANCHANG_API_KEY=
+PANCHANG_API_BASE_URL=
 ```
 
 `VITE_ADMIN_PASSCODE` is only a simple UI gate. It is bundled into frontend code and is not real security.
 
 `ADMIN_PASSWORD` and `GITHUB_TOKEN` must stay server-only. Add them in Netlify environment variables or a local `netlify dev` environment. Never commit real secrets.
+
+`PANCHANG_API_PROVIDER`, `PANCHANG_API_KEY`, and `PANCHANG_API_BASE_URL` must also stay server-only. The frontend never reads them. Panchang should remain in a clean unavailable state until a real provider URL and key are configured.
 
 ## Optional GitHub Backend
 
@@ -65,6 +70,23 @@ To test GitHub-backed publishing locally:
 4. Open Admin > Backup & Publish and use Publish to GitHub.
 
 Do not commit `.env`.
+
+## Panchang Function Testing
+
+Panchang uses the optional Netlify Function endpoint `/.netlify/functions/get-panchang`.
+
+- Query params: `date`, `lat`, `lng`, `timezone`, `language`
+- Server env vars: `PANCHANG_API_PROVIDER`, `PANCHANG_API_KEY`, `PANCHANG_API_BASE_URL`
+
+Normal `npm run dev` will usually return 404 for that endpoint because Vite does not serve Netlify Functions. The frontend handles that gracefully and shows local date/time plus a not-configured message.
+
+To test Panchang locally:
+
+1. Set the Panchang env vars in Netlify or local `netlify dev`.
+2. Run `netlify dev`.
+3. Open Panchang in the app.
+4. Enter location coordinates or use browser geolocation.
+5. Confirm the returned values render in the result grid.
 
 ## Moving to Another Netlify Account
 

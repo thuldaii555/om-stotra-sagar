@@ -1,8 +1,13 @@
-import { useMemo, useState, type FormEvent, type ReactNode, type TextareaHTMLAttributes } from 'react';
-import { Download, Layers, ScrollText, Sparkles, Trash2, X } from 'lucide-react';
+import { useMemo, useState, type ChangeEvent, type FormEvent, type ReactNode, type TextareaHTMLAttributes } from 'react';
+import { Download, FileText, Layers, RotateCcw, ScrollText, Sparkles, Trash2, Upload, X } from 'lucide-react';
+import * as pdfjsLib from 'pdfjs-dist';
+import pdfjsWorkerUrl from 'pdfjs-dist/build/pdf.worker.mjs?url';
 import type { Category, Deity, HinduStory, PanchangContent, PoojaBidhi, Stotra } from '../../types';
 import type { CategoryInput, DeityInput, HinduStoryInput, PoojaBidhiInput, StotraInput } from '../../services/localContentService';
 import { getLocalizedCategoryName, getLocalizedContentTitle, getLocalizedDeityName, getLocalizedDeityType, getLocalizedPoojaTitle, getLocalizedText } from '../../utils/localization';
+import { DEFAULT_IMAGE_CROP, getDeityImageSrc, getDeityImageStyle } from '../../utils/deityImage';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -16,6 +21,7 @@ interface AdminPanelProps {
   message: string | null;
   errorMessage: string | null;
   localContentActive: boolean;
+  localDraftNewer: boolean;
   language: 'ne' | 'en';
   onClose: () => void;
   onSaveStotra: (input: StotraInput, id?: string) => boolean;
@@ -39,7 +45,7 @@ interface AdminPanelProps {
 type Tab = 'deities' | 'content' | 'pooja' | 'stories' | 'categories' | 'backup';
 
 const deityTypes: Array<NonNullable<Deity['type']>> = ['God', 'Goddess', 'Form', 'Other'];
-const emptyDeity: DeityInput = { name: '', type: 'Other', sanskritName: '', imageUrl: '', introduction: '', description: '', significance: '', mantra: '', tags: [] };
+const emptyDeity: DeityInput = { name: '', type: 'Other', sanskritName: '', imageUrl: '', imageDataUrl: '', imageSrc: '', imageCrop: DEFAULT_IMAGE_CROP, introduction: '', description: '', significance: '', mantra: '', tags: [] };
 const emptyContent: StotraInput = { title: '', alternateTitle: '', deity: '', category: 'Stotra', imageUrl: '', content: '', meaning: '', nepaliMeaning: '', wordMeaning: '', benefits: '', process: '', source: '', tags: [], status: 'published' };
 const emptyPooja: PoojaBidhiInput = { title: '', deity: '', occasion: '', overview: '', materials: [], steps: [], benefits: [], cautions: '', source: '', tags: [] };
 const emptyStory: HinduStoryInput = { title: '', deity: '', summary: '', story: '', lesson: '', source: '', tags: [] };
@@ -50,6 +56,72 @@ const textFromList = (items?: string[]) => (items || []).join('\n');
 const tagsFromText = (value: string) => value.split(',').map((item) => item.trim()).filter(Boolean);
 const tagsToText = (items?: string[]) => (items || []).join(', ');
 const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+const MAX_DEITY_IMAGE_BYTES = 1024 * 1024;
+
+async function optimizeImageFile(file: File): Promise<{ dataUrl: string; warning?: string }> {
+  if (!/^image\/(png|jpe?g|webp)$/i.test(file.type)) {
+    throw new Error('Upload a JPG, PNG, or WebP image.');
+  }
+
+  const imageUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('Could not read image.'));
+      img.src = imageUrl;
+    });
+    const maxSide = 600;
+    const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
+    const width = Math.max(1, Math.round(image.naturalWidth * scale));
+    const height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas image compression is not supported.');
+    ctx.drawImage(image, 0, 0, width, height);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.84);
+    const approxBytes = Math.ceil((dataUrl.length - dataUrl.indexOf(',') - 1) * 0.75);
+    return {
+      dataUrl,
+      warning: approxBytes > MAX_DEITY_IMAGE_BYTES ? 'Image is still larger than 1 MB after resizing. Use a smaller image before publishing.' : undefined,
+    };
+  } finally {
+    URL.revokeObjectURL(imageUrl);
+  }
+}
+
+async function extractPdfText(file: File): Promise<string> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const pages: string[] = [];
+
+  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+    const page = await pdf.getPage(pageNumber);
+    const textContent = await page.getTextContent();
+    let pageText = '';
+    let previousY: number | null = null;
+
+    textContent.items.forEach((item) => {
+      const textItem = item as { str?: string; transform?: number[] };
+      const value = textItem.str || '';
+      if (!value.trim()) return;
+      const y = textItem.transform?.[5] ?? previousY;
+      if (previousY !== null && y !== null && Math.abs(previousY - y) > 5) {
+        pageText = pageText.trimEnd() + '\n';
+      } else if (pageText && !pageText.endsWith('\n')) {
+        pageText += ' ';
+      }
+      pageText += value;
+      previousY = typeof y === 'number' ? y : previousY;
+    });
+
+    pages.push(pageText.trim());
+  }
+
+  return pages.filter(Boolean).join('\n\n').replace(/\r\n?/g, '\n');
+}
 type PickerOption = string | { value: string; label: string };
 const pickerValue = (option: PickerOption) => (typeof option === 'string' ? option : option.value);
 const pickerLabel = (option: PickerOption) => (typeof option === 'string' ? option : option.label);
@@ -262,6 +334,63 @@ function AdminPicker({ value, options, placeholder, optional = false, onChange, 
   );
 }
 
+function DeityImageEditor({
+  deity,
+  status,
+  onUpload,
+  onChange,
+}: {
+  deity: DeityInput;
+  status: string | null;
+  onUpload: (event: ChangeEvent<HTMLInputElement>) => void;
+  onChange: (updater: (previous: DeityInput) => DeityInput) => void;
+}) {
+  const imageSrc = getDeityImageSrc(deity);
+  const crop = deity.imageCrop || DEFAULT_IMAGE_CROP;
+  const setCrop = (partial: Partial<typeof crop>) => onChange((previous) => ({ ...previous, imageCrop: { ...(previous.imageCrop || DEFAULT_IMAGE_CROP), ...partial } }));
+
+  return (
+    <div className="deity-image-editor">
+      <div className="button-row compact-create-row">
+        <label className="secondary-button file-upload-button">
+          <Upload size={15} />
+          <span>Upload image</span>
+          <input type="file" accept="image/png,image/jpeg,image/webp" onChange={onUpload} />
+        </label>
+        <button type="button" className="secondary-button" onClick={() => setCrop(DEFAULT_IMAGE_CROP)}>
+          <RotateCcw size={15} />
+          <span>Reset image adjustment</span>
+        </button>
+      </div>
+
+      <div className="deity-crop-row">
+        <div className="deity-crop-preview" aria-label="Circular deity image preview">
+          {imageSrc ? (
+            <img src={imageSrc} alt="" className="deity-crop-image" style={getDeityImageStyle(deity)} />
+          ) : (
+            <div className="symbol-medallion deity-tile-medallion">{deity.name.trim().charAt(0) || 'Om'}</div>
+          )}
+        </div>
+        <div className="deity-crop-controls">
+          <label className="range-field">
+            <span>Zoom</span>
+            <input type="range" min="0.8" max="2.4" step="0.05" value={crop.scale} onChange={(event) => setCrop({ scale: Number(event.target.value) })} />
+          </label>
+          <label className="range-field">
+            <span>Horizontal position</span>
+            <input type="range" min="-35" max="35" step="1" value={crop.x} onChange={(event) => setCrop({ x: Number(event.target.value) })} />
+          </label>
+          <label className="range-field">
+            <span>Vertical position</span>
+            <input type="range" min="-35" max="35" step="1" value={crop.y} onChange={(event) => setCrop({ y: Number(event.target.value) })} />
+          </label>
+        </div>
+      </div>
+      {status && <p className="admin-helper-text">{status}</p>}
+    </div>
+  );
+}
+
 function AdminRecordList({ title, toolbar, children }: { title: string; toolbar?: ReactNode; children: ReactNode }) {
   return <section className="admin-card admin-list compact-list"><div className="section-header"><SectionTitle title={title} />{toolbar}</div><div className="record-list">{children}</div></section>;
 }
@@ -299,6 +428,7 @@ export default function AdminPanel({
   message,
   errorMessage,
   localContentActive,
+  localDraftNewer,
   language,
   onClose,
   onSaveStotra,
@@ -323,6 +453,8 @@ export default function AdminPanel({
   const [query, setQuery] = useState('');
   const [deityForm, setDeityForm] = useState<DeityInput>(emptyDeity);
   const [contentForm, setContentForm] = useState<StotraInput>(emptyContent);
+  const [pdfStatus, setPdfStatus] = useState<string | null>(null);
+  const [imageUploadStatus, setImageUploadStatus] = useState<string | null>(null);
   const [poojaForm, setPoojaForm] = useState<PoojaBidhiInput>(emptyPooja);
   const [poojaText, setPoojaText] = useState({ materials: '', steps: '', benefits: '', materialsNe: '', stepsNe: '', benefitsNe: '' });
   const [storyForm, setStoryForm] = useState<HinduStoryInput>(emptyStory);
@@ -330,6 +462,9 @@ export default function AdminPanel({
   const [editing, setEditing] = useState<{ type: Tab; id: string } | null>(null);
   const [dismissedAlerts, setDismissedAlerts] = useState<Record<string, boolean>>({});
   const labels = adminLabels[language];
+  const localDraftNotice = language === 'ne'
+    ? 'This browser has a newer unsynced local draft than the remote content. Publish to GitHub to make it live, or export a backup.'
+    : 'This browser has a newer unsynced local draft than the remote content. Publish to GitHub to make it live, or export a backup.';
   const ui = language === 'ne'
     ? {
         kicker: 'स्थानीय सामग्री स्टुडियो',
@@ -372,6 +507,61 @@ export default function AdminPanel({
     });
   };
 
+  const resetDeityForm = () => {
+    setDeityForm(emptyDeity);
+    setEditing(null);
+    setImageUploadStatus(null);
+  };
+
+  const resetContentForm = () => {
+    setContentForm(emptyContent);
+    setEditing(null);
+    setPdfStatus(null);
+  };
+
+  const handleDeityImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    setImageUploadStatus(language === 'ne' ? 'तस्वीर तयार हुँदैछ...' : 'Preparing image...');
+    try {
+      const { dataUrl, warning } = await optimizeImageFile(file);
+      setDeityForm((prev) => ({
+        ...prev,
+        imageDataUrl: dataUrl,
+        imageSrc: dataUrl,
+        imageCrop: prev.imageCrop || DEFAULT_IMAGE_CROP,
+      }));
+      setImageUploadStatus(warning || (language === 'ne' ? 'तस्वीर थपियो। सेभ गर्नु अघि मिलाउनुहोस्।' : 'Image added. Adjust it before saving.'));
+    } catch (error) {
+      setImageUploadStatus(error instanceof Error ? error.message : 'Could not prepare image.');
+    }
+  };
+
+  const handlePdfUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      setPdfStatus('Upload a PDF file.');
+      return;
+    }
+    setPdfStatus(language === 'ne' ? 'PDF बाट पाठ निकालिँदैछ...' : 'Extracting text from PDF...');
+    try {
+      const text = await extractPdfText(file);
+      if (!text.trim()) {
+        setPdfStatus('PDF text could not be extracted. Please paste the text manually or attach the PDF as source.');
+        setContentForm((prev) => ({ ...prev, sourcePdfName: file.name }));
+        return;
+      }
+      setContentForm((prev) => ({ ...prev, content: text, sourcePdfName: file.name }));
+      setPdfStatus(language === 'ne' ? 'PDF पाठ textarea मा राखियो। सेभ गर्नु अघि जाँच/सम्पादन गर्नुहोस्।' : 'Extracted PDF text was placed in the textarea. Review and edit before saving.');
+    } catch {
+      setPdfStatus('PDF text could not be extracted. Please paste the text manually or attach the PDF as source.');
+      setContentForm((prev) => ({ ...prev, sourcePdfName: file.name }));
+    }
+  };
+
   const filteredContent = useMemo(() => {
     const value = query.trim().toLowerCase();
     if (!value) return stotras;
@@ -408,8 +598,7 @@ export default function AdminPanel({
     if (duplicateDeity(deityForm.name, id)) return setNotice(noticeText.deityDuplicate);
     const saved = onSaveDeity({ ...deityForm, description: deityForm.introduction || deityForm.description, tags: deityForm.tags || [] }, id);
     if (saved) {
-      setDeityForm(emptyDeity);
-      setEditing(null);
+      resetDeityForm();
       setNotice(noticeText.deitySaved);
     }
   };
@@ -419,12 +608,11 @@ export default function AdminPanel({
     const id = editing?.type === 'content' ? editing.id : undefined;
     if (!contentForm.title.trim() || !contentForm.deity.trim() || !contentForm.category.trim() || !contentForm.content.trim()) return setNotice(noticeText.contentRequired);
     if (contentForm.title.length > 120) return setNotice(noticeText.titleLength);
-    if (contentForm.content.length > 5000) return setNotice(noticeText.contentLength);
+    if (contentForm.content.length > 50000) return setNotice(noticeText.contentLength);
     if ((contentForm.meaning || contentForm.nepaliMeaning || '').length > 3000) return setNotice(noticeText.meaningLength);
     if ((contentForm.benefits || '').length > 1000) return setNotice(noticeText.benefitsLength);
     onSaveStotra({ ...contentForm, nepaliMeaning: contentForm.meaning || contentForm.nepaliMeaning, tags: contentForm.tags || [] }, id);
-    setContentForm(emptyContent);
-    setEditing(null);
+    resetContentForm();
     setNotice(noticeText.contentSaved);
   };
 
@@ -517,7 +705,14 @@ export default function AdminPanel({
                 onDismiss={() => setDismissedAlerts((prev) => ({ ...prev, [`info:${ui.instantSave}`]: true }))}
               />
             )}
-            {localContentActive && !dismissedAlerts[`neutral:${ui.localActive}`] && (
+            {localDraftNewer && !dismissedAlerts[`neutral:${localDraftNotice}`] && (
+              <AdminMessage
+                tone="neutral"
+                text={localDraftNotice}
+                onDismiss={() => setDismissedAlerts((prev) => ({ ...prev, [`neutral:${localDraftNotice}`]: true }))}
+              />
+            )}
+            {localContentActive && !localDraftNewer && !dismissedAlerts[`neutral:${ui.localActive}`] && (
               <AdminMessage
                 tone="neutral"
                 text={ui.localActive}
@@ -543,6 +738,7 @@ export default function AdminPanel({
                 <select className="admin-input compact-input" value={deityForm.type || 'Other'} onChange={(e) => setDeityForm((p) => ({ ...p, type: e.target.value as Deity['type'] }))}>{deityTypes.map((type) => <option key={type} value={type}>{language === 'ne' ? ({ God: 'देवता', Goddess: 'देवी', Form: 'स्वरूप', Other: 'अन्य' } as Record<string, string>)[type] : type}</option>)}</select>
                 <input className="admin-input compact-input" placeholder={labels.sanskritName} value={deityForm.sanskritName || ''} onChange={(e) => setDeityForm((p) => ({ ...p, sanskritName: e.target.value }))} />
                 <input className="admin-input compact-input" placeholder={labels.imageUrl} value={deityForm.imageUrl || ''} onChange={(e) => setDeityForm((p) => ({ ...p, imageUrl: e.target.value }))} />
+                <DeityImageEditor deity={deityForm} status={imageUploadStatus} onUpload={handleDeityImageUpload} onChange={setDeityForm} />
                 <textarea className="admin-input compact-textarea" rows={7} placeholder={labels.introduction} value={deityForm.introduction || deityForm.description || ''} onChange={(e) => setDeityForm((p) => ({ ...p, introduction: e.target.value, description: e.target.value }))} />
                 <textarea className="admin-input compact-textarea" rows={7} placeholder={labels.significance} value={deityForm.significance} onChange={(e) => setDeityForm((p) => ({ ...p, significance: e.target.value }))} />
                 <textarea className="admin-input compact-textarea" rows={3} placeholder={labels.mantra} value={deityForm.mantra || ''} onChange={(e) => setDeityForm((p) => ({ ...p, mantra: e.target.value }))} />
@@ -553,9 +749,9 @@ export default function AdminPanel({
                   <textarea className="admin-input compact-textarea" rows={4} placeholder={labels.significanceNe} value={deityForm.significanceNe || ''} onChange={(e) => setDeityForm((p) => ({ ...p, significanceNe: e.target.value }))} />
                 </details>
                 <input className="admin-input compact-input" placeholder={`${labels.tags}, ${labels.commaSeparated}`} value={tagsToText(deityForm.tags)} onChange={(e) => setDeityForm((p) => ({ ...p, tags: tagsFromText(e.target.value) }))} />
-                <AdminFormActions isSaving={isSaving} label={labels.saveDeity} clearLabel={labels.clear} onCancel={() => { setDeityForm(emptyDeity); setEditing(null); }} />
+                <AdminFormActions isSaving={isSaving} label={labels.saveDeity} clearLabel={labels.clear} onCancel={resetDeityForm} />
               </form>
-              <AdminRecordList title={labels.deitiesProfiles}>{deities.map((deity) => <AdminRecord key={deity.id} title={getLocalizedDeityName(deity, language)} subtitle={`${getLocalizedDeityType(deity, language)} - ${getLocalizedText(language, deity.introductionNe, deity.introduction || deity.description)}`} editLabel={labels.edit} onEdit={() => { setDeityForm({ ...deity, introduction: deity.introduction || deity.description }); setEditing({ type: 'deities', id: deity.id }); }} onDelete={() => deleteDeity(deity)} />)}</AdminRecordList>
+              <AdminRecordList title={labels.deitiesProfiles}>{deities.map((deity) => <AdminRecord key={deity.id} title={getLocalizedDeityName(deity, language)} subtitle={`${getLocalizedDeityType(deity, language)} - ${getLocalizedText(language, deity.introductionNe, deity.introduction || deity.description)}`} editLabel={labels.edit} onEdit={() => { setDeityForm({ ...deity, imageCrop: deity.imageCrop || DEFAULT_IMAGE_CROP, introduction: deity.introduction || deity.description }); setImageUploadStatus(null); setEditing({ type: 'deities', id: deity.id }); }} onDelete={() => deleteDeity(deity)} />)}</AdminRecordList>
             </div>
           )}
 
@@ -571,7 +767,17 @@ export default function AdminPanel({
                 <AdminPicker value={contentForm.deity} options={deities.map((d) => ({ value: d.name, label: getLocalizedDeityName(d, language) }))} placeholder={labels.deity} onChange={(value) => setContentForm((p) => ({ ...p, deity: value }))} onCreate={(name) => { const saved = onSaveDeity({ ...emptyDeity, name, nameNe: language === 'ne' ? name : undefined, introduction: language === 'ne' ? `${name} को परिचय` : `${name} profile introduction.`, introductionNe: language === 'ne' ? `${name} को परिचय` : undefined, description: language === 'ne' ? `${name} को परिचय` : `${name} profile introduction.`, significance: language === 'ne' ? 'प्रकाशन अघि महत्त्व थप्नुहोस्।' : 'Add significance before publishing.', significanceNe: language === 'ne' ? 'प्रकाशन अघि महत्त्व थप्नुहोस्।' : undefined, tags: [name.toLowerCase()] }); if (saved) setContentForm((p) => ({ ...p, deity: saved.name })); }} />
                 <AdminPicker value={contentForm.category} options={categories.map((c) => ({ value: c.name, label: getLocalizedCategoryName(c, language) }))} placeholder={labels.category} onChange={(value) => setContentForm((p) => ({ ...p, category: value }))} onCreate={(name) => { const saved = onSaveCategory({ name, nameNe: language === 'ne' ? name : undefined, description: '', descriptionNe: language === 'ne' ? 'श्रेणी विवरण' : undefined }); if (saved) setContentForm((p) => ({ ...p, category: saved.name })); }} />
                 <input className="admin-input compact-input" placeholder={labels.imageUrl} value={contentForm.imageUrl || ''} onChange={(e) => setContentForm((p) => ({ ...p, imageUrl: e.target.value }))} />
-                <CharCountTextarea label={labels.contentFullText} required maxLength={5000} rows={14} placeholder={labels.contentFullText} value={contentForm.content} onChange={(e) => setContentForm((p) => ({ ...p, content: e.target.value }))} />
+                <details className="admin-nested-section pdf-import-section">
+                  <summary className="field-label"><FileText size={15} /> Import from PDF / PDF बाट सामग्री ल्याउनुहोस्</summary>
+                  <label className="secondary-button file-upload-button">
+                    <Upload size={15} />
+                    <span>Upload PDF</span>
+                    <input type="file" accept="application/pdf,.pdf" onChange={handlePdfUpload} />
+                  </label>
+                  {contentForm.sourcePdfName && <p className="admin-helper-text">Source PDF: {contentForm.sourcePdfName}</p>}
+                  {pdfStatus && <p className="admin-helper-text">{pdfStatus}</p>}
+                </details>
+                <CharCountTextarea label={labels.contentFullText} required maxLength={50000} rows={14} placeholder={labels.contentFullText} value={contentForm.content} onChange={(e) => setContentForm((p) => ({ ...p, content: e.target.value }))} className="content-textarea devotional-textarea" />
                 <CharCountTextarea label={labels.meaning} maxLength={3000} rows={5} placeholder={labels.meaning} value={contentForm.meaning || contentForm.nepaliMeaning || ''} onChange={(e) => setContentForm((p) => ({ ...p, meaning: e.target.value, nepaliMeaning: e.target.value }))} />
                 <textarea className="admin-input compact-textarea" rows={4} placeholder={labels.wordMeaning} value={contentForm.wordMeaning || ''} onChange={(e) => setContentForm((p) => ({ ...p, wordMeaning: e.target.value }))} />
                 <CharCountTextarea label={labels.benefits} maxLength={1000} rows={4} placeholder={labels.benefits} value={contentForm.benefits || ''} onChange={(e) => setContentForm((p) => ({ ...p, benefits: e.target.value }))} />
@@ -587,9 +793,9 @@ export default function AdminPanel({
                 </details>
                 <input className="admin-input compact-input" placeholder={labels.source} value={contentForm.source || ''} onChange={(e) => setContentForm((p) => ({ ...p, source: e.target.value }))} />
                 <input className="admin-input compact-input" placeholder={`${labels.tags}, ${labels.commaSeparated}`} value={tagsToText(contentForm.tags)} onChange={(e) => setContentForm((p) => ({ ...p, tags: tagsFromText(e.target.value) }))} />
-                <AdminFormActions isSaving={isSaving} label={labels.saveContent} clearLabel={labels.clear} onCancel={() => { setContentForm(emptyContent); setEditing(null); }} />
+                <AdminFormActions isSaving={isSaving} label={labels.saveContent} clearLabel={labels.clear} onCancel={resetContentForm} />
               </form>
-              <AdminRecordList title={ui.contentList} toolbar={<input className="admin-input compact-input" placeholder={labels.search} value={query} onChange={(e) => setQuery(e.target.value)} />}>{filteredContent.map((item) => <AdminRecord key={item.id} title={getLocalizedContentTitle(item, language)} subtitle={`${getLocalizedDeityName(item.deityNe || item.deity, language)} - ${getLocalizedCategoryName(item.categoryNe || item.category, language)}`} editLabel={labels.edit} onEdit={() => { setContentForm({ ...item, meaning: item.meaning || item.nepaliMeaning }); setEditing({ type: 'content', id: item.id }); }} onDelete={() => { if (confirm(language === 'ne' ? `${getLocalizedContentTitle(item, language)} मेटाउने?` : `Delete ${item.title}?`)) onDeleteStotra(item.id); }} />)}</AdminRecordList>
+              <AdminRecordList title={ui.contentList} toolbar={<input className="admin-input compact-input" placeholder={labels.search} value={query} onChange={(e) => setQuery(e.target.value)} />}>{filteredContent.map((item) => <AdminRecord key={item.id} title={getLocalizedContentTitle(item, language)} subtitle={`${getLocalizedDeityName(item.deityNe || item.deity, language)} - ${getLocalizedCategoryName(item.categoryNe || item.category, language)}`} editLabel={labels.edit} onEdit={() => { setContentForm({ ...item, meaning: item.meaning || item.nepaliMeaning }); setPdfStatus(null); setEditing({ type: 'content', id: item.id }); }} onDelete={() => { if (confirm(language === 'ne' ? `${getLocalizedContentTitle(item, language)} मेटाउने?` : `Delete ${item.title}?`)) onDeleteStotra(item.id); }} />)}</AdminRecordList>
             </div>
           )}
 

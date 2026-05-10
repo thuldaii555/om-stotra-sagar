@@ -20,6 +20,8 @@ type ContentSource = 'local' | 'remote';
 interface ContentMetadata {
   source: ContentSource;
   updatedAt: string;
+  lastPublishedAt?: string;
+  sourceVersion?: string;
 }
 
 const createId = (prefix: string): string => {
@@ -28,10 +30,25 @@ const createId = (prefix: string): string => {
 };
 
 const cleanText = (value?: string): string => value?.trim() || '';
+const cleanMultilineText = (value?: string): string => value?.replace(/\r\n?/g, '\n') || '';
+const cleanDataUrl = (value?: string): string | undefined => {
+  const text = cleanText(value);
+  return /^data:image\/(png|jpe?g|webp);base64,/i.test(text) ? text : undefined;
+};
+const clampNumber = (value: unknown, fallback: number, min: number, max: number): number => {
+  const numeric = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(numeric)) return fallback;
+  return Math.min(max, Math.max(min, numeric));
+};
 
 const cleanOptionalText = (value?: string): string | undefined => {
   const trimmed = cleanText(value);
   return trimmed || undefined;
+};
+
+const cleanOptionalMultilineText = (value?: string): string | undefined => {
+  const text = cleanMultilineText(value);
+  return text.trim() ? text : undefined;
 };
 
 const cleanTags = (tags?: string[]): string[] =>
@@ -87,18 +104,21 @@ export const normalizeStotraInput = (stotra: Partial<Stotra> & { id?: string }, 
   category: normalizeCategoryName(stotra.category),
   categoryNe: cleanOptionalText(stotra.categoryNe),
   imageUrl: cleanOptionalText(stotra.imageUrl),
-  content: cleanText(stotra.content),
-  meaning: cleanOptionalText(stotra.meaning || stotra.nepaliMeaning),
-  meaningNe: cleanOptionalText(stotra.meaningNe),
-  nepaliMeaning: cleanOptionalText(stotra.meaning || stotra.nepaliMeaning),
-  wordMeaning: cleanOptionalText(stotra.wordMeaning),
-  wordMeaningNe: cleanOptionalText(stotra.wordMeaningNe),
-  benefits: cleanOptionalText(stotra.benefits),
-  benefitsNe: cleanOptionalText(stotra.benefitsNe),
-  process: cleanOptionalText(stotra.process),
-  processNe: cleanOptionalText(stotra.processNe),
+  content: cleanMultilineText(stotra.content),
+  meaning: cleanOptionalMultilineText(stotra.meaning || stotra.nepaliMeaning),
+  meaningNe: cleanOptionalMultilineText(stotra.meaningNe),
+  nepaliMeaning: cleanOptionalMultilineText(stotra.meaning || stotra.nepaliMeaning),
+  wordMeaning: cleanOptionalMultilineText(stotra.wordMeaning),
+  wordMeaningNe: cleanOptionalMultilineText(stotra.wordMeaningNe),
+  benefits: cleanOptionalMultilineText(stotra.benefits),
+  benefitsNe: cleanOptionalMultilineText(stotra.benefitsNe),
+  process: cleanOptionalMultilineText(stotra.process),
+  processNe: cleanOptionalMultilineText(stotra.processNe),
   source: cleanOptionalText(stotra.source),
   sourceNe: cleanOptionalText(stotra.sourceNe),
+  sourcePdfName: cleanOptionalText(stotra.sourcePdfName),
+  sourcePdfDataUrl: cleanOptionalText(stotra.sourcePdfDataUrl),
+  sourcePdfUrl: cleanOptionalText(stotra.sourcePdfUrl),
   tags: cleanTags(stotra.tags),
   language: cleanOptionalText(stotra.language),
   script: cleanOptionalText(stotra.script),
@@ -119,6 +139,17 @@ export const normalizeDeityInput = (deity: Partial<Deity> & { id?: string }, fal
   significanceNe: cleanOptionalText(deity.significanceNe),
   mantra: cleanOptionalText(deity.mantra),
   imageUrl: cleanOptionalText(deity.imageUrl),
+  imageDataUrl: cleanDataUrl(deity.imageDataUrl),
+  imageSrc: cleanOptionalText(deity.imageUrl) || cleanDataUrl(deity.imageDataUrl) || cleanOptionalText(deity.imageSrc),
+  imageCrop: deity.imageCrop ? {
+    x: clampNumber(deity.imageCrop.x, 0, -100, 100),
+    y: clampNumber(deity.imageCrop.y, 0, -100, 100),
+    scale: clampNumber(deity.imageCrop.scale, 1, 0.5, 3),
+  } : undefined,
+  imageFit: cleanOptionalText(deity.imageFit),
+  imagePositionX: deity.imagePositionX === undefined ? undefined : clampNumber(deity.imagePositionX, 50, 0, 100),
+  imagePositionY: deity.imagePositionY === undefined ? undefined : clampNumber(deity.imagePositionY, 50, 0, 100),
+  imageScale: deity.imageScale === undefined ? undefined : clampNumber(deity.imageScale, 1, 0.5, 3),
   tags: cleanTags(deity.tags),
   theme: cleanOptionalText(deity.theme),
 });
@@ -200,7 +231,7 @@ export const normalizeContentBundle = (bundle: Partial<ContentBundle> | null): C
   const seenDevotionalIds = new Set<string>();
   const stotras = devotionalItems
     .map((item, index) => normalizeStotraInput(item, `content-${index + 1}`))
-    .filter((item) => item.title && item.deity && item.category && item.content)
+    .filter((item) => item.title && item.deity && item.category && item.content.trim())
     .filter((item) => {
       if (seenDevotionalIds.has(item.id)) return false;
       seenDevotionalIds.add(item.id);
@@ -222,6 +253,9 @@ export const normalizeContentBundle = (bundle: Partial<ContentBundle> | null): C
     poojaBidhi: ensureArray<Partial<PoojaBidhi>>(resolved.poojaBidhi).map((item, index) => normalizePoojaBidhiInput(item, `pooja-${index + 1}`)).filter((item) => item.title && item.deity && item.occasion && item.overview),
     stories: ensureArray<Partial<HinduStory>>(resolved.stories).map((item, index) => normalizeStoryInput(item, `story-${index + 1}`)).filter((item) => item.title && item.story && item.lesson),
     panchang: normalizePanchangContentInput(resolved.panchang),
+    updatedAt: cleanOptionalText(resolved.updatedAt),
+    lastPublishedAt: cleanOptionalText(resolved.lastPublishedAt),
+    sourceVersion: cleanOptionalText(resolved.sourceVersion),
   };
 };
 
@@ -235,10 +269,21 @@ const readBundle = (): ContentBundle => {
   return normalizeContentBundle(stored);
 };
 
-export const persistContentBundle = (bundle: ContentBundle, source: ContentSource = 'local'): ContentBundle => {
-  const normalized = normalizeContentBundle(bundle);
+export const persistContentBundle = (bundle: ContentBundle, source: ContentSource = 'local', metadata: Partial<ContentMetadata> = {}): ContentBundle => {
+  const timestamp = metadata.updatedAt || new Date().toISOString();
+  const normalized = normalizeContentBundle({
+    ...bundle,
+    updatedAt: timestamp,
+    lastPublishedAt: metadata.lastPublishedAt ?? bundle.lastPublishedAt,
+    sourceVersion: metadata.sourceVersion ?? bundle.sourceVersion,
+  });
   writeStorage(CONTENT_KEY, normalized);
-  writeStorage<ContentMetadata>(CONTENT_META_KEY, { source, updatedAt: new Date().toISOString() });
+  writeStorage<ContentMetadata>(CONTENT_META_KEY, {
+    source,
+    updatedAt: normalized.updatedAt || timestamp,
+    lastPublishedAt: normalized.lastPublishedAt,
+    sourceVersion: normalized.sourceVersion,
+  });
   return normalized;
 };
 
@@ -301,13 +346,15 @@ export function hasLocalContentBundle(): boolean {
   return typeof localStorage !== 'undefined' && localStorage.getItem(CONTENT_KEY) !== null;
 }
 
-export function getContentSourceInfo(): { hasLocalContent: boolean; source: ContentSource | 'default'; updatedAt?: string } {
+export function getContentSourceInfo(): { hasLocalContent: boolean; source: ContentSource | 'default'; updatedAt?: string; lastPublishedAt?: string; sourceVersion?: string } {
   const metadata = readStorage<ContentMetadata | null>(CONTENT_META_KEY, null);
   if (hasLocalContentBundle()) {
     return {
       hasLocalContent: true,
       source: metadata?.source || 'local',
       updatedAt: metadata?.updatedAt,
+      lastPublishedAt: metadata?.lastPublishedAt,
+      sourceVersion: metadata?.sourceVersion,
     };
   }
   return { hasLocalContent: false, source: 'default' };
@@ -317,6 +364,74 @@ export function seedRemoteContentIfNoLocal(bundle: ContentBundle): boolean {
   if (hasLocalContentBundle()) return false;
   persistContentBundle(normalizeContentBundle(bundle), 'remote');
   return true;
+}
+
+export function getContentTimestamp(bundle: Partial<ContentBundle> | null | undefined): number {
+  const value = bundle?.lastPublishedAt || bundle?.updatedAt;
+  const timestamp = value ? Date.parse(value) : 0;
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+export function applyRemoteContentIfNewer(remoteBundle: ContentBundle): 'remote-applied' | 'local-newer' | 'unchanged' {
+  const remote = normalizeContentBundle(remoteBundle);
+  if (!hasLocalContentBundle()) {
+    persistContentBundle(remote, 'remote', {
+      updatedAt: remote.updatedAt || remote.lastPublishedAt || new Date().toISOString(),
+      lastPublishedAt: remote.lastPublishedAt,
+      sourceVersion: remote.sourceVersion,
+    });
+    return 'remote-applied';
+  }
+
+  const local = readBundle();
+  const localInfo = getContentSourceInfo();
+  const localTimestamp = getContentTimestamp({
+    ...local,
+    updatedAt: localInfo.updatedAt || local.updatedAt,
+    lastPublishedAt: localInfo.lastPublishedAt || local.lastPublishedAt,
+  });
+  const remoteTimestamp = getContentTimestamp(remote);
+
+  if (remoteTimestamp === 0) {
+    persistContentBundle(remote, 'remote', {
+      updatedAt: new Date().toISOString(),
+      lastPublishedAt: remote.lastPublishedAt,
+      sourceVersion: remote.sourceVersion,
+    });
+    return 'remote-applied';
+  }
+
+  if (remoteTimestamp > localTimestamp) {
+    persistContentBundle(remote, 'remote', {
+      updatedAt: remote.updatedAt || remote.lastPublishedAt,
+      lastPublishedAt: remote.lastPublishedAt,
+      sourceVersion: remote.sourceVersion,
+    });
+    return 'remote-applied';
+  }
+
+  if (localInfo.source === 'local' && localTimestamp > remoteTimestamp) {
+    return 'local-newer';
+  }
+
+  return 'unchanged';
+}
+
+export function markContentPublished(bundle: ContentBundle, publishedAt: string = new Date().toISOString()): ContentBundle {
+  return persistContentBundle(
+    {
+      ...normalizeContentBundle(bundle),
+      updatedAt: publishedAt,
+      lastPublishedAt: publishedAt,
+      sourceVersion: `github-${publishedAt}`,
+    },
+    'remote',
+    {
+      updatedAt: publishedAt,
+      lastPublishedAt: publishedAt,
+      sourceVersion: `github-${publishedAt}`,
+    }
+  );
 }
 
 export function getStotras(): Stotra[] {

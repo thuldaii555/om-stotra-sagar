@@ -34,9 +34,9 @@
   --radius-lg: 20px;
   --radius-xl: 28px;
 
-  --font-display:    'Cormorant Garamond', Georgia, serif;
-  --font-devanagari: 'Noto Serif Devanagari', Mangal, serif;
-  --font-body:       'Inter', system-ui, sans-serif;
+  --font-display:    Georgia, 'Times New Roman', serif;
+  --font-devanagari: 'Noto Serif Devanagari', Mangal, Kokila, 'Nirmala UI', serif;
+  --font-body:       system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 [data-theme="dark"] {
@@ -1339,6 +1339,14 @@ h4 {
   font-size: 1.05rem;
 }
 
+.stotra-original-text {
+  white-space: pre-wrap;
+  line-height: 2;
+  font-family: "Noto Serif Devanagari", "Mangal", "Kokila", "Nirmala UI", serif;
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
 .reader-text-small {
   font-size: clamp(1.15rem, 2.3vw, 1.6rem);
 }
@@ -1673,6 +1681,13 @@ h4 {
   body {
     background: white;
     color: black;
+  }
+
+  .stotra-original-text {
+    white-space: pre-wrap;
+    line-height: 2;
+    word-break: normal;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -6470,6 +6485,80 @@ body {
   min-height: 13rem;
 }
 
+.devotional-textarea {
+  white-space: pre-wrap;
+  font-family: "Noto Serif Devanagari", "Mangal", "Kokila", "Nirmala UI", ui-monospace, SFMono-Regular, Menlo, monospace;
+  line-height: 1.75;
+}
+
+.deity-image-editor,
+.pdf-import-section {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(63, 52, 44, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 250, 241, 0.52);
+}
+
+.file-upload-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+
+.file-upload-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.deity-crop-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: center;
+}
+
+.deity-crop-preview {
+  width: 6.25rem;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 999px;
+  border: 2px solid rgba(216, 178, 74, 0.42);
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.08), rgba(216, 178, 74, 0.12));
+}
+
+.deity-crop-controls {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.range-field {
+  display: grid;
+  gap: 0.25rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.range-field input {
+  width: 100%;
+}
+
+.admin-helper-text {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
 .compact-save,
 .compact-form .action-button,
 .compact-form .secondary-button,
@@ -7648,18 +7737,29 @@ h3 {
 }
 
 .deity-tile-media {
-  min-height: 7rem;
-  border-radius: 13px;
+  width: min(6.25rem, 100%);
+  aspect-ratio: 1;
+  justify-self: center;
+  border-radius: 999px;
   overflow: hidden;
   background: linear-gradient(135deg, rgba(255, 107, 53, 0.08), rgba(216, 178, 74, 0.12));
   display: grid;
   place-items: center;
+  border: 1px solid rgba(216, 178, 74, 0.28);
 }
 
 .deity-tile-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.deity-crop-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: center;
+  will-change: transform;
 }
 
 .deity-tile-fallback {
@@ -7676,6 +7776,7 @@ h3 {
 .deity-tile-copy {
   display: grid;
   gap: 0.2rem;
+  text-align: center;
 }
 
 .deity-tile-type {
@@ -7764,10 +7865,15 @@ h3 {
 }
 
 .deity-detail-visual {
-  min-height: 18rem;
-  border-radius: 24px;
+  width: min(18rem, 70vw);
+  aspect-ratio: 1;
+  min-height: 0;
+  border-radius: 999px;
   overflow: hidden;
   background: linear-gradient(135deg, #ff9b57, #c9953d);
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(216, 178, 74, 0.28);
 }
 
 .deity-detail-visual .symbol-medallion {

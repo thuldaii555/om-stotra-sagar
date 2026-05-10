@@ -15,6 +15,8 @@ import {
   getFavoriteIds,
   getHistory,
   getReaderFontSize,
+  applyRemoteContentIfNewer,
+  markContentPublished,
   normalizeCategoryInput,
   normalizeContentBundle,
   normalizeContentName,
@@ -25,7 +27,6 @@ import {
   normalizeStotraInput,
   persistContentBundle,
   removeFavorite,
-  seedRemoteContentIfNoLocal,
   setReaderFontSize as saveReaderFontSize,
   toggleFavorite,
   createUniqueId,
@@ -154,6 +155,7 @@ export default function App() {
   const [status, setStatus] = useState<ContentStatus | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [contentSourceInfo, setContentSourceInfo] = useState(() => getContentSourceInfo());
+  const [localDraftNewer, setLocalDraftNewer] = useState(false);
   const [adminUnlocked, setAdminUnlocked] = useState(() => isAdminSessionActive());
   const [language, setLanguage] = useState<Language>(() => getSavedLanguage());
   const [theme, setTheme] = useState<Theme>(() => getSavedTheme());
@@ -266,10 +268,13 @@ export default function App() {
     loadRemoteContent().then((remoteContent) => {
       if (!isMounted || !remoteContent) return;
       try {
-        const seeded = seedRemoteContentIfNoLocal(remoteContent);
-        if (seeded) {
+        const result = applyRemoteContentIfNewer(remoteContent);
+        if (result === 'remote-applied') {
           setContent(getContentBundle());
           setContentSourceInfo(getContentSourceInfo());
+          setLocalDraftNewer(false);
+        } else if (result === 'local-newer') {
+          setLocalDraftNewer(true);
         }
       } catch (error) {
         console.warn('Remote content ignored.');
@@ -287,6 +292,7 @@ export default function App() {
     setContent(next);
     setFavoriteIds(getFavoriteIds());
     setContentSourceInfo(getContentSourceInfo());
+    setLocalDraftNewer(source === 'local');
     return next;
   };
 
@@ -621,7 +627,20 @@ export default function App() {
     }
     setIsSaving(true);
     try {
-      const result = await publishContentToGitHub(normalizeContentBundle(content), password);
+      const publishedAt = new Date().toISOString();
+      const contentToPublish = normalizeContentBundle({
+        ...content,
+        updatedAt: publishedAt,
+        lastPublishedAt: publishedAt,
+        sourceVersion: `github-${publishedAt}`,
+      });
+      const result = await publishContentToGitHub(contentToPublish, password);
+      if (result.ok) {
+        const publishedContent = markContentPublished(contentToPublish, publishedAt);
+        setContent(publishedContent);
+        setContentSourceInfo(getContentSourceInfo());
+        setLocalDraftNewer(false);
+      }
       const localMessage = result.message.includes('Backend not configured')
         ? t('backendNotConfigured', language)
         : result.message.includes('Published to GitHub')
@@ -739,6 +758,7 @@ export default function App() {
             message={status?.kind === 'neutral' ? status.text : null}
             errorMessage={status?.kind === 'error' ? status.text : null}
             localContentActive={contentSourceInfo.hasLocalContent}
+            localDraftNewer={localDraftNewer}
             language={language}
             onClose={() => handleViewChange('home')}
             onLogoutAdmin={handleAdminLogout}

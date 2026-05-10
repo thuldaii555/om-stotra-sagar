@@ -293,7 +293,7 @@ export default function StotraReader({
                 )}
 
                 <ReaderSection title={copy.devotionalText}>
-                  <div className={`reader-text ${textScriptClass} ${fontSizeClass[fontSize]}`}>{stotra.content}</div>
+                  <div className={`reader-text stotra-original-text ${textScriptClass} ${fontSizeClass[fontSize]}`}>{stotra.content}</div>
                 </ReaderSection>
 
                 {meaning && (

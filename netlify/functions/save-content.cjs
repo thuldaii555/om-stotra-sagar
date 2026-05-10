@@ -28,7 +28,14 @@ exports.handler = async function handler(event) {
     return json(503, { error: 'GitHub publishing is not configured.' });
   }
 
-  const content = payload.content;
+  const publishedAt = new Date().toISOString();
+  const payloadContent = payload.content || {};
+  const content = {
+    ...payloadContent,
+    updatedAt: payloadContent.updatedAt || publishedAt,
+    lastPublishedAt: payloadContent.lastPublishedAt || publishedAt,
+    sourceVersion: payloadContent.sourceVersion || `github-${publishedAt}`,
+  };
   const validationError = getValidationError(content);
   if (validationError) {
     return json(400, { error: validationError });
@@ -68,7 +75,7 @@ exports.handler = async function handler(event) {
       return json(502, { error: 'GitHub content save failed.' });
     }
 
-    return json(200, { message: 'Content published to GitHub.' });
+    return json(200, { message: 'Content published to GitHub.', updatedAt: content.updatedAt, lastPublishedAt: content.lastPublishedAt, sourceVersion: content.sourceVersion });
   } catch {
     return json(502, { error: 'GitHub content save failed.' });
   }

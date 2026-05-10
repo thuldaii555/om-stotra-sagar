@@ -21,10 +21,19 @@ export interface Stotra {
   processNe?: string;
   source?: string;
   sourceNe?: string;
+  sourcePdfName?: string;
+  sourcePdfDataUrl?: string;
+  sourcePdfUrl?: string;
   tags: string[];
   language?: string;
   script?: string;
   status?: 'draft' | 'published';
+}
+
+export interface ImageCrop {
+  x: number;
+  y: number;
+  scale: number;
 }
 
 export interface Deity {
@@ -41,6 +50,13 @@ export interface Deity {
   significanceNe?: string;
   mantra?: string;
   imageUrl?: string;
+  imageDataUrl?: string;
+  imageSrc?: string;
+  imageCrop?: ImageCrop;
+  imageFit?: string;
+  imagePositionX?: number;
+  imagePositionY?: number;
+  imageScale?: number;
   tags: string[];
   theme?: string;
 }
@@ -157,4 +173,7 @@ export interface ContentBundle {
   poojaBidhi: PoojaBidhi[];
   stories: HinduStory[];
   panchang: PanchangContent;
+  updatedAt?: string;
+  lastPublishedAt?: string;
+  sourceVersion?: string;
 }

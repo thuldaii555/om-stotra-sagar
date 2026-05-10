@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ArrowLeft, ArrowRight, BookOpen, Feather, Sparkles } from 'lucide-react';
 import type { Deity, PoojaBidhi, Stotra } from '../../types';
 import { getLocalizedCategoryName, getLocalizedContentTitle, getLocalizedDeityName, getLocalizedDeityType, getLocalizedPoojaTitle, getLocalizedText } from '../../utils/localization';
+import { getDeityImageSrc, getDeityImageStyle } from '../../utils/deityImage';
 
 interface GodsPageProps {
   deities: Deity[];
@@ -122,7 +123,8 @@ export default function GodsPage({ deities, stotras, poojaBidhi, language, activ
 
 function DeityCard({ deity, language, onOpen }: { key?: string; deity: Deity; language: 'ne' | 'en'; onOpen: () => void }) {
   const [imageFailed, setImageFailed] = useState(false);
-  const hasImage = Boolean(deity.imageUrl) && !imageFailed;
+  const imageSrc = getDeityImageSrc(deity);
+  const hasImage = Boolean(imageSrc) && !imageFailed;
   const displayName = getLocalizedDeityName(deity, language);
   const symbol = displayName.trim().charAt(0) || 'Om';
 
@@ -130,7 +132,7 @@ function DeityCard({ deity, language, onOpen }: { key?: string; deity: Deity; la
     <button className="deity-tile-card" onClick={onOpen}>
       <div className="deity-tile-media">
         {hasImage ? (
-          <img src={deity.imageUrl} alt={displayName} className="deity-tile-image" loading="lazy" onError={() => setImageFailed(true)} />
+          <img src={imageSrc} alt={displayName} className="deity-tile-image deity-crop-image" style={getDeityImageStyle(deity)} loading="lazy" onError={() => setImageFailed(true)} />
         ) : (
           <div className="deity-tile-fallback">
             <div className="symbol-medallion deity-tile-medallion">{symbol}</div>
@@ -163,6 +165,7 @@ function DeityProfile({
   onOpenPooja: (deity: string) => void;
 }) {
   const [imageFailed, setImageFailed] = useState(false);
+  const imageSrc = getDeityImageSrc(deity);
   const symbol = deity.sanskritName?.trim().charAt(0) || deity.name.trim().charAt(0) || 'Om';
   const copy = language === 'ne'
     ? { back: 'सबै प्रोफाइल', significance: 'महत्त्व', mantra: 'मन्त्र', related: 'सम्बन्धित सामग्री', availableFor: 'उपलब्ध सामग्री', pooja: 'पूजा विधि', empty: 'सम्बन्धित भक्तिपूर्ण सामग्री अहिलेसम्म छैन।' }
@@ -180,8 +183,8 @@ function DeityProfile({
       <button onClick={onBack} className="secondary-button deity-back-button"><ArrowLeft size={16} /> {copy.back}</button>
       <section className="page-hero premium-hero-card deity-detail-hero">
         <div className="deity-detail-visual">
-          {deity.imageUrl && !imageFailed ? (
-            <img src={deity.imageUrl} alt={deity.name} className="deity-image" onError={() => setImageFailed(true)} />
+          {imageSrc && !imageFailed ? (
+            <img src={imageSrc} alt={deity.name} className="deity-image deity-crop-image" style={getDeityImageStyle(deity)} onError={() => setImageFailed(true)} />
           ) : (
             <div className="symbol-medallion gods-hero-medallion">{symbol}</div>
           )}

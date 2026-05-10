@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
+import { useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 import { CalendarClock, LocateFixed, MapPin, MoonStar, SunMedium } from 'lucide-react';
 import type { PanchangContent } from '../types';
 import { fetchPanchang, type PanchangFetchState } from '../services/panchangService';
@@ -57,54 +57,54 @@ export default function Panchang({ content, language }: PanchangPageProps) {
 
   const timezoneDisplay = location.timezone.trim() || DEFAULT_LOCATION.timezone;
   const selectedCity = location.city.trim() || DEFAULT_LOCATION.city;
-  const selectedCityDisplay = language === 'ne' && selectedCity === 'Kathmandu, Nepal' ? 'à¤•à¤¾à¤ à¤®à¤¾à¤¡à¥Œà¤‚, à¤¨à¥‡à¤ªà¤¾à¤²' : selectedCity;
+  const selectedCityDisplay = language === 'ne' && selectedCity === 'Kathmandu, Nepal' ? 'काठमाडौं, नेपाल' : selectedCity;
   const localInfo = useMemo(() => formatZonedDateTime(now, timezoneDisplay, selectedCity, language), [language, now, selectedCity, timezoneDisplay]);
   const dateKey = localInfo.isoDate;
   const statusLabel = state.status === 'success'
-    ? (language === 'ne' ? 'à¤¸à¤«à¤²' : 'success')
+    ? (language === 'ne' ? 'सफल' : 'success')
     : state.status === 'loading'
-      ? (language === 'ne' ? 'à¤²à¥‹à¤¡ à¤¹à¥à¤à¤¦à¥ˆà¤›' : 'loading')
+      ? (language === 'ne' ? 'लोड हुँदैछ' : 'loading')
       : state.status === 'notConfigured'
-        ? (language === 'ne' ? 'à¤œà¤¡à¤¾à¤¨ à¤›à¥ˆà¤¨' : 'notConfigured')
-        : (language === 'ne' ? 'à¤¤à¥à¤°à¥à¤Ÿà¤¿' : 'error');
+        ? (language === 'ne' ? 'जडान छैन' : 'notConfigured')
+        : (language === 'ne' ? 'त्रुटि' : 'error');
 
   const copy = language === 'ne'
     ? {
-        eyebrow: 'à¤ªà¤žà¥à¤šà¤¾à¤™à¥à¤—',
+        eyebrow: 'पञ्चाङ्ग',
         title: t('dailyPanchang', language),
-        subtitle: 'à¤¦à¤¿à¤¨, à¤¸à¤®à¤¯, à¤° à¤¸à¥à¤¥à¤¾à¤¨à¤•à¥‹ à¤†à¤§à¤¾à¤°à¤®à¤¾ à¤¦à¥ˆà¤¨à¤¿à¤• à¤¹à¤¿à¤¨à¥à¤¦à¥‚ à¤ªà¤¾à¤¤à¥à¤°à¥‹ à¤œà¤¾à¤¨à¤•à¤¾à¤°à¥€à¥¤',
-        dateTitle: 'à¤®à¤¿à¤¤à¤¿ à¤° à¤¸à¤®à¤¯',
-        locationTitle: 'à¤¸à¥à¤¥à¤¾à¤¨',
-        resultTitle: 'à¤ªà¤žà¥à¤šà¤¾à¤™à¥à¤— à¤µà¤¿à¤µà¤°à¤£',
-        sourceTitle: 'à¤¸à¥à¤°à¥‹à¤¤ à¤¸à¥à¤¥à¤¿à¤¤à¤¿',
-        city: 'à¤¶à¤¹à¤°',
-        latitude: 'à¤…à¤•à¥à¤·à¤¾à¤‚à¤¶',
-        longitude: 'à¤¦à¥‡à¤¶à¤¾à¤¨à¥à¤¤à¤°',
-        timezone: 'à¤¸à¤®à¤¯ à¤•à¥à¤·à¥‡à¤¤à¥à¤°',
-        useLocation: 'à¤®à¥‡à¤°à¥‹ à¤¸à¥à¤¥à¤¾à¤¨ à¤ªà¥à¤°à¤¯à¥‹à¤— à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
-        notConfigured: 'à¤ªà¤žà¥à¤šà¤¾à¤™à¥à¤— à¤—à¤£à¤¨à¤¾ à¤¸à¥à¤°à¥‹à¤¤ à¤…à¤à¥ˆ à¤œà¤¡à¤¾à¤¨ à¤—à¤°à¤¿à¤à¤•à¥‹ à¤›à¥ˆà¤¨à¥¤ à¤®à¤¿à¤¤à¤¿, à¤¸à¤®à¤¯ à¤° à¤¸à¥à¤¥à¤¾à¤¨ à¤¦à¥‡à¤–à¤¾à¤‡à¤à¤•à¥‹ à¤›à¥¤',
-        error: 'à¤…à¤¹à¤¿à¤²à¥‡ à¤ªà¤žà¥à¤šà¤¾à¤™à¥à¤— à¤²à¥‹à¤¡ à¤—à¤°à¥à¤¨ à¤¸à¤•à¤¿à¤à¤¨à¥¤ à¤•à¥ƒà¤ªà¤¯à¤¾ à¤¸à¥à¤¥à¤¾à¤¨ à¤œà¤¾à¤à¤šà¥à¤¨à¥à¤¹à¥‹à¤¸à¥ à¤µà¤¾ à¤«à¥‡à¤°à¤¿ à¤ªà¥à¤°à¤¯à¤¾à¤¸ à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥à¥¤',
-        loading: 'à¤ªà¤žà¥à¤šà¤¾à¤™à¥à¤— à¤²à¥‹à¤¡ à¤¹à¥à¤à¤¦à¥ˆà¤›...',
-        exactNote: 'à¤ à¥à¤¯à¤¾à¤•à¥à¤•à¥ˆ à¤ªà¤žà¥à¤šà¤¾à¤™à¥à¤— à¤®à¤¾à¤¨à¤¹à¤°à¥‚ à¤¸à¥à¤¥à¤¾à¤¨, à¤¸à¤®à¤¯ à¤•à¥à¤·à¥‡à¤¤à¥à¤°, à¤° à¤—à¤£à¤¨à¤¾ à¤µà¤¿à¤§à¤¿à¤®à¤¾ à¤¨à¤¿à¤°à¥à¤­à¤° à¤¹à¥à¤¨à¥à¤›à¤¨à¥à¥¤',
-        browserTime: 'à¤¸à¥à¤¥à¤¾à¤¨à¥€à¤¯ à¤¸à¤®à¤¯',
-        browserTimezone: 'à¤¸à¤®à¤¯ à¤•à¥à¤·à¥‡à¤¤à¥à¤°',
-        gregorianDate: 'à¤®à¤¿à¤¤à¤¿',
-        bikramSambat: 'à¤µà¤¿.à¤¸à¤‚. à¤®à¤¿à¤¤à¤¿',
-        bikramSambatPending: 'à¤µà¤¿.à¤¸à¤‚. à¤®à¤¿à¤¤à¤¿ à¤œà¤¡à¤¾à¤¨ à¤¹à¥à¤à¤¦à¥ˆà¤›',
-        selectedLocation: 'à¤šà¤¯à¤¨ à¤—à¤°à¤¿à¤à¤•à¥‹ à¤¸à¥à¤¥à¤¾à¤¨',
-        manualHelp: 'à¤…à¤•à¥à¤·à¤¾à¤‚à¤¶/à¤¦à¥‡à¤¶à¤¾à¤¨à¥à¤¤à¤° à¤°à¤¾à¤–à¥‡à¤ªà¤›à¤¿ à¤ªà¤žà¥à¤šà¤¾à¤™à¥à¤— à¤¸à¥à¤°à¥‹à¤¤ à¤‰à¤ªà¤²à¤¬à¥à¤§ à¤­à¤à¤®à¤¾ à¤ªà¤°à¤¿à¤£à¤¾à¤® à¤¤à¥à¤°à¥à¤¨à¥à¤¤à¥ˆ à¤²à¥‹à¤¡ à¤¹à¥à¤¨à¥à¤›à¥¤',
-        unavailable: 'à¤‰à¤ªà¤²à¤¬à¥à¤§ à¤›à¥ˆà¤¨',
-        sunrise: 'à¤¸à¥‚à¤°à¥à¤¯à¥‹à¤¦à¤¯',
-        sunset: 'à¤¸à¥‚à¤°à¥à¤¯à¤¾à¤¸à¥à¤¤',
-        tithi: 'à¤¤à¤¿à¤¥à¤¿',
-        nakshatra: 'à¤¨à¤•à¥à¤·à¤¤à¥à¤°',
-        yoga: 'à¤¯à¥‹à¤—',
-        karana: 'à¤•à¤°à¤£',
-        paksha: 'à¤ªà¤•à¥à¤·',
-        lunarMonth: 'à¤šà¤¨à¥à¤¦à¥à¤° à¤®à¤¹à¤¿à¤¨à¤¾',
-        rahuKaal: 'à¤°à¤¾à¤¹à¥à¤•à¤¾à¤²',
-        configured: 'à¤¸à¥à¤°à¥‹à¤¤ à¤‰à¤ªà¤²à¤¬à¥à¤§ à¤›',
-        provider: 'à¤¸à¥‡à¤µà¤¾ à¤ªà¥à¤°à¤¦à¤¾à¤¯à¤•',
+        subtitle: 'दिन, समय, र स्थानको आधारमा दैनिक हिन्दू पात्रो जानकारी।',
+        dateTitle: 'मिति र समय',
+        locationTitle: 'स्थान',
+        resultTitle: 'पञ्चाङ्ग विवरण',
+        sourceTitle: 'स्रोत स्थिति',
+        city: 'शहर',
+        latitude: 'अक्षांश',
+        longitude: 'देशान्तर',
+        timezone: 'समय क्षेत्र',
+        useLocation: 'मेरो स्थान प्रयोग गर्नुहोस्',
+        notConfigured: 'पञ्चाङ्ग गणना स्रोत अझै जडान गरिएको छैन। मिति, समय र स्थान देखाइएको छ।',
+        error: 'अहिले पञ्चाङ्ग लोड गर्न सकिएन। कृपया स्थान जाँच्नुहोस् वा फेरि प्रयास गर्नुहोस्।',
+        loading: 'पञ्चाङ्ग लोड हुँदैछ...',
+        exactNote: 'ठ्याक्कै पञ्चाङ्ग मानहरू स्थान, समय क्षेत्र, र गणना विधिमा निर्भर हुन्छन्।',
+        browserTime: 'स्थानीय समय',
+        browserTimezone: 'समय क्षेत्र',
+        gregorianDate: 'मिति',
+        bikramSambat: 'वि.सं. मिति',
+        bikramSambatPending: 'वि.सं. मिति जडान हुँदैछ',
+        selectedLocation: 'चयन गरिएको स्थान',
+        manualHelp: 'अक्षांश/देशान्तर राखेपछि पञ्चाङ्ग स्रोत उपलब्ध भएमा परिणाम तुरुन्तै लोड हुन्छ।',
+        unavailable: 'उपलब्ध छैन',
+        sunrise: 'सूर्योदय',
+        sunset: 'सूर्यास्त',
+        tithi: 'तिथि',
+        nakshatra: 'नक्षत्र',
+        yoga: 'योग',
+        karana: 'करण',
+        paksha: 'पक्ष',
+        lunarMonth: 'चन्द्र महिना',
+        rahuKaal: 'राहुकाल',
+        configured: 'स्रोत उपलब्ध छ',
+        provider: 'सेवा प्रदायक',
       }
     : {
         eyebrow: 'Panchang',
@@ -243,11 +243,11 @@ export default function Panchang({ content, language }: PanchangPageProps) {
                 setLocation,
                 setIsLocating,
                 setState,
-                language === 'ne' ? 'à¤¹à¤¾à¤²à¤•à¥‹ à¤¸à¥à¤¥à¤¾à¤¨' : 'Current location',
+                language === 'ne' ? 'हालको स्थान' : 'Current location',
                 copy.error
               )}
             >
-              <LocateFixed size={16} /> {isLocating ? (language === 'ne' ? 'à¤¸à¥à¤¥à¤¾à¤¨ à¤²à¤¿à¤à¤¦à¥ˆ...' : 'Locating...') : copy.useLocation}
+              <LocateFixed size={16} /> {isLocating ? (language === 'ne' ? 'स्थान लिँदै...' : 'Locating...') : copy.useLocation}
             </button>
           </div>
 
@@ -256,7 +256,7 @@ export default function Panchang({ content, language }: PanchangPageProps) {
               label={copy.city}
               value={location.city}
               onChange={(value) => setLocation((current) => ({ ...current, city: value }))}
-              placeholder={language === 'ne' ? 'à¤¶à¤¹à¤° à¤µà¤¾ à¤•à¥à¤·à¥‡à¤¤à¥à¤°' : 'City or region'}
+              placeholder={language === 'ne' ? 'शहर वा क्षेत्र' : 'City or region'}
             />
             <Field
               label={copy.latitude}
@@ -420,9 +420,9 @@ function handleUseLocation(
 }
 
 function formatField(field?: { name: string; start?: string; end?: string } | null) {
-  if (!field) return 'â€”';
+  if (!field) return '—';
   const parts = [field.name, field.start, field.end].filter(Boolean);
-  return parts.length > 0 ? parts.join(' Â· ') : 'â€”';
+  return parts.length > 0 ? parts.join(' · ') : '—';
 }
 
 

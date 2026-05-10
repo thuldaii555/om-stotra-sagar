@@ -8,10 +8,24 @@ export async function loadRemoteContent(): Promise<ContentBundle | null> {
     const response = await fetch(CONTENT_ENDPOINT, { headers: { Accept: 'application/json' } });
     if (!response.ok) return null;
     const payload = await response.json() as { content?: ContentBundle | null };
-    return payload.content ?? null;
+    const content = payload.content ?? null;
+    if (content && isContentEncodingCorrupted(content)) {
+      console.warn('Remote content appears encoding-corrupted. Falling back to local defaults.');
+      return null;
+    }
+    return content;
   } catch {
     return null;
   }
+}
+
+export function isContentEncodingCorrupted(content: unknown): boolean {
+  const text = JSON.stringify(content);
+  if (!text) return false;
+
+  const mojibakeMatches = text.match(/à[¤¥]/g) || [];
+  const replacementChar = JSON.parse(`"\\u${'fffd'}"`) as string;
+  return mojibakeMatches.length > 0 || text.includes(replacementChar);
 }
 
 export async function publishContentToGitHub(content: ContentBundle, adminPassword: string): Promise<{ ok: boolean; message: string }> {

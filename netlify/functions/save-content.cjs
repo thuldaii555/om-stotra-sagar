@@ -50,9 +50,10 @@ exports.handler = async function handler(event) {
       return json(502, { error: 'Could not read current GitHub content file.' });
     }
 
+    const jsonText = JSON.stringify(content, null, 2);
     const body = {
       message: 'Update Om Stotra Sagar content',
-      content: Buffer.from(JSON.stringify(content, null, 2), 'utf8').toString('base64'),
+      content: Buffer.from(jsonText, 'utf8').toString('base64'),
       branch,
       ...(sha ? { sha } : {}),
     };
@@ -102,7 +103,10 @@ function encodeURIComponentPath(path) {
 function json(statusCode, body) {
   return {
     statusCode,
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-store',
+    },
     body: JSON.stringify(body),
   };
 }

@@ -39,6 +39,7 @@ import {
 import { DEFAULT_CONTENT, DEFAULT_PANCHANG_CONTENT } from './data/defaultContent';
 import type { Category, ContentBundle, Deity, HistoryItem, PoojaBidhi, Stotra } from './types';
 import { getLocalizedCategoryName, getLocalizedContentTitle, getLocalizedDeityName } from './utils/localization';
+import { t } from './utils/i18n';
 
 const StotrasPage = lazy(() => import('./components/stotra/StotrasPage'));
 const FavoritesPage = lazy(() => import('./components/stotra/FavoritesPage'));
@@ -613,7 +614,7 @@ export default function App() {
   };
 
   const handlePublishContent = async (): Promise<boolean> => {
-    const password = window.prompt('Enter backend admin password to publish content') || '';
+    const password = window.prompt(msg('Enter backend admin password to publish content', 'सामग्री प्रकाशित गर्न backend एडमिन पासवर्ड राख्नुहोस्')) || '';
     if (!password) {
       setMessage(msg('Backend admin password is required to publish.', 'प्रकाशित गर्न backend एडमिन पासवर्ड आवश्यक छ।'), 'error');
       return false;
@@ -621,7 +622,14 @@ export default function App() {
     setIsSaving(true);
     try {
       const result = await publishContentToGitHub(normalizeContentBundle(content), password);
-      setMessage(result.message, result.ok ? 'neutral' : 'error');
+      const localMessage = result.message.includes('Backend not configured')
+        ? t('backendNotConfigured', language)
+        : result.message.includes('Published to GitHub')
+          ? t('publishedToGitHub', language)
+          : result.message.includes('Publish failed')
+            ? t('publishFailed', language)
+            : result.message;
+      setMessage(localMessage, result.ok ? 'neutral' : 'error');
       return result.ok;
     } finally {
       setIsSaving(false);
@@ -705,7 +713,7 @@ export default function App() {
       ) : activeView === 'pooja' ? (
         <PoojaPage poojaBidhi={poojaBidhi} activeDeity={activeDeity} selectedPoojaId={selectedPoojaId} language={language} />
       ) : activeView === 'stories' ? (
-        <StoriesPage stories={stories} />
+        <StoriesPage stories={stories} activeDeity={activeDeity} language={language} />
       ) : activeView === 'panchang' ? (
         <Panchang content={panchang} language={language} />
       ) : activeView === 'favorites' ? (

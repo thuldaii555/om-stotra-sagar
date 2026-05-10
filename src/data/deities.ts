@@ -16,11 +16,40 @@ const nameNeByName: Record<string, string> = {
   Parvati: 'पार्वती',
   Kartikeya: 'कार्तिकेय',
   Radha: 'राधा',
+  Bhairava: 'भैरव',
+  Indra: 'इन्द्र',
+};
+
+const typeByName: Record<string, NonNullable<Deity['type']>> = {
+  Ganesh: 'God',
+  Shiva: 'God',
+  Vishnu: 'God',
+  Lakshmi: 'Goddess',
+  Saraswati: 'Goddess',
+  Hanuman: 'God',
+  Durga: 'Goddess',
+  Krishna: 'God',
+  Rama: 'God',
+  Kali: 'Goddess',
+  Surya: 'God',
+  Narayana: 'God',
+  Parvati: 'Goddess',
+  Kartikeya: 'God',
+  Radha: 'Goddess',
+  Bhairava: 'God',
+  Indra: 'God',
+};
+
+const typeNeByType: Record<NonNullable<Deity['type']>, string> = {
+  God: 'देवता',
+  Goddess: 'देवी',
+  Form: 'स्वरूप',
+  Other: 'अन्य',
 };
 
 const introNeByName: Record<string, string> = {
-  Ganesh: 'बुद्धि, शुभारम्भ र विघ्न हटाउने देवता।',
-  Shiva: 'शान्ति, रूपान्तरण, ध्यान र कृपासँग सम्बन्धित मंगलमय भगवान्।',
+  Ganesh: 'बुद्धि, शुभारम्भ र विघ्न हटाउने देवताको रूपमा गणेशको पूजा गरिन्छ।',
+  Shiva: 'शिवलाई ध्यान, वैराग्य, रूपान्तरण र करुणासँग जोडिने महादेवको रूपमा मानिन्छ।',
   Vishnu: 'धर्म र सृष्टिको सन्तुलन संरक्षण गर्ने पालनकर्ता।',
   Lakshmi: 'समृद्धि, कृपा, सौन्दर्य र शुभताको देवी।',
   Saraswati: 'विद्या, संगीत, वाणी, सिर्जना र ज्ञानकी देवी।',
@@ -29,29 +58,33 @@ const introNeByName: Record<string, string> = {
   Krishna: 'भक्ति, ज्ञान, करुणा र आनन्दसँग सम्बन्धित प्रिय भगवान्।',
   Rama: 'धर्म, सत्य, साहस र करुणाका आदर्श राजा।',
   Kali: 'रक्षा, काल, साहस र रूपान्तरणसँग सम्बन्धित उग्र दिव्य माता।',
-  Surya: 'प्रकाश, स्वास्थ्य, स्पष्टता, अनुशासन र दैनिक क्रमका देवता।',
+  Surya: 'प्रकाश, स्वास्थ्य, स्पष्टता, अनुशासन र दैनिक कर्मका देवता।',
   Narayana: 'विष्णुसँग सम्बन्धित सर्वव्यापी पालनकर्ता स्वरूप।',
   Parvati: 'प्रेम, शक्ति र पारिवारिक मंगलसँग सम्बन्धित कोमल र शक्तिशाली दिव्य माता।',
   Kartikeya: 'साहस, अनुशासन र स्पष्टताका दिव्य सेनापति।',
-  Radha: 'कृष्णप्रेम, शुद्ध भक्ति र दिव्य प्रेमकी प्रतीक।',
+  Radha: 'कृष्णप्रेम, शुद्ध भक्ति र दिव्य प्रेमको प्रतीक।',
+  Bhairava: 'संरक्षण, अनुशासन, कालबोध र निर्भय साधनासँग जोडिने रक्षक देवता।',
+  Indra: 'देवताहरूका राजा, वर्षा, स्वर्गीय शासन र बलसँग सम्बन्धित देवता।',
 };
 
 const significanceNeByName: Record<string, string> = {
-  Ganesh: 'अध्ययन, यात्रा, पूजा, व्यापार वा कुनै पनि नयाँ काम सुरु गर्नुअघि गणेशको स्मरण गर्ने परम्परा छ।',
+  Ganesh: 'अध्ययन, यात्रा, पूजा, व्यवसाय वा कुनै पनि नयाँ काम सुरु गर्नुअघि गणेशको स्मरण गरिन्छ।',
   Shiva: 'शिव उपासनाले आन्तरिक अनुशासन, नम्रता, शान्ति र विकार त्यागको भावलाई बल दिन्छ।',
   Vishnu: 'विष्णुको स्मरण शरण, स्थिरता, रक्षा र धर्ममा आधारित भक्तिका लागि गरिन्छ।',
   Lakshmi: 'लक्ष्मीको पूजा घरको मंगल, कृतज्ञता, स्वच्छता, उदारता र सदुपयोगी समृद्धिका लागि गरिन्छ।',
   Saraswati: 'विद्यार्थी, शिक्षक, कलाकार र साधकहरूले स्पष्टता, नम्रता र अनुशासित अध्ययनका लागि सरस्वतीको स्मरण गर्छन्।',
   Hanuman: 'हनुमानको स्मरण रक्षा, अनुशासित मन, रामभक्ति र निडर सेवाका लागि गरिन्छ।',
   Durga: 'दुर्गाको पूजा साहस, रक्षा, न्याय र अधर्ममाथि धर्मको विजयका लागि गरिन्छ।',
-  Krishna: 'कृष्णको स्मरण भक्ति, गीता, कीर्तन र धर्म सिकाउने कथामार्फत गरिन्छ।',
+  Krishna: 'कृष्णको स्मरण भक्ति, गीताका शिक्षाहरू, कीर्तन र धर्मलाई प्रेमसहित बुझ्नका लागि गरिन्छ।',
   Rama: 'रामको स्मरण सत्य आचरण, पारिवारिक निष्ठा, कर्तव्य र नैतिक स्पष्टताका लागि गरिन्छ।',
   Kali: 'कालीको स्मरण निर्भयता, रक्षा र अज्ञान तथा असत्य हटाउने भावका लागि गरिन्छ।',
   Surya: 'सूर्यलाई स्वास्थ्य, दैनिक अनुशासन, कृतज्ञता, ऊर्जा र स्पष्ट चेतनाका लागि स्मरण गरिन्छ।',
   Narayana: 'नारायणको स्मरण शरण, संरक्षण, सत्यता र गृहस्थ भक्तिका लागि गरिन्छ।',
-  Parvati: 'पार्वतीलाई मातृकृपा, अनुशासित भक्ति र शक्तिको स्रोतका रूपमा पूजा गरिन्छ।',
+  Parvati: 'पार्वतीलाई मातृकृपा, अनुशासित भक्ति र शक्तिको स्रोतको रूपमा पूजा गरिन्छ।',
   Kartikeya: 'कार्तिकेयको स्मरण वीरता, आध्यात्मिक एकाग्रता र कठिनाइलाई संयमपूर्वक सामना गर्ने बुद्धिका लागि गरिन्छ।',
-  Radha: 'राधालाई कृष्णभक्तिको निस्वार्थ प्रेम र मधुर स्मरणको हृदयका रूपमा सम्मान गरिन्छ।',
+  Radha: 'राधालाई कृष्णभक्तिको निस्वार्थ प्रेम र मधुर स्मरणको हृदयको रूपमा सम्मान गरिन्छ।',
+  Bhairava: 'भैरवको स्मरण रक्षा, अनुशासन, भयमुक्त साधना र सीमाना-रक्षक भावका लागि गरिन्छ।',
+  Indra: 'इन्द्रको पूजा वर्षा, समृद्धि, सामर्थ्य र देवशासनको स्मरणका लागि गरिन्छ।',
 };
 
 const deity = (
@@ -67,6 +100,8 @@ const deity = (
   id,
   name,
   nameNe: nameNeByName[name],
+  type: typeByName[name] || 'Other',
+  typeNe: typeNeByType[typeByName[name] || 'Other'],
   sanskritName,
   description,
   introductionNe: introNeByName[name],
@@ -93,4 +128,6 @@ export const DEFAULT_DEITIES: Deity[] = [
   deity('deity-parvati', 'Parvati', 'श्री पार्वती', 'The gentle and powerful divine mother, consort of Shiva, associated with love, strength, and family harmony.', 'Parvati is honored as motherly grace, disciplined devotion, and the source of Shakti in household and temple worship.', 'ॐ पार्वत्यै नमः', ['mother', 'shakti', 'family'], 'from-pink-100 to-rose-50'),
   deity('deity-kartikeya', 'Kartikeya', 'श्री कार्तिकेय', 'The youthful commander of the divine forces, associated with courage, discipline, and clarity.', 'Kartikeya is remembered for bravery, spiritual focus, and the ability to meet difficulty with wisdom and restraint.', 'ॐ स्कन्दाय नमः', ['courage', 'discipline', 'skanda'], 'from-orange-100 to-amber-50'),
   deity('deity-radha', 'Radha', 'श्री राधा', 'The supreme devotee of Krishna and a symbol of pure love, devotion, and longing for the divine.', 'Radha is honored in bhakti traditions as the heart of selfless devotion and loving remembrance of Krishna.', 'राधे कृष्ण राधे कृष्ण', ['bhakti', 'love', 'krishna'], 'from-fuchsia-100 to-rose-50'),
+  deity('deity-bhairava', 'Bhairava', 'श्री भैरव', 'The protective and fierce guardian form associated with time, discipline, and sacred boundaries.', 'Bhairava is remembered for protection, fearlessness, discipline, and the removal of harmful tendencies.', 'ॐ भैरवाय नमः', ['protection', 'discipline', 'guardian'], 'from-slate-900 to-zinc-700'),
+  deity('deity-indra', 'Indra', 'इन्द्र', 'The king of the gods associated with rain, strength, celestial order, and lordship.', 'Indra is remembered for rain, abundance, vitality, and the orderly support of life.', 'ॐ इन्द्राय नमः', ['rain', 'strength', 'heaven'], 'from-sky-100 to-blue-50'),
 ];

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ArrowLeft, ArrowRight, Search } from 'lucide-react';
 import type { PoojaBidhi } from '../../types';
-import { getLocalizedDeityName, getLocalizedList, getLocalizedPoojaTitle, getLocalizedText, includesLocalizedQuery } from '../../utils/localization';
+import { getLocalizedDeityName, getLocalizedList, getLocalizedPoojaTitle, getLocalizedText, getPoojaField, includesLocalizedQuery } from '../../utils/localization';
 
 interface PoojaPageProps {
   poojaBidhi: PoojaBidhi[];
@@ -32,7 +32,7 @@ export default function PoojaPage({ poojaBidhi, activeDeity, selectedPoojaId, la
         cautions: 'सावधानीहरू',
         source: 'स्रोत',
         fallbackBidhi: 'पूजा विधि',
-        cautionFallback: 'परिवार, क्षेत्र र सम्प्रदायअनुसार परम्परा फरक हुन सक्छ। ठूलो विधिका लागि पुरोहित वा परिवारका ज्येष्ठसँग परामर्श गर्नुहोस्।',
+        cautionFallback: 'परिवार, क्षेत्र र सम्प्रदायअनुसार परम्परा फरक हुन सक्छ। ठूला विधिका लागि पुरोहित वा परिवारका ज्येष्ठसँग परामर्श गर्नुहोस्।',
         notAvailable: 'उपलब्ध छैन।',
       }
     : {
@@ -61,7 +61,25 @@ export default function PoojaPage({ poojaBidhi, activeDeity, selectedPoojaId, la
     const base = activeDeity ? poojaBidhi.filter((item) => item.deity === activeDeity) : poojaBidhi;
     const search = query.trim().toLowerCase();
     if (!search) return base;
-    return base.filter((item) => includesLocalizedQuery([item.title, getLocalizedPoojaTitle(item, 'ne'), item.titleNe, item.deity, getLocalizedDeityName(item.deityNe || item.deity, 'ne'), item.deityNe, item.occasion, item.occasionNe, item.overview, item.overviewNe, item.materials, item.materialsNe, item.steps, item.stepsNe, item.benefits, item.benefitsNe, item.tags], search));
+    return base.filter((item) => includesLocalizedQuery([
+      item.title,
+      item.titleNe,
+      getLocalizedPoojaTitle(item, 'ne'),
+      item.deity,
+      item.deityNe,
+      getLocalizedDeityName(item.deityNe || item.deity, 'ne'),
+      item.occasion,
+      item.occasionNe,
+      item.overview,
+      item.overviewNe,
+      item.materials,
+      item.materialsNe,
+      item.steps,
+      item.stepsNe,
+      item.benefits,
+      item.benefitsNe,
+      item.tags,
+    ], search));
   }, [activeDeity, poojaBidhi, query]);
 
   const selected = visibleItems.find((item) => item.id === selectedId) || null;
@@ -90,7 +108,7 @@ export default function PoojaPage({ poojaBidhi, activeDeity, selectedPoojaId, la
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={copy.searchPlaceholder}
-            aria-label="Search pooja guides"
+            aria-label={language === 'ne' ? 'पूजा विधि खोज्नुहोस्' : 'Search pooja guides'}
             className="search-bar"
           />
           <Search className="search-icon" size={18} />
@@ -117,7 +135,9 @@ export default function PoojaPage({ poojaBidhi, activeDeity, selectedPoojaId, la
                 >
                   <div className="pooja-list-copy">
                     <p className="pooja-list-title">{getLocalizedPoojaTitle(item, language)}</p>
-                    <p className="pooja-list-meta">{getLocalizedDeityName(item.deityNe || item.deity, language)} · {getLocalizedText(language, item.occasionNe, item.occasion) || copy.fallbackBidhi}</p>
+                    <p className="pooja-list-meta">
+                      {getLocalizedDeityName(item.deityNe || item.deity, language)} · {getLocalizedText(language, item.occasionNe, item.occasion) || copy.fallbackBidhi}
+                    </p>
                   </div>
                   <ArrowRight size={16} className="pooja-list-arrow" />
                 </button>
@@ -132,7 +152,7 @@ export default function PoojaPage({ poojaBidhi, activeDeity, selectedPoojaId, la
               <button onClick={() => setSelectedId(null)} className="secondary-button pooja-back-button">
                 <ArrowLeft size={16} /> {copy.allGuides}
               </button>
-              <p className="page-eyebrow">{selected.occasion || copy.eyebrow}</p>
+              <p className="page-eyebrow">{getPoojaField(selected, 'occasion', language) || copy.eyebrow}</p>
               <h2 className="card-title">{getLocalizedPoojaTitle(selected, language)}</h2>
               <p className="deity-line">{copy.deity}: {getLocalizedDeityName(selected.deityNe || selected.deity, language)}</p>
               <p className="card-copy">{getLocalizedText(language, selected.overviewNe, selected.overview)}</p>

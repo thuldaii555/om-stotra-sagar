@@ -93,7 +93,7 @@ export default function HomePage({
         almanacGuide: 'हिन्दू पात्रो मार्गदर्शन',
         search: 'खोज्नुहोस्',
         noContent: 'अहिलेसम्म सामग्री छैन',
-        noContentCopy: 'Admin बाट जाँचिएको सामग्री थप्नुहोस् वा starter collection पुनर्स्थापित गर्नुहोस्।',
+        noContentCopy: 'एडमिनबाट जाँचिएको सामग्री थप्नुहोस् वा सुरुवाती संग्रह पुनर्स्थापित गर्नुहोस्।',
         loadingTitle: 'सामग्री लोड हुँदैछ',
         loadingMessage: 'भक्तिपूर्ण पुस्तकालय तयार हुँदैछ।',
         featuredInLibrary: 'पुस्तकालयमा',
@@ -466,3 +466,4 @@ export default function HomePage({
     </>
   );
 }
+

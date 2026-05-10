@@ -1,7 +1,8 @@
-import { useMemo, useState, type FormEvent, type ReactNode, type TextareaHTMLAttributes } from 'react';
+﻿import { useMemo, useState, type FormEvent, type ReactNode, type TextareaHTMLAttributes } from 'react';
 import { Download, Layers, ScrollText, Sparkles, Trash2, X } from 'lucide-react';
 import type { Category, Deity, HinduStory, PanchangContent, PoojaBidhi, Stotra } from '../../types';
 import type { CategoryInput, DeityInput, HinduStoryInput, PoojaBidhiInput, StotraInput } from '../../services/localContentService';
+import { getLocalizedCategoryName, getLocalizedContentTitle, getLocalizedDeityName, getLocalizedDeityType, getLocalizedPoojaTitle, getLocalizedText } from '../../utils/localization';
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -49,6 +50,9 @@ const textFromList = (items?: string[]) => (items || []).join('\n');
 const tagsFromText = (value: string) => value.split(',').map((item) => item.trim()).filter(Boolean);
 const tagsToText = (items?: string[]) => (items || []).join(', ');
 const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+type PickerOption = string | { value: string; label: string };
+const pickerValue = (option: PickerOption) => (typeof option === 'string' ? option : option.value);
+const pickerLabel = (option: PickerOption) => (typeof option === 'string' ? option : option.label);
 const adminLabels = {
   en: {
     save: 'Save',
@@ -120,75 +124,169 @@ const adminLabels = {
     publishing: 'Publishing...',
   },
   ne: {
-    save: 'सेभ गर्नुहोस्',
-    edit: 'सम्पादन',
-    delete: 'मेटाउनुहोस्',
-    search: 'खोज्नुहोस्',
-    deity: 'देवता',
-    category: 'श्रेणी',
-    meaning: 'अर्थ',
-    benefits: 'लाभ',
-    source: 'स्रोत',
-    tags: 'ट्यागहरू',
-    introduction: 'परिचय',
-    significance: 'महत्त्व',
-    mantra: 'मन्त्र',
-    process: 'पाठ गर्ने विधि',
-    logout: 'लगआउट',
-    export: 'JSON निर्यात',
-    import: 'JSON आयात',
-    reset: 'पूर्ववत् गर्नुहोस्',
-    publish: 'GitHub मा प्रकाशित गर्नुहोस्',
-    title: 'शीर्षक',
-    alternateTitle: 'वैकल्पिक शीर्षक',
-    name: 'नाम',
-    sanskritName: 'संस्कृत नाम',
-    imageUrl: 'तस्बिर URL वैकल्पिक',
-    contentFullText: 'पूरा पाठ',
-    wordMeaning: 'शब्दार्थ',
-    occasion: 'अवसर',
-    overview: 'सारांश',
-    materials: 'सामग्री',
-    steps: 'विधि',
-    cautions: 'सावधानीहरू',
-    description: 'विवरण',
-    commaSeparated: 'अल्पविरामले छुट्याउनुहोस्',
-    exportedJson: 'निर्यात गरिएको JSON वा आयात गर्ने JSON यहाँ राख्नुहोस्',
-    saving: 'सेभ हुँदैछ...',
-    create: 'सिर्जना गर्नुहोस्',
-    newItem: 'नयाँ',
-    typeNew: 'नयाँ लेख्नुहोस्',
-    noDeity: 'देवता छैन',
-    other: 'अन्य',
-    nepaliFields: 'नेपाली प्रदर्शन विवरण',
-    nameNe: 'नेपाली नाम',
-    titleNe: 'नेपाली शीर्षक',
-    alternateTitleNe: 'नेपाली वैकल्पिक शीर्षक',
-    introductionNe: 'नेपाली परिचय',
-    significanceNe: 'नेपाली महत्व',
-    descriptionNe: 'नेपाली विवरण',
-    meaningNe: 'नेपाली अर्थ',
-    wordMeaningNe: 'नेपाली शब्दार्थ',
-    benefitsNe: 'नेपाली लाभ',
-    processNe: 'नेपाली पाठ विधि',
-    occasionNe: 'नेपाली अवसर',
-    overviewNe: 'नेपाली सारांश',
-    materialsNe: 'नेपाली सामग्री',
-    stepsNe: 'नेपाली विधि',
-    cautionsNe: 'नेपाली सावधानीहरू',
-    deitiesProfiles: 'देवता / प्रोफाइल',
-    devotionalContent: 'भक्ति सामग्री',
-    poojaBidhi: 'पूजा विधि',
-    categories: 'श्रेणीहरू',
-    backupPublish: 'ब्याकअप र प्रकाशन',
-    saveDeity: 'देवता सेभ',
-    saveCategory: 'श्रेणी सेभ',
-    saveContent: 'भक्ति सामग्री सेभ',
-    savePooja: 'पूजा मार्गदर्शन सेभ',
-    clear: 'खाली',
-    publishing: 'प्रकाशन हुँदै...',
+    save: 'à¤¸à¥‡à¤­ à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+    edit: 'à¤¸à¤®à¥à¤ªà¤¾à¤¦à¤¨',
+    delete: 'à¤®à¥‡à¤Ÿà¤¾à¤‰à¤¨à¥à¤¹à¥‹à¤¸à¥',
+    search: 'à¤–à¥‹à¤œà¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+    deity: 'à¤¦à¥‡à¤µà¤¤à¤¾',
+    category: 'à¤¶à¥à¤°à¥‡à¤£à¥€',
+    meaning: 'à¤…à¤°à¥à¤¥',
+    benefits: 'à¤²à¤¾à¤­',
+    source: 'à¤¸à¥à¤°à¥‹à¤¤',
+    tags: 'à¤Ÿà¥à¤¯à¤¾à¤—à¤¹à¤°à¥‚',
+    introduction: 'à¤ªà¤°à¤¿à¤šà¤¯',
+    significance: 'à¤®à¤¹à¤¤à¥à¤¤à¥à¤µ',
+    mantra: 'à¤®à¤¨à¥à¤¤à¥à¤°',
+    process: 'à¤ªà¤¾à¤  à¤—à¤°à¥à¤¨à¥‡ à¤µà¤¿à¤§à¤¿',
+    logout: 'à¤²à¤—à¤†à¤‰à¤Ÿ',
+    export: 'JSON à¤¨à¤¿à¤°à¥à¤¯à¤¾à¤¤',
+    import: 'JSON à¤†à¤¯à¤¾à¤¤',
+    reset: 'à¤ªà¥‚à¤°à¥à¤µà¤µà¤¤à¥ à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+    publish: 'GitHub à¤®à¤¾ à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¿à¤¤ à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+    title: 'à¤¶à¥€à¤°à¥à¤·à¤•',
+    alternateTitle: 'à¤µà¥ˆà¤•à¤²à¥à¤ªà¤¿à¤• à¤¶à¥€à¤°à¥à¤·à¤•',
+    name: 'à¤¨à¤¾à¤®',
+    sanskritName: 'à¤¸à¤‚à¤¸à¥à¤•à¥ƒà¤¤ à¤¨à¤¾à¤®',
+    imageUrl: 'à¤¤à¤¸à¥à¤¬à¤¿à¤° URL à¤µà¥ˆà¤•à¤²à¥à¤ªà¤¿à¤•',
+    contentFullText: 'à¤ªà¥‚à¤°à¤¾ à¤ªà¤¾à¤ ',
+    wordMeaning: 'à¤¶à¤¬à¥à¤¦à¤¾à¤°à¥à¤¥',
+    occasion: 'à¤…à¤µà¤¸à¤°',
+    overview: 'à¤¸à¤¾à¤°à¤¾à¤‚à¤¶',
+    materials: 'à¤¸à¤¾à¤®à¤—à¥à¤°à¥€',
+    steps: 'à¤µà¤¿à¤§à¤¿',
+    cautions: 'à¤¸à¤¾à¤µà¤§à¤¾à¤¨à¥€à¤¹à¤°à¥‚',
+    description: 'à¤µà¤¿à¤µà¤°à¤£',
+    commaSeparated: 'à¤…à¤²à¥à¤ªà¤µà¤¿à¤°à¤¾à¤®à¤²à¥‡ à¤›à¥à¤Ÿà¥à¤¯à¤¾à¤‰à¤¨à¥à¤¹à¥‹à¤¸à¥',
+    exportedJson: 'à¤¨à¤¿à¤°à¥à¤¯à¤¾à¤¤ à¤—à¤°à¤¿à¤à¤•à¥‹ JSON à¤µà¤¾ à¤†à¤¯à¤¾à¤¤ à¤—à¤°à¥à¤¨à¥‡ JSON à¤¯à¤¹à¤¾à¤ à¤°à¤¾à¤–à¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+    saving: 'à¤¸à¥‡à¤­ à¤¹à¥à¤à¤¦à¥ˆà¤›...',
+    create: 'à¤¸à¤¿à¤°à¥à¤œà¤¨à¤¾ à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+    newItem: 'à¤¨à¤¯à¤¾à¤',
+    typeNew: 'à¤¨à¤¯à¤¾à¤ à¤²à¥‡à¤–à¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+    noDeity: 'à¤¦à¥‡à¤µà¤¤à¤¾ à¤›à¥ˆà¤¨',
+    other: 'à¤…à¤¨à¥à¤¯',
+    nepaliFields: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤ªà¥à¤°à¤¦à¤°à¥à¤¶à¤¨ à¤µà¤¿à¤µà¤°à¤£',
+    nameNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤¨à¤¾à¤®',
+    titleNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤¶à¥€à¤°à¥à¤·à¤•',
+    alternateTitleNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤µà¥ˆà¤•à¤²à¥à¤ªà¤¿à¤• à¤¶à¥€à¤°à¥à¤·à¤•',
+    introductionNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤ªà¤°à¤¿à¤šà¤¯',
+    significanceNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤®à¤¹à¤¤à¥à¤µ',
+    descriptionNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤µà¤¿à¤µà¤°à¤£',
+    meaningNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤…à¤°à¥à¤¥',
+    wordMeaningNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤¶à¤¬à¥à¤¦à¤¾à¤°à¥à¤¥',
+    benefitsNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤²à¤¾à¤­',
+    processNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤ªà¤¾à¤  à¤µà¤¿à¤§à¤¿',
+    occasionNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤…à¤µà¤¸à¤°',
+    overviewNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤¸à¤¾à¤°à¤¾à¤‚à¤¶',
+    materialsNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€',
+    stepsNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤µà¤¿à¤§à¤¿',
+    cautionsNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤¸à¤¾à¤µà¤§à¤¾à¤¨à¥€à¤¹à¤°à¥‚',
+    deitiesProfiles: 'à¤¦à¥‡à¤µà¤¤à¤¾ / à¤ªà¥à¤°à¥‹à¤«à¤¾à¤‡à¤²',
+    devotionalContent: 'à¤­à¤•à¥à¤¤à¤¿ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€',
+    poojaBidhi: 'à¤ªà¥‚à¤œà¤¾ à¤µà¤¿à¤§à¤¿',
+    categories: 'à¤¶à¥à¤°à¥‡à¤£à¥€à¤¹à¤°à¥‚',
+    backupPublish: 'à¤¬à¥à¤¯à¤¾à¤•à¤…à¤ª à¤° à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨',
+    saveDeity: 'à¤¦à¥‡à¤µà¤¤à¤¾ à¤¸à¥‡à¤­',
+    saveCategory: 'à¤¶à¥à¤°à¥‡à¤£à¥€ à¤¸à¥‡à¤­',
+    saveContent: 'à¤­à¤•à¥à¤¤à¤¿ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤¸à¥‡à¤­',
+    savePooja: 'à¤ªà¥‚à¤œà¤¾ à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤¨ à¤¸à¥‡à¤­',
+    clear: 'à¤–à¤¾à¤²à¥€',
+    publishing: 'à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨ à¤¹à¥à¤à¤¦à¥ˆ...',
   },
 } as const;
+
+function AdminFormActions({ isSaving, label, clearLabel, onCancel }: { isSaving: boolean; label: string; clearLabel: string; onCancel: () => void }) {
+  const savingLabel = label.includes('सेभ') ? 'सेभ हुँदैछ...' : 'Saving...';
+  return <div className="button-row"><button disabled={isSaving} className="action-button compact-save">{isSaving ? savingLabel : label}</button><button type="button" onClick={onCancel} className="secondary-button">{clearLabel}</button></div>;
+}
+
+function AdminPicker({ value, options, placeholder, optional = false, onChange, onCreate }: { value: string; options: PickerOption[]; placeholder: string; optional?: boolean; onChange: (value: string) => void; onCreate: (value: string) => void }) {
+  const hasMatchingOption = options.some((option) => sameName(pickerValue(option), value));
+  const [isCreating, setIsCreating] = useState(false);
+  const [draft, setDraft] = useState('');
+  const isNepali = /[\u0900-\u097F]/.test(placeholder);
+  const newLabel = isNepali ? `नयाँ ${placeholder}` : `New ${placeholder}`;
+  const cancelLabel = isNepali ? 'रद्द गर्नुहोस्' : 'Cancel';
+  const noDeityLabel = isNepali ? 'देवता छैन' : 'No deity';
+  const typeNewLabel = isNepali ? `नयाँ ${placeholder} लेख्नुहोस्` : `Type new ${placeholder.toLowerCase()}`;
+  const createLabel = isNepali ? 'सिर्जना गर्नुहोस्' : 'Create';
+  return (
+    <div className="picker-field compact-picker">
+      <select
+        className="admin-input compact-input admin-select"
+        value={hasMatchingOption ? value : ''}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setIsCreating(false);
+        }}
+      >
+        <option value="">{placeholder}</option>
+        {options.map((option) => <option key={pickerValue(option)} value={pickerValue(option)}>{pickerLabel(option)}</option>)}
+      </select>
+      <div className="button-row">
+        {optional && <button type="button" className="secondary-button" onClick={() => onChange('')}>{noDeityLabel}</button>}
+        {!isCreating ? (
+          <button type="button" className="secondary-button" onClick={() => { setDraft(''); setIsCreating(true); }}>
+            {newLabel}
+          </button>
+        ) : (
+          <button type="button" className="secondary-button" onClick={() => { setDraft(''); setIsCreating(false); }}>
+            {cancelLabel}
+          </button>
+        )}
+      </div>
+      {isCreating && (
+        <div className="button-row compact-create-row">
+          <input
+            className="admin-input compact-input"
+            placeholder={typeNewLabel}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+          <button
+            type="button"
+            className="action-button"
+            onClick={() => {
+              const next = draft.trim();
+              if (!next) return;
+              onCreate(next);
+              onChange(next);
+              setDraft('');
+              setIsCreating(false);
+            }}
+          >
+            {createLabel}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AdminRecordList({ title, toolbar, children }: { title: string; toolbar?: ReactNode; children: ReactNode }) {
+  return <section className="admin-card admin-list compact-list"><div className="section-header"><SectionTitle title={title} />{toolbar}</div><div className="record-list">{children}</div></section>;
+}
+
+function AdminRecord({ title, subtitle, editLabel = 'Edit', onEdit, onDelete }: { key?: string; title: string; subtitle: string; editLabel?: string; onEdit: () => void; onDelete: () => void }) {
+  const deleteLabel = editLabel === 'सम्पादन' ? `${title} मेटाउनुहोस्` : `Delete ${title}`;
+  return <article className="record-card compact-record"><div className="record-card-copy"><p className="record-title">{title}</p><p className="record-subtitle">{subtitle}</p></div><div className="record-actions"><button onClick={onEdit} className="secondary-button">{editLabel}</button><button onClick={onDelete} className="icon-button" aria-label={deleteLabel}><Trash2 size={16} /></button></div></article>;
+}
+
+function AdminBackupAction({ title, text, button }: { title: string; text: string; button: ReactNode }) {
+  return <section className="backup-section"><div><p className="backup-title">{title}</p><p className="body-copy">{text}</p></div>{button}</section>;
+}
+
+function AdminMessage({ tone, text, onDismiss }: { tone: 'success' | 'error' | 'neutral' | 'info'; text: string; onDismiss?: () => void }) {
+  return (
+    <div className={`message-banner message-${tone}`}>
+      <span>{text}</span>
+      {onDismiss && (
+        <button type="button" className="message-close" onClick={onDismiss} aria-label="Dismiss message">
+          <X size={14} />
+        </button>
+      )}
+    </div>
+  );
+}
 
 export default function AdminPanel({
   isOpen,
@@ -234,18 +332,18 @@ export default function AdminPanel({
   const labels = adminLabels[language];
   const ui = language === 'ne'
     ? {
-        kicker: 'स्थानीय सामग्री स्टुडियो',
-        title: 'Om Stotra Sagar सामग्री व्यवस्थापन',
-        subtitle: 'सेभ गर्दा यो ब्राउजरमा तुरुन्तै लेखिन्छ। GitHub मा प्रकाशन वैकल्पिक backend मार्फत मात्र हुन्छ।',
-        localActive: 'स्थानीय ब्राउजर सामग्री सक्रिय छ। तयार भएपछि निर्यात वा प्रकाशन गर्नुहोस्।',
-        instantSave: 'सेभ गर्दा यो ब्राउजरमा तुरुन्तै अपडेट हुन्छ। GitHub मा प्रकाशन वैकल्पिक र अलग छ।',
-        deityTitle: editing?.type === 'deities' ? 'देवता प्रोफाइल सम्पादन' : 'देवता प्रोफाइल थप्नुहोस्',
-        contentTitle: editing?.type === 'content' ? 'भक्तिपूर्ण सामग्री सम्पादन' : 'भक्तिपूर्ण सामग्री थप्नुहोस्',
-        poojaTitle: editing?.type === 'pooja' ? 'पूजा विधि सम्पादन' : 'पूजा विधि थप्नुहोस्',
-        categoryTitle: editing?.type === 'categories' ? 'श्रेणी सम्पादन' : 'श्रेणी थप्नुहोस्',
-        contentList: 'भक्तिपूर्ण सामग्री',
-        poojaList: 'पूजा विधि',
-        categoryList: 'श्रेणीहरू',
+        kicker: 'à¤¸à¥à¤¥à¤¾à¤¨à¥€à¤¯ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤¸à¥à¤Ÿà¥à¤¡à¤¿à¤¯à¥‹',
+        title: 'Om Stotra Sagar à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤µà¥à¤¯à¤µà¤¸à¥à¤¥à¤¾à¤ªà¤¨',
+        subtitle: 'à¤¸à¥‡à¤­ à¤—à¤°à¥à¤¦à¤¾ à¤¯à¥‹ à¤¬à¥à¤°à¤¾à¤‰à¤œà¤°à¤®à¤¾ à¤¤à¥à¤°à¥à¤¨à¥à¤¤à¥ˆ à¤²à¥‡à¤–à¤¿à¤¨à¥à¤›à¥¤ GitHub à¤®à¤¾ à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨ à¤µà¥ˆà¤•à¤²à¥à¤ªà¤¿à¤• backend à¤®à¤¾à¤°à¥à¤«à¤¤ à¤®à¤¾à¤¤à¥à¤° à¤¹à¥à¤¨à¥à¤›à¥¤',
+        localActive: 'à¤¸à¥à¤¥à¤¾à¤¨à¥€à¤¯ à¤¬à¥à¤°à¤¾à¤‰à¤œà¤° à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤¸à¤•à¥à¤°à¤¿à¤¯ à¤›à¥¤ à¤¤à¤¯à¤¾à¤° à¤­à¤à¤ªà¤›à¤¿ à¤¨à¤¿à¤°à¥à¤¯à¤¾à¤¤ à¤µà¤¾ à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨ à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥à¥¤',
+        instantSave: 'à¤¸à¥‡à¤­ à¤—à¤°à¥à¤¦à¤¾ à¤¯à¥‹ à¤¬à¥à¤°à¤¾à¤‰à¤œà¤°à¤®à¤¾ à¤¤à¥à¤°à¥à¤¨à¥à¤¤à¥ˆ à¤…à¤ªà¤¡à¥‡à¤Ÿ à¤¹à¥à¤¨à¥à¤›à¥¤ GitHub à¤®à¤¾ à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨ à¤µà¥ˆà¤•à¤²à¥à¤ªà¤¿à¤• à¤° à¤…à¤²à¤— à¤›à¥¤',
+        deityTitle: editing?.type === 'deities' ? 'à¤¦à¥‡à¤µà¤¤à¤¾ à¤ªà¥à¤°à¥‹à¤«à¤¾à¤‡à¤² à¤¸à¤®à¥à¤ªà¤¾à¤¦à¤¨' : 'à¤¦à¥‡à¤µà¤¤à¤¾ à¤ªà¥à¤°à¥‹à¤«à¤¾à¤‡à¤² à¤¥à¤ªà¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+        contentTitle: editing?.type === 'content' ? 'à¤­à¤•à¥à¤¤à¤¿à¤ªà¥‚à¤°à¥à¤£ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤¸à¤®à¥à¤ªà¤¾à¤¦à¤¨' : 'à¤­à¤•à¥à¤¤à¤¿à¤ªà¥‚à¤°à¥à¤£ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤¥à¤ªà¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+        poojaTitle: editing?.type === 'pooja' ? 'à¤ªà¥‚à¤œà¤¾ à¤µà¤¿à¤§à¤¿ à¤¸à¤®à¥à¤ªà¤¾à¤¦à¤¨' : 'à¤ªà¥‚à¤œà¤¾ à¤µà¤¿à¤§à¤¿ à¤¥à¤ªà¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+        categoryTitle: editing?.type === 'categories' ? 'à¤¶à¥à¤°à¥‡à¤£à¥€ à¤¸à¤®à¥à¤ªà¤¾à¤¦à¤¨' : 'à¤¶à¥à¤°à¥‡à¤£à¥€ à¤¥à¤ªà¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+        contentList: 'à¤­à¤•à¥à¤¤à¤¿à¤ªà¥‚à¤°à¥à¤£ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€',
+        poojaList: 'à¤ªà¥‚à¤œà¤¾ à¤µà¤¿à¤§à¤¿',
+        categoryList: 'à¤¶à¥à¤°à¥‡à¤£à¥€à¤¹à¤°à¥‚',
       }
     : {
         kicker: 'Local Content Studio',
@@ -285,22 +383,22 @@ export default function AdminPanel({
   const duplicateDeity = (name: string, id?: string) => deities.some((item) => item.id !== id && sameName(item.name, name));
   const duplicateCategory = (name: string, id?: string) => categories.some((item) => item.id !== id && sameName(item.name, name));
   const noticeText = {
-    nameRequired: language === 'ne' ? 'नाम अनिवार्य छ।' : 'Name is required.',
-    deityDuplicate: language === 'ne' ? 'यो नामको देवता पहिले नै छ।' : 'A deity with this name already exists.',
-    deitySaved: language === 'ne' ? 'देवता प्रोफाइल स्थानीय रूपमा सेभ भयो।' : 'Deity profile saved locally.',
-    contentRequired: language === 'ne' ? 'शीर्षक, देवता, श्रेणी र पूरा पाठ अनिवार्य छन्।' : 'Title, deity, category, and full text are required.',
-    titleLength: language === 'ne' ? 'शीर्षक १२० अक्षर वा कम हुनुपर्छ।' : 'Title must be 120 characters or fewer.',
-    contentLength: language === 'ne' ? 'सामग्री ५००० अक्षर वा कम हुनुपर्छ।' : 'Content must be 5000 characters or fewer.',
-    meaningLength: language === 'ne' ? 'अर्थ ३००० अक्षर वा कम हुनुपर्छ।' : 'Meaning must be 3000 characters or fewer.',
-    benefitsLength: language === 'ne' ? 'लाभ १००० अक्षर वा कम हुनुपर्छ।' : 'Benefits must be 1000 characters or fewer.',
-    contentSaved: language === 'ne' ? 'भक्तिपूर्ण सामग्री यो ब्राउजरमा सेभ भयो।' : 'Devotional content saved to this browser.',
-    poojaRequired: language === 'ne' ? 'शीर्षक, देवता र सारांश अनिवार्य छन्।' : 'Title, deity, and overview are required.',
-    poojaSaved: language === 'ne' ? 'पूजा विधि यो ब्राउजरमा सेभ भयो।' : 'Pooja Bidhi saved to this browser.',
-    storyRequired: language === 'ne' ? 'शीर्षक, सारांश र कथा अनिवार्य छन्।' : 'Title, summary, and story are required.',
-    storySaved: language === 'ne' ? 'कथा यो ब्राउजरमा सेभ भयो।' : 'Story saved to this browser.',
-    categoryRequired: language === 'ne' ? 'श्रेणी नाम अनिवार्य छ।' : 'Category name is required.',
-    categoryDuplicate: language === 'ne' ? 'यो नामको श्रेणी पहिले नै छ।' : 'A category with this name already exists.',
-    categorySaved: language === 'ne' ? 'श्रेणी स्थानीय रूपमा सेभ भयो।' : 'Category saved locally.',
+    nameRequired: language === 'ne' ? 'à¤¨à¤¾à¤® à¤…à¤¨à¤¿à¤µà¤¾à¤°à¥à¤¯ à¤›à¥¤' : 'Name is required.',
+    deityDuplicate: language === 'ne' ? 'à¤¯à¥‹ à¤¨à¤¾à¤®à¤•à¥‹ à¤¦à¥‡à¤µà¤¤à¤¾ à¤ªà¤¹à¤¿à¤²à¥‡ à¤¨à¥ˆ à¤›à¥¤' : 'A deity with this name already exists.',
+    deitySaved: language === 'ne' ? 'à¤¦à¥‡à¤µà¤¤à¤¾ à¤ªà¥à¤°à¥‹à¤«à¤¾à¤‡à¤² à¤¸à¥à¤¥à¤¾à¤¨à¥€à¤¯ à¤°à¥‚à¤ªà¤®à¤¾ à¤¸à¥‡à¤­ à¤­à¤¯à¥‹à¥¤' : 'Deity profile saved locally.',
+    contentRequired: language === 'ne' ? 'à¤¶à¥€à¤°à¥à¤·à¤•, à¤¦à¥‡à¤µà¤¤à¤¾, à¤¶à¥à¤°à¥‡à¤£à¥€ à¤° à¤ªà¥‚à¤°à¤¾ à¤ªà¤¾à¤  à¤…à¤¨à¤¿à¤µà¤¾à¤°à¥à¤¯ à¤›à¤¨à¥à¥¤' : 'Title, deity, category, and full text are required.',
+    titleLength: language === 'ne' ? 'à¤¶à¥€à¤°à¥à¤·à¤• à¥§à¥¨à¥¦ à¤…à¤•à¥à¤·à¤° à¤µà¤¾ à¤•à¤® à¤¹à¥à¤¨à¥à¤ªà¤°à¥à¤›à¥¤' : 'Title must be 120 characters or fewer.',
+    contentLength: language === 'ne' ? 'à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¥«à¥¦à¥¦à¥¦ à¤…à¤•à¥à¤·à¤° à¤µà¤¾ à¤•à¤® à¤¹à¥à¤¨à¥à¤ªà¤°à¥à¤›à¥¤' : 'Content must be 5000 characters or fewer.',
+    meaningLength: language === 'ne' ? 'à¤…à¤°à¥à¤¥ à¥©à¥¦à¥¦à¥¦ à¤…à¤•à¥à¤·à¤° à¤µà¤¾ à¤•à¤® à¤¹à¥à¤¨à¥à¤ªà¤°à¥à¤›à¥¤' : 'Meaning must be 3000 characters or fewer.',
+    benefitsLength: language === 'ne' ? 'à¤²à¤¾à¤­ à¥§à¥¦à¥¦à¥¦ à¤…à¤•à¥à¤·à¤° à¤µà¤¾ à¤•à¤® à¤¹à¥à¤¨à¥à¤ªà¤°à¥à¤›à¥¤' : 'Benefits must be 1000 characters or fewer.',
+    contentSaved: language === 'ne' ? 'à¤­à¤•à¥à¤¤à¤¿à¤ªà¥‚à¤°à¥à¤£ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤¯à¥‹ à¤¬à¥à¤°à¤¾à¤‰à¤œà¤°à¤®à¤¾ à¤¸à¥‡à¤­ à¤­à¤¯à¥‹à¥¤' : 'Devotional content saved to this browser.',
+    poojaRequired: language === 'ne' ? 'à¤¶à¥€à¤°à¥à¤·à¤•, à¤¦à¥‡à¤µà¤¤à¤¾ à¤° à¤¸à¤¾à¤°à¤¾à¤‚à¤¶ à¤…à¤¨à¤¿à¤µà¤¾à¤°à¥à¤¯ à¤›à¤¨à¥à¥¤' : 'Title, deity, and overview are required.',
+    poojaSaved: language === 'ne' ? 'à¤ªà¥‚à¤œà¤¾ à¤µà¤¿à¤§à¤¿ à¤¯à¥‹ à¤¬à¥à¤°à¤¾à¤‰à¤œà¤°à¤®à¤¾ à¤¸à¥‡à¤­ à¤­à¤¯à¥‹à¥¤' : 'Pooja Bidhi saved to this browser.',
+    storyRequired: language === 'ne' ? 'à¤¶à¥€à¤°à¥à¤·à¤•, à¤¸à¤¾à¤°à¤¾à¤‚à¤¶ à¤° à¤•à¤¥à¤¾ à¤…à¤¨à¤¿à¤µà¤¾à¤°à¥à¤¯ à¤›à¤¨à¥à¥¤' : 'Title, summary, and story are required.',
+    storySaved: language === 'ne' ? 'à¤•à¤¥à¤¾ à¤¯à¥‹ à¤¬à¥à¤°à¤¾à¤‰à¤œà¤°à¤®à¤¾ à¤¸à¥‡à¤­ à¤­à¤¯à¥‹à¥¤' : 'Story saved to this browser.',
+    categoryRequired: language === 'ne' ? 'à¤¶à¥à¤°à¥‡à¤£à¥€ à¤¨à¤¾à¤® à¤…à¤¨à¤¿à¤µà¤¾à¤°à¥à¤¯ à¤›à¥¤' : 'Category name is required.',
+    categoryDuplicate: language === 'ne' ? 'à¤¯à¥‹ à¤¨à¤¾à¤®à¤•à¥‹ à¤¶à¥à¤°à¥‡à¤£à¥€ à¤ªà¤¹à¤¿à¤²à¥‡ à¤¨à¥ˆ à¤›à¥¤' : 'A category with this name already exists.',
+    categorySaved: language === 'ne' ? 'à¤¶à¥à¤°à¥‡à¤£à¥€ à¤¸à¥à¤¥à¤¾à¤¨à¥€à¤¯ à¤°à¥‚à¤ªà¤®à¤¾ à¤¸à¥‡à¤­ à¤­à¤¯à¥‹à¥¤' : 'Category saved locally.',
   };
 
   const submitDeity = (event: FormEvent) => {
@@ -375,7 +473,7 @@ export default function AdminPanel({
   const deleteDeity = (deity: Deity) => {
     const hasRelated = stotras.some((item) => item.deity === deity.name) || poojaBidhi.some((item) => item.deity === deity.name) || stories.some((item) => item.deity === deity.name);
     const warning = language === 'ne'
-      ? (hasRelated ? 'यो देवतासँग सम्बन्धित सामग्री छ। मेटाउँदा ती सामग्री छुट्टिन सक्छन्। तैपनि मेटाउने?' : `${deity.name} मेटाउने?`)
+      ? (hasRelated ? 'à¤¯à¥‹ à¤¦à¥‡à¤µà¤¤à¤¾à¤¸à¤à¤— à¤¸à¤®à¥à¤¬à¤¨à¥à¤§à¤¿à¤¤ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤›à¥¤ à¤®à¥‡à¤Ÿà¤¾à¤‰à¤à¤¦à¤¾ à¤¤à¥€ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤›à¥à¤Ÿà¥à¤Ÿà¤¿à¤¨ à¤¸à¤•à¥à¤›à¤¨à¥à¥¤ à¤¤à¥ˆà¤ªà¤¨à¤¿ à¤®à¥‡à¤Ÿà¤¾à¤‰à¤¨à¥‡?' : `${deity.name} à¤®à¥‡à¤Ÿà¤¾à¤‰à¤¨à¥‡?`)
       : (hasRelated ? 'This deity has related content. Deleting it may orphan related items. Delete anyway?' : `Delete ${deity.name}?`);
     if (confirm(warning)) onDeleteDeity(deity.id);
   };
@@ -383,7 +481,7 @@ export default function AdminPanel({
   const deleteCategory = (category: Category) => {
     const used = stotras.some((item) => item.category === category.name);
     const warning = language === 'ne'
-      ? (used ? 'यो श्रेणी भक्तिपूर्ण सामग्रीमा प्रयोग भएको छ। मेटाउँदा सम्बन्धित सामग्री छुट्टिन सक्छ। तैपनि मेटाउने?' : `${category.name} मेटाउने?`)
+      ? (used ? 'à¤¯à¥‹ à¤¶à¥à¤°à¥‡à¤£à¥€ à¤­à¤•à¥à¤¤à¤¿à¤ªà¥‚à¤°à¥à¤£ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€à¤®à¤¾ à¤ªà¥à¤°à¤¯à¥‹à¤— à¤­à¤à¤•à¥‹ à¤›à¥¤ à¤®à¥‡à¤Ÿà¤¾à¤‰à¤à¤¦à¤¾ à¤¸à¤®à¥à¤¬à¤¨à¥à¤§à¤¿à¤¤ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤›à¥à¤Ÿà¥à¤Ÿà¤¿à¤¨ à¤¸à¤•à¥à¤›à¥¤ à¤¤à¥ˆà¤ªà¤¨à¤¿ à¤®à¥‡à¤Ÿà¤¾à¤‰à¤¨à¥‡?' : `${category.name} à¤®à¥‡à¤Ÿà¤¾à¤‰à¤¨à¥‡?`)
       : (used ? 'This category is used by devotional content. Deleting it may orphan related items. Delete anyway?' : `Delete ${category.name}?`);
     if (confirm(warning)) onDeleteCategory(category.id);
   };
@@ -413,14 +511,14 @@ export default function AdminPanel({
         <div className="admin-body compact-admin-body">
           <div className="admin-banner-stack">
             {!dismissedAlerts[`info:${ui.instantSave}`] && (
-              <Message
+              <AdminMessage
                 tone="info"
                 text={ui.instantSave}
                 onDismiss={() => setDismissedAlerts((prev) => ({ ...prev, [`info:${ui.instantSave}`]: true }))}
               />
             )}
             {localContentActive && !dismissedAlerts[`neutral:${ui.localActive}`] && (
-              <Message
+              <AdminMessage
                 tone="neutral"
                 text={ui.localActive}
                 onDismiss={() => setDismissedAlerts((prev) => ({ ...prev, [`neutral:${ui.localActive}`]: true }))}
@@ -428,13 +526,13 @@ export default function AdminPanel({
             )}
           </div>
           {message && !dismissedAlerts[`success:${message}`] && (
-            <Message tone="success" text={message} onDismiss={() => setDismissedAlerts((prev) => ({ ...prev, [`success:${message}`]: true }))} />
+            <AdminMessage tone="success" text={message} onDismiss={() => setDismissedAlerts((prev) => ({ ...prev, [`success:${message}`]: true }))} />
           )}
           {errorMessage && !dismissedAlerts[`error:${errorMessage}`] && (
-            <Message tone="error" text={errorMessage} onDismiss={() => setDismissedAlerts((prev) => ({ ...prev, [`error:${errorMessage}`]: true }))} />
+            <AdminMessage tone="error" text={errorMessage} onDismiss={() => setDismissedAlerts((prev) => ({ ...prev, [`error:${errorMessage}`]: true }))} />
           )}
           {notice && !dismissedAlerts[`neutral:${notice}`] && (
-            <Message tone="neutral" text={notice} onDismiss={() => setDismissedAlerts((prev) => ({ ...prev, [`neutral:${notice}`]: true }))} />
+            <AdminMessage tone="neutral" text={notice} onDismiss={() => setDismissedAlerts((prev) => ({ ...prev, [`neutral:${notice}`]: true }))} />
           )}
 
           {tab === 'deities' && (
@@ -442,7 +540,7 @@ export default function AdminPanel({
               <form onSubmit={submitDeity} className="admin-card compact-form">
                 <SectionTitle title={ui.deityTitle} />
                 <input className="admin-input compact-input" placeholder={labels.name} value={deityForm.name} onChange={(e) => setDeityForm((p) => ({ ...p, name: e.target.value }))} />
-                <select className="admin-input compact-input" value={deityForm.type || 'Other'} onChange={(e) => setDeityForm((p) => ({ ...p, type: e.target.value as Deity['type'] }))}>{deityTypes.map((type) => <option key={type} value={type}>{language === 'ne' ? ({ God: 'देवता', Goddess: 'देवी', Form: 'स्वरूप', Other: 'अन्य' } as Record<string, string>)[type] : type}</option>)}</select>
+                <select className="admin-input compact-input" value={deityForm.type || 'Other'} onChange={(e) => setDeityForm((p) => ({ ...p, type: e.target.value as Deity['type'] }))}>{deityTypes.map((type) => <option key={type} value={type}>{language === 'ne' ? ({ God: 'à¤¦à¥‡à¤µà¤¤à¤¾', Goddess: 'à¤¦à¥‡à¤µà¥€', Form: 'à¤¸à¥à¤µà¤°à¥‚à¤ª', Other: 'à¤…à¤¨à¥à¤¯' } as Record<string, string>)[type] : type}</option>)}</select>
                 <input className="admin-input compact-input" placeholder={labels.sanskritName} value={deityForm.sanskritName || ''} onChange={(e) => setDeityForm((p) => ({ ...p, sanskritName: e.target.value }))} />
                 <input className="admin-input compact-input" placeholder={labels.imageUrl} value={deityForm.imageUrl || ''} onChange={(e) => setDeityForm((p) => ({ ...p, imageUrl: e.target.value }))} />
                 <textarea className="admin-input compact-textarea" rows={7} placeholder={labels.introduction} value={deityForm.introduction || deityForm.description || ''} onChange={(e) => setDeityForm((p) => ({ ...p, introduction: e.target.value, description: e.target.value }))} />
@@ -455,9 +553,9 @@ export default function AdminPanel({
                   <textarea className="admin-input compact-textarea" rows={4} placeholder={labels.significanceNe} value={deityForm.significanceNe || ''} onChange={(e) => setDeityForm((p) => ({ ...p, significanceNe: e.target.value }))} />
                 </details>
                 <input className="admin-input compact-input" placeholder={`${labels.tags}, ${labels.commaSeparated}`} value={tagsToText(deityForm.tags)} onChange={(e) => setDeityForm((p) => ({ ...p, tags: tagsFromText(e.target.value) }))} />
-                <FormActions isSaving={isSaving} label={labels.saveDeity} clearLabel={labels.clear} onCancel={() => { setDeityForm(emptyDeity); setEditing(null); }} />
+                <AdminFormActions isSaving={isSaving} label={labels.saveDeity} clearLabel={labels.clear} onCancel={() => { setDeityForm(emptyDeity); setEditing(null); }} />
               </form>
-              <RecordList title={labels.deitiesProfiles}>{deities.map((deity) => <Record key={deity.id} title={deity.name} subtitle={`${deity.type || 'Other'} - ${deity.introduction || deity.description}`} editLabel={labels.edit} onEdit={() => { setDeityForm({ ...deity, introduction: deity.introduction || deity.description }); setEditing({ type: 'deities', id: deity.id }); }} onDelete={() => deleteDeity(deity)} />)}</RecordList>
+              <AdminRecordList title={labels.deitiesProfiles}>{deities.map((deity) => <AdminRecord key={deity.id} title={getLocalizedDeityName(deity, language)} subtitle={`${getLocalizedDeityType(deity, language)} - ${getLocalizedText(language, deity.introductionNe, deity.introduction || deity.description)}`} editLabel={labels.edit} onEdit={() => { setDeityForm({ ...deity, introduction: deity.introduction || deity.description }); setEditing({ type: 'deities', id: deity.id }); }} onDelete={() => deleteDeity(deity)} />)}</AdminRecordList>
             </div>
           )}
 
@@ -470,8 +568,8 @@ export default function AdminPanel({
                   <span className={`char-count ${contentForm.title.length > 120 ? 'char-count-error' : ''}`}>{contentForm.title.length} / 120</span>
                 </div>
                 <input className="admin-input compact-input" placeholder={labels.alternateTitle} value={contentForm.alternateTitle || ''} onChange={(e) => setContentForm((p) => ({ ...p, alternateTitle: e.target.value }))} />
-                <Picker value={contentForm.deity} options={deities.map((d) => d.name)} placeholder={labels.deity} onChange={(value) => setContentForm((p) => ({ ...p, deity: value }))} onCreate={(name) => { const saved = onSaveDeity({ ...emptyDeity, name, introduction: language === 'ne' ? `${name} को परिचय।` : `${name} profile introduction.`, description: language === 'ne' ? `${name} को परिचय।` : `${name} profile introduction.`, significance: language === 'ne' ? 'प्रकाशनअघि महत्व थप्नुहोस्।' : 'Add significance before publishing.', tags: [name.toLowerCase()] }); if (saved) setContentForm((p) => ({ ...p, deity: saved.name })); }} />
-                <Picker value={contentForm.category} options={categories.map((c) => c.name)} placeholder={labels.category} onChange={(value) => setContentForm((p) => ({ ...p, category: value }))} onCreate={(name) => { const saved = onSaveCategory({ name, description: '' }); if (saved) setContentForm((p) => ({ ...p, category: saved.name })); }} />
+                <AdminPicker value={contentForm.deity} options={deities.map((d) => ({ value: d.name, label: getLocalizedDeityName(d, language) }))} placeholder={labels.deity} onChange={(value) => setContentForm((p) => ({ ...p, deity: value }))} onCreate={(name) => { const saved = onSaveDeity({ ...emptyDeity, name, nameNe: language === 'ne' ? name : undefined, introduction: language === 'ne' ? `${name} ?? ??????` : `${name} profile introduction.`, introductionNe: language === 'ne' ? `${name} ?? ??????` : undefined, description: language === 'ne' ? `${name} ?? ??????` : `${name} profile introduction.`, significance: language === 'ne' ? '?????????? ????? ??????????' : 'Add significance before publishing.', significanceNe: language === 'ne' ? '?????????? ????? ??????????' : undefined, tags: [name.toLowerCase()] }); if (saved) setContentForm((p) => ({ ...p, deity: saved.name })); }} />
+                <AdminPicker value={contentForm.category} options={categories.map((c) => ({ value: c.name, label: getLocalizedCategoryName(c, language) }))} placeholder={labels.category} onChange={(value) => setContentForm((p) => ({ ...p, category: value }))} onCreate={(name) => { const saved = onSaveCategory({ name, nameNe: language === 'ne' ? name : undefined, description: '', descriptionNe: language === 'ne' ? '?????? ?????' : undefined }); if (saved) setContentForm((p) => ({ ...p, category: saved.name })); }} />
                 <input className="admin-input compact-input" placeholder={labels.imageUrl} value={contentForm.imageUrl || ''} onChange={(e) => setContentForm((p) => ({ ...p, imageUrl: e.target.value }))} />
                 <CharCountTextarea label={labels.contentFullText} required maxLength={5000} rows={14} placeholder={labels.contentFullText} value={contentForm.content} onChange={(e) => setContentForm((p) => ({ ...p, content: e.target.value }))} />
                 <CharCountTextarea label={labels.meaning} maxLength={3000} rows={5} placeholder={labels.meaning} value={contentForm.meaning || contentForm.nepaliMeaning || ''} onChange={(e) => setContentForm((p) => ({ ...p, meaning: e.target.value, nepaliMeaning: e.target.value }))} />
@@ -489,9 +587,9 @@ export default function AdminPanel({
                 </details>
                 <input className="admin-input compact-input" placeholder={labels.source} value={contentForm.source || ''} onChange={(e) => setContentForm((p) => ({ ...p, source: e.target.value }))} />
                 <input className="admin-input compact-input" placeholder={`${labels.tags}, ${labels.commaSeparated}`} value={tagsToText(contentForm.tags)} onChange={(e) => setContentForm((p) => ({ ...p, tags: tagsFromText(e.target.value) }))} />
-                <FormActions isSaving={isSaving} label={labels.saveContent} clearLabel={labels.clear} onCancel={() => { setContentForm(emptyContent); setEditing(null); }} />
+                <AdminFormActions isSaving={isSaving} label={labels.saveContent} clearLabel={labels.clear} onCancel={() => { setContentForm(emptyContent); setEditing(null); }} />
               </form>
-              <RecordList title={ui.contentList} toolbar={<input className="admin-input compact-input" placeholder={labels.search} value={query} onChange={(e) => setQuery(e.target.value)} />}>{filteredContent.map((item) => <Record key={item.id} title={item.title} subtitle={`${item.deity} - ${item.category}`} editLabel={labels.edit} onEdit={() => { setContentForm({ ...item, meaning: item.meaning || item.nepaliMeaning }); setEditing({ type: 'content', id: item.id }); }} onDelete={() => { if (confirm(language === 'ne' ? `${item.title} मेटाउने?` : `Delete ${item.title}?`)) onDeleteStotra(item.id); }} />)}</RecordList>
+              <AdminRecordList title={ui.contentList} toolbar={<input className="admin-input compact-input" placeholder={labels.search} value={query} onChange={(e) => setQuery(e.target.value)} />}>{filteredContent.map((item) => <AdminRecord key={item.id} title={getLocalizedContentTitle(item, language)} subtitle={`${getLocalizedDeityName(item.deityNe || item.deity, language)} - ${getLocalizedCategoryName(item.categoryNe || item.category, language)}`} editLabel={labels.edit} onEdit={() => { setContentForm({ ...item, meaning: item.meaning || item.nepaliMeaning }); setEditing({ type: 'content', id: item.id }); }} onDelete={() => { if (confirm(language === 'ne' ? `${getLocalizedContentTitle(item, language)} ????????` : `Delete ${item.title}?`)) onDeleteStotra(item.id); }} />)}</AdminRecordList>
             </div>
           )}
 
@@ -500,7 +598,7 @@ export default function AdminPanel({
               <form onSubmit={submitPooja} className="admin-card compact-form">
                 <SectionTitle title={ui.poojaTitle} />
                 <input className="admin-input compact-input" placeholder={labels.title} value={poojaForm.title} onChange={(e) => setPoojaForm((p) => ({ ...p, title: e.target.value }))} />
-                <Picker value={poojaForm.deity} options={deities.map((d) => d.name)} placeholder={labels.deity} onChange={(value) => setPoojaForm((p) => ({ ...p, deity: value }))} onCreate={(name) => { const saved = onSaveDeity({ ...emptyDeity, name, introduction: language === 'ne' ? `${name} को परिचय।` : `${name} profile introduction.`, description: language === 'ne' ? `${name} को परिचय।` : `${name} profile introduction.`, significance: language === 'ne' ? 'प्रकाशनअघि महत्व थप्नुहोस्।' : 'Add significance before publishing.', tags: [name.toLowerCase()] }); if (saved) setPoojaForm((p) => ({ ...p, deity: saved.name })); }} />
+                <AdminPicker value={poojaForm.deity} options={deities.map((d) => ({ value: d.name, label: getLocalizedDeityName(d, language) }))} placeholder={labels.deity} onChange={(value) => setPoojaForm((p) => ({ ...p, deity: value }))} onCreate={(name) => { const saved = onSaveDeity({ ...emptyDeity, name, nameNe: language === 'ne' ? name : undefined, introduction: language === 'ne' ? `${name} ?? ??????` : `${name} profile introduction.`, introductionNe: language === 'ne' ? `${name} ?? ??????` : undefined, description: language === 'ne' ? `${name} ?? ??????` : `${name} profile introduction.`, significance: language === 'ne' ? '?????????? ????? ??????????' : 'Add significance before publishing.', significanceNe: language === 'ne' ? '?????????? ????? ??????????' : undefined, tags: [name.toLowerCase()] }); if (saved) setPoojaForm((p) => ({ ...p, deity: saved.name })); }} />
                 <input className="admin-input compact-input" placeholder={labels.occasion} value={poojaForm.occasion} onChange={(e) => setPoojaForm((p) => ({ ...p, occasion: e.target.value }))} />
                 <textarea className="admin-input compact-textarea" rows={5} placeholder={labels.overview} value={poojaForm.overview} onChange={(e) => setPoojaForm((p) => ({ ...p, overview: e.target.value }))} />
                 <textarea className="admin-input compact-textarea" rows={7} placeholder={labels.materials} value={poojaText.materials} onChange={(e) => setPoojaText((p) => ({ ...p, materials: e.target.value }))} />
@@ -519,9 +617,9 @@ export default function AdminPanel({
                 </details>
                 <input className="admin-input compact-input" placeholder={labels.source} value={poojaForm.source || ''} onChange={(e) => setPoojaForm((p) => ({ ...p, source: e.target.value }))} />
                 <input className="admin-input compact-input" placeholder={`${labels.tags}, ${labels.commaSeparated}`} value={tagsToText(poojaForm.tags)} onChange={(e) => setPoojaForm((p) => ({ ...p, tags: tagsFromText(e.target.value) }))} />
-                <FormActions isSaving={isSaving} label={labels.savePooja} clearLabel={labels.clear} onCancel={() => { setPoojaForm(emptyPooja); setPoojaText({ materials: '', steps: '', benefits: '', materialsNe: '', stepsNe: '', benefitsNe: '' }); setEditing(null); }} />
+                <AdminFormActions isSaving={isSaving} label={labels.savePooja} clearLabel={labels.clear} onCancel={() => { setPoojaForm(emptyPooja); setPoojaText({ materials: '', steps: '', benefits: '', materialsNe: '', stepsNe: '', benefitsNe: '' }); setEditing(null); }} />
               </form>
-              <RecordList title={ui.poojaList}>{poojaBidhi.map((item) => <Record key={item.id} title={item.title} subtitle={`${item.deity} - ${item.occasion}`} editLabel={labels.edit} onEdit={() => { resetPoojaForm(item); setEditing({ type: 'pooja', id: item.id }); }} onDelete={() => { if (confirm(language === 'ne' ? `${item.title} मेटाउने?` : `Delete ${item.title}?`)) onDeletePoojaBidhi(item.id); }} />)}</RecordList>
+              <AdminRecordList title={ui.poojaList}>{poojaBidhi.map((item) => <AdminRecord key={item.id} title={getLocalizedPoojaTitle(item, language)} subtitle={`${getLocalizedDeityName(item.deityNe || item.deity, language)} - ${getLocalizedText(language, item.occasionNe, item.occasion)}`} editLabel={labels.edit} onEdit={() => { resetPoojaForm(item); setEditing({ type: 'pooja', id: item.id }); }} onDelete={() => { if (confirm(language === 'ne' ? `${getLocalizedPoojaTitle(item, language)} ????????` : `Delete ${item.title}?`)) onDeletePoojaBidhi(item.id); }} />)}</AdminRecordList>
             </div>
           )}
 
@@ -536,9 +634,9 @@ export default function AdminPanel({
                   <input className="admin-input compact-input" placeholder={labels.nameNe} value={categoryForm.nameNe || ''} onChange={(e) => setCategoryForm((p) => ({ ...p, nameNe: e.target.value }))} />
                   <textarea className="admin-input compact-textarea" rows={4} placeholder={labels.descriptionNe} value={categoryForm.descriptionNe || ''} onChange={(e) => setCategoryForm((p) => ({ ...p, descriptionNe: e.target.value }))} />
                 </details>
-                <FormActions isSaving={isSaving} label={labels.saveCategory} clearLabel={labels.clear} onCancel={() => { setCategoryForm(emptyCategory); setEditing(null); }} />
+                <AdminFormActions isSaving={isSaving} label={labels.saveCategory} clearLabel={labels.clear} onCancel={() => { setCategoryForm(emptyCategory); setEditing(null); }} />
               </form>
-              <RecordList title={ui.categoryList}>{categories.map((category) => <Record key={category.id} title={category.name} subtitle={category.description || ''} editLabel={labels.edit} onEdit={() => { setCategoryForm(category); setEditing({ type: 'categories', id: category.id }); }} onDelete={() => deleteCategory(category)} />)}</RecordList>
+              <AdminRecordList title={ui.categoryList}>{categories.map((category) => <AdminRecord key={category.id} title={getLocalizedCategoryName(category, language)} subtitle={getLocalizedText(language, category.descriptionNe, category.description)} editLabel={labels.edit} onEdit={() => { setCategoryForm(category); setEditing({ type: 'categories', id: category.id }); }} onDelete={() => deleteCategory(category)} />)}</AdminRecordList>
             </div>
           )}
 
@@ -546,13 +644,13 @@ export default function AdminPanel({
             <div className="admin-tools-grid">
               <div className="admin-card backup-card compact-form">
                 <SectionTitle title={labels.backupPublish} />
-                <BackupAction title={labels.export} text={language === 'ne' ? 'ब्याकअप मात्र। सामान्य सम्पादनका लागि निर्यात आवश्यक छैन।' : 'Backup only. Normal editing does not require export.'} button={<button onClick={() => { setJsonText(onExportAllContent()); setNotice(language === 'ne' ? 'सामग्री तलको बाकसमा निर्यात गरियो।' : 'Content exported to the box below.'); }} className="action-button">{labels.export}</button>} />
-                <BackupAction title={labels.import} text={language === 'ne' ? 'यो ब्राउजरमा ब्याकअप पुनर्स्थापित गर्नुहोस्।' : 'Restore a backup into this browser.'} button={<button onClick={() => onImportAllContent(jsonText) && setNotice(language === 'ne' ? 'सामग्री स्थानीय रूपमा आयात गरियो।' : 'Content imported locally.')} className="secondary-button">{labels.import}</button>} />
-                <BackupAction title={labels.reset} text={language === 'ne' ? 'पुष्टि पछि bundled defaults पुनर्स्थापित हुन्छ।' : 'Restores bundled defaults after confirmation.'} button={<button onClick={() => { if (confirm(language === 'ne' ? 'सबै स्थानीय सामग्रीलाई डिफल्टमा फर्काउने?' : 'Reset all local content to defaults?')) onResetToDefaultContent(); }} className="secondary-button danger-button">{labels.reset}</button>} />
-                <BackupAction title={labels.publish} text={language === 'ne' ? 'Netlify Functions मार्फत वैकल्पिक रिमोट प्रकाशन।' : 'Optional remote publishing through Netlify Functions.'} button={<button onClick={onPublishContent} disabled={isSaving} className="secondary-button">{isSaving ? labels.publishing : labels.publish}</button>} />
+                <AdminBackupAction title={labels.export} text={language === 'ne' ? 'à¤¬à¥à¤¯à¤¾à¤•à¤…à¤ª à¤®à¤¾à¤¤à¥à¤°à¥¤ à¤¸à¤¾à¤®à¤¾à¤¨à¥à¤¯ à¤¸à¤®à¥à¤ªà¤¾à¤¦à¤¨à¤•à¤¾ à¤²à¤¾à¤—à¤¿ à¤¨à¤¿à¤°à¥à¤¯à¤¾à¤¤ à¤†à¤µà¤¶à¥à¤¯à¤• à¤›à¥ˆà¤¨à¥¤' : 'Backup only. Normal editing does not require export.'} button={<button onClick={() => { setJsonText(onExportAllContent()); setNotice(language === 'ne' ? 'à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤¤à¤²à¤•à¥‹ à¤¬à¤¾à¤•à¤¸à¤®à¤¾ à¤¨à¤¿à¤°à¥à¤¯à¤¾à¤¤ à¤—à¤°à¤¿à¤¯à¥‹à¥¤' : 'Content exported to the box below.'); }} className="action-button">{labels.export}</button>} />
+                <AdminBackupAction title={labels.import} text={language === 'ne' ? 'à¤¯à¥‹ à¤¬à¥à¤°à¤¾à¤‰à¤œà¤°à¤®à¤¾ à¤¬à¥à¤¯à¤¾à¤•à¤…à¤ª à¤ªà¥à¤¨à¤°à¥à¤¸à¥à¤¥à¤¾à¤ªà¤¿à¤¤ à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥à¥¤' : 'Restore a backup into this browser.'} button={<button onClick={() => onImportAllContent(jsonText) && setNotice(language === 'ne' ? 'à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤¸à¥à¤¥à¤¾à¤¨à¥€à¤¯ à¤°à¥‚à¤ªà¤®à¤¾ à¤†à¤¯à¤¾à¤¤ à¤—à¤°à¤¿à¤¯à¥‹à¥¤' : 'Content imported locally.')} className="secondary-button">{labels.import}</button>} />
+                <AdminBackupAction title={labels.reset} text={language === 'ne' ? 'à¤ªà¥à¤·à¥à¤Ÿà¤¿ à¤ªà¤›à¤¿ bundled defaults à¤ªà¥à¤¨à¤°à¥à¤¸à¥à¤¥à¤¾à¤ªà¤¿à¤¤ à¤¹à¥à¤¨à¥à¤›à¥¤' : 'Restores bundled defaults after confirmation.'} button={<button onClick={() => { if (confirm(language === 'ne' ? 'à¤¸à¤¬à¥ˆ à¤¸à¥à¤¥à¤¾à¤¨à¥€à¤¯ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€à¤²à¤¾à¤ˆ à¤¡à¤¿à¤«à¤²à¥à¤Ÿà¤®à¤¾ à¤«à¤°à¥à¤•à¤¾à¤‰à¤¨à¥‡?' : 'Reset all local content to defaults?')) onResetToDefaultContent(); }} className="secondary-button danger-button">{labels.reset}</button>} />
+                <AdminBackupAction title={labels.publish} text={language === 'ne' ? 'Netlify Functions à¤®à¤¾à¤°à¥à¤«à¤¤ à¤µà¥ˆà¤•à¤²à¥à¤ªà¤¿à¤• à¤°à¤¿à¤®à¥‹à¤Ÿ à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨à¥¤' : 'Optional remote publishing through Netlify Functions.'} button={<button onClick={onPublishContent} disabled={isSaving} className="secondary-button">{isSaving ? labels.publishing : labels.publish}</button>} />
                 <textarea className="admin-input admin-json compact-textarea" value={jsonText} onChange={(e) => setJsonText(e.target.value)} placeholder={labels.exportedJson} />
-                <p className="body-copy">{language === 'ne' ? 'स्थानीय सेभहरू यो ब्राउजरमा तुरुन्तै देखिन्छन्। लाइभ backend का लागि तयार भएपछि मात्र GitHub मा प्रकाशन प्रयोग गर्नुहोस्।' : 'Local saves appear immediately in this browser. Use Publish to GitHub when the content is ready for the live site backend.'}</p>
-                <p className="body-copy">{language === 'ne' ? 'Backend नभए प्रकाशन गर्दा “Backend not configured” देखिन्छ। निर्यात/आयात भने स्थानीय रूपमा काम गर्छ।' : 'If backend is missing, Publish shows: Backend not configured. Export/import still works locally.'}</p>
+                <p className="body-copy">{language === 'ne' ? 'à¤¸à¥à¤¥à¤¾à¤¨à¥€à¤¯ à¤¸à¥‡à¤­à¤¹à¤°à¥‚ à¤¯à¥‹ à¤¬à¥à¤°à¤¾à¤‰à¤œà¤°à¤®à¤¾ à¤¤à¥à¤°à¥à¤¨à¥à¤¤à¥ˆ à¤¦à¥‡à¤–à¤¿à¤¨à¥à¤›à¤¨à¥à¥¤ à¤²à¤¾à¤‡à¤­ backend à¤•à¤¾ à¤²à¤¾à¤—à¤¿ à¤¤à¤¯à¤¾à¤° à¤­à¤à¤ªà¤›à¤¿ à¤®à¤¾à¤¤à¥à¤° GitHub à¤®à¤¾ à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨ à¤ªà¥à¤°à¤¯à¥‹à¤— à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥à¥¤' : 'Local saves appear immediately in this browser. Use Publish to GitHub when the content is ready for the live site backend.'}</p>
+                <p className="body-copy">{language === 'ne' ? 'Backend à¤¨à¤­à¤ à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨ à¤—à¤°à¥à¤¦à¤¾ â€œbackend à¤œà¤¡à¤¾à¤¨ à¤—à¤°à¤¿à¤à¤•à¥‹ à¤›à¥ˆà¤¨â€ à¤¦à¥‡à¤–à¤¿à¤¨à¥à¤›à¥¤ à¤¨à¤¿à¤°à¥à¤¯à¤¾à¤¤/à¤†à¤¯à¤¾à¤¤ à¤­à¤¨à¥‡ à¤¸à¥à¤¥à¤¾à¤¨à¥€à¤¯ à¤°à¥‚à¤ªà¤®à¤¾ à¤•à¤¾à¤® à¤—à¤°à¥à¤›à¥¤' : 'If backend is missing, Publish shows: backend not configured. Export/import still works locally.'}</p>
               </div>
             </div>
           )}
@@ -604,20 +702,21 @@ function CharCountTextarea({
 }
 
 function FormActions({ isSaving, label, clearLabel, onCancel }: { isSaving: boolean; label: string; clearLabel: string; onCancel: () => void }) {
-  const savingLabel = label.includes('सेभ') ? 'सेभ हुँदैछ...' : 'Saving...';
+function FormActions({ isSaving, label, clearLabel, onCancel }: { isSaving: boolean; label: string; clearLabel: string; onCancel: () => void }) {
+  const savingLabel = label.includes('???') ? '??? ??????...' : 'Saving...';
   return <div className="button-row"><button disabled={isSaving} className="action-button compact-save">{isSaving ? savingLabel : label}</button><button type="button" onClick={onCancel} className="secondary-button">{clearLabel}</button></div>;
 }
 
-function Picker({ value, options, placeholder, optional = false, onChange, onCreate }: { value: string; options: string[]; placeholder: string; optional?: boolean; onChange: (value: string) => void; onCreate: (value: string) => void }) {
-  const hasMatchingOption = options.some((option) => sameName(option, value));
+function Picker({ value, options, placeholder, optional = false, onChange, onCreate }: { value: string; options: PickerOption[]; placeholder: string; optional?: boolean; onChange: (value: string) => void; onCreate: (value: string) => void }) {
+  const hasMatchingOption = options.some((option) => sameName(pickerValue(option), value));
   const [isCreating, setIsCreating] = useState(false);
   const [draft, setDraft] = useState('');
   const isNepali = /[\u0900-\u097F]/.test(placeholder);
-  const newLabel = isNepali ? `नयाँ ${placeholder}` : `New ${placeholder}`;
-  const cancelLabel = isNepali ? 'रद्द गर्नुहोस्' : 'Cancel';
-  const noDeityLabel = isNepali ? 'देवता छैन' : 'No deity';
-  const typeNewLabel = isNepali ? `नयाँ ${placeholder} लेख्नुहोस्` : `Type new ${placeholder.toLowerCase()}`;
-  const createLabel = isNepali ? 'सिर्जना गर्नुहोस्' : 'Create';
+  const newLabel = isNepali ? `???? ${placeholder}` : `New ${placeholder}`;
+  const cancelLabel = isNepali ? '???? ?????????' : 'Cancel';
+  const noDeityLabel = isNepali ? '????? ???' : 'No deity';
+  const typeNewLabel = isNepali ? `???? ${placeholder} ??????????` : `Type new ${placeholder.toLowerCase()}`;
+  const createLabel = isNepali ? '??????? ?????????' : 'Create';
   return (
     <div className="picker-field compact-picker">
       <select
@@ -629,7 +728,7 @@ function Picker({ value, options, placeholder, optional = false, onChange, onCre
         }}
       >
         <option value="">{placeholder}</option>
-        {options.map((option) => <option key={option} value={option}>{option}</option>)}
+        {options.map((option) => <option key={pickerValue(option)} value={pickerValue(option)}>{pickerLabel(option)}</option>)}
       </select>
       <div className="button-row">
         {optional && <button type="button" className="secondary-button" onClick={() => onChange('')}>{noDeityLabel}</button>}
@@ -676,7 +775,7 @@ function RecordList({ title, toolbar, children }: { title: string; toolbar?: Rea
 }
 
 function Record({ title, subtitle, editLabel = 'Edit', onEdit, onDelete }: { key?: string; title: string; subtitle: string; editLabel?: string; onEdit: () => void; onDelete: () => void }) {
-  const deleteLabel = editLabel === 'सम्पादन' ? `${title} मेटाउनुहोस्` : `Delete ${title}`;
+  const deleteLabel = editLabel === '???????' ? `${title} ???????????` : `Delete ${title}`;
   return <article className="record-card compact-record"><div className="record-card-copy"><p className="record-title">{title}</p><p className="record-subtitle">{subtitle}</p></div><div className="record-actions"><button onClick={onEdit} className="secondary-button">{editLabel}</button><button onClick={onDelete} className="icon-button" aria-label={deleteLabel}><Trash2 size={16} /></button></div></article>;
 }
 
@@ -696,3 +795,8 @@ function Message({ tone, text, onDismiss }: { tone: 'success' | 'error' | 'neutr
     </div>
   );
 }
+
+}
+
+
+

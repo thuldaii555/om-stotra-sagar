@@ -147,6 +147,26 @@ export function getLocalizedPoojaTitle(pooja: PoojaBidhi, language: Language): s
   return getLocalizedText(language, pooja.titleNe || POOJA_TITLES_NE[pooja.title], pooja.title);
 }
 
+export function getPoojaField(
+  pooja: PoojaBidhi,
+  field: 'title' | 'deity' | 'occasion' | 'overview' | 'materials' | 'steps' | 'benefits' | 'cautions' | 'source',
+  language: Language
+): string | string[] {
+  const data = pooja as unknown as Record<string, unknown>;
+  const neValue = data[`${field}Ne`];
+  const enValue = data[field];
+
+  if (Array.isArray(neValue) || Array.isArray(enValue)) {
+    return getLocalizedList(language, Array.isArray(neValue) ? (neValue as string[]) : undefined, Array.isArray(enValue) ? (enValue as string[]) : undefined);
+  }
+
+  return getLocalizedText(
+    language,
+    typeof neValue === 'string' ? neValue : undefined,
+    typeof enValue === 'string' ? enValue : undefined
+  );
+}
+
 export function includesLocalizedQuery(values: Array<string | string[] | undefined | null>, query: string): boolean {
   const normalized = query.trim().toLowerCase();
   if (!normalized) return true;

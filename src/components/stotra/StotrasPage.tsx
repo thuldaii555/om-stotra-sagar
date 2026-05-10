@@ -54,7 +54,7 @@ export default function StotrasPage({
         loadingTitle: 'पुस्तकालय लोड हुँदैछ',
         loadingMessage: 'भक्तिपूर्ण सामग्री तयार हुँदैछ।',
         emptyTitle: 'अहिलेसम्म सामग्री छैन',
-        emptyMessage: 'Admin बाट जाँचिएको सामग्री थप्नुहोस् वा starter collection पुनर्स्थापित गर्नुहोस्।',
+        emptyMessage: 'एडमिनबाट जाँचिएको सामग्री थप्नुहोस् वा सुरुवाती संग्रह पुनर्स्थापित गर्नुहोस्।',
         noMatchTitle: 'मिल्ने सामग्री भेटिएन',
         noMatchMessage: 'अर्को खोज शब्द प्रयोग गर्नुहोस् वा देवता/श्रेणी फिल्टर खाली गर्नुहोस्।',
         clearFilters: 'फिल्टर खाली गर्नुहोस्',
@@ -179,3 +179,4 @@ export default function StotrasPage({
     </main>
   );
 }
+

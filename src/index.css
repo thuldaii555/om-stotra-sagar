@@ -851,6 +851,107 @@ h4 {
   color: var(--saffron);
 }
 
+.admin-nested-section {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 252, 246, 0.72);
+}
+
+.admin-nested-section summary {
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+}
+
+.brand-logo-mark {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  overflow: visible;
+  flex-shrink: 0;
+  background:
+    radial-gradient(circle, rgba(255, 214, 120, 0.22) 0%, rgba(242, 106, 46, 0.08) 44%, rgba(0, 0, 0, 0) 72%);
+}
+
+.brand-logo-image {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 999px;
+  display: block;
+  background: transparent;
+}
+
+.brand-logo-fallback,
+.home-logo-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-devanagari);
+  color: var(--gold);
+}
+
+.brand-logo-fallback {
+  font-size: 1.55rem;
+}
+
+.home-hero-logo-mark {
+  position: relative;
+  width: clamp(190px, 18vw, 240px);
+  height: clamp(190px, 18vw, 240px);
+  display: grid;
+  place-items: center;
+  margin: 0 auto 0.15rem;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(255, 224, 148, 0.26) 0%, rgba(242, 106, 46, 0.10) 42%, rgba(0, 0, 0, 0) 72%);
+}
+
+.home-hero-logo-image {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+  display: block;
+  background: transparent;
+}
+
+.home-logo-fallback {
+  font-size: clamp(7rem, 14vw, 10rem);
+}
+
+.logo-glow {
+  filter:
+    drop-shadow(0 14px 28px rgba(212, 80, 10, 0.24))
+    drop-shadow(0 0 30px rgba(214, 169, 73, 0.30));
+}
+
+@media (max-width: 640px) {
+  .brand-logo-mark {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .home-hero-logo-mark {
+    width: clamp(140px, 42vw, 170px);
+    height: clamp(140px, 42vw, 170px);
+  }
+}
+
 .inline-panel {
   padding: 1rem;
   border-radius: 1rem;
@@ -3900,12 +4001,12 @@ body {
 }
 
 .home-hero-v2 .home-om-mark {
-  width: 7rem;
-  height: 7rem;
-  min-width: 7rem;
-  min-height: 7rem;
+  width: 10.5rem;
+  height: 10.5rem;
+  min-width: 10.5rem;
+  min-height: 10.5rem;
   margin-bottom: -0.2rem;
-  font-size: 4.15rem;
+  font-size: 6.25rem;
   color: #d4500a;
   background:
     radial-gradient(circle at 48% 42%, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.16) 28%, transparent 45%),
@@ -3916,6 +4017,23 @@ body {
     0 16px 42px rgba(212, 80, 10, 0.18),
     0 0 0 1px rgba(184, 134, 11, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.44);
+}
+
+.home-date-widget {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem 0.65rem;
+  max-width: min(100%, 34rem);
+  padding: 0.55rem 0.75rem;
+  border: 1px solid rgba(184, 134, 11, 0.18);
+  border-radius: 14px;
+  background: rgba(255, 252, 246, 0.78);
+  color: var(--brown);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.35;
+  box-shadow: 0 8px 22px rgba(44, 30, 12, 0.06);
 }
 
 .home-hero-v2 .home-om-mark::before {
@@ -4040,11 +4158,11 @@ body {
   }
 
   .home-hero-v2 .home-om-mark {
-    width: 5.9rem;
-    height: 5.9rem;
-    min-width: 5.9rem;
-    min-height: 5.9rem;
-    font-size: 3.4rem;
+    width: 8.8rem;
+    height: 8.8rem;
+    min-width: 8.8rem;
+    min-height: 8.8rem;
+    font-size: 5.1rem;
   }
 
   .home-title-v2 {
@@ -4053,6 +4171,63 @@ body {
 
   .home-content-v2 {
     padding-inline: 0.9rem;
+  }
+}
+
+/* Final home hero sizing override. */
+.home-hero-v2 .home-om-mark {
+  width: 10.5rem;
+  height: 10.5rem;
+  min-width: 10.5rem;
+  min-height: 10.5rem;
+  font-size: 6.25rem;
+}
+
+@media (max-width: 640px) {
+  .home-hero-v2 .home-om-mark {
+    width: 8.8rem;
+    height: 8.8rem;
+    min-width: 8.8rem;
+    min-height: 8.8rem;
+    font-size: 5.1rem;
+  }
+}
+
+/* Final home hero sizing override. */
+.home-hero-v2 .home-om-mark {
+  width: 10.5rem;
+  height: 10.5rem;
+  min-width: 10.5rem;
+  min-height: 10.5rem;
+  font-size: 6.25rem;
+}
+
+@media (max-width: 640px) {
+  .home-hero-v2 .home-om-mark {
+    width: 8.8rem;
+    height: 8.8rem;
+    min-width: 8.8rem;
+    min-height: 8.8rem;
+    font-size: 5.1rem;
+  }
+}
+
+/* Final override for the current home hero implementation. */
+.home-hero-v2 .home-om-mark {
+  width: 10.5rem;
+  height: 10.5rem;
+  min-width: 10.5rem;
+  min-height: 10.5rem;
+  font-size: 6.25rem;
+}
+
+@media (max-width: 640px) {
+  .home-hero-v2 .home-om-mark {
+    width: 8.8rem;
+    height: 8.8rem;
+    min-width: 8.8rem;
+    min-height: 8.8rem;
+    font-size: 5.1rem;
   }
 }
 
@@ -4087,12 +4262,12 @@ body {
 }
 
 .home-hero-v2 .home-om-mark {
-  width: 7rem;
-  height: 7rem;
-  min-width: 7rem;
-  min-height: 7rem;
+  width: 10.5rem;
+  height: 10.5rem;
+  min-width: 10.5rem;
+  min-height: 10.5rem;
   margin-bottom: -0.2rem;
-  font-size: 4.15rem;
+  font-size: 6.25rem;
   color: #d4500a;
   background:
     radial-gradient(circle at 48% 42%, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.16) 28%, transparent 45%),
@@ -4227,11 +4402,11 @@ body {
   }
 
   .home-hero-v2 .home-om-mark {
-    width: 5.9rem;
-    height: 5.9rem;
-    min-width: 5.9rem;
-    min-height: 5.9rem;
-    font-size: 3.4rem;
+    width: 8.8rem;
+    height: 8.8rem;
+    min-width: 8.8rem;
+    min-height: 8.8rem;
+    font-size: 5.1rem;
   }
 
   .home-title-v2 {
@@ -4281,12 +4456,12 @@ body {
 }
 
 .home-hero-v2 .home-om-mark {
-  width: 7rem;
-  height: 7rem;
-  min-width: 7rem;
-  min-height: 7rem;
+  width: 10.5rem;
+  height: 10.5rem;
+  min-width: 10.5rem;
+  min-height: 10.5rem;
   margin-bottom: -0.2rem;
-  font-size: 4.15rem;
+  font-size: 6.25rem;
   color: #d4500a;
   background:
     radial-gradient(circle at 48% 42%, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.16) 28%, transparent 45%),
@@ -4463,11 +4638,11 @@ body {
   }
 
   .home-hero-v2 .home-om-mark {
-    width: 5.9rem;
-    height: 5.9rem;
-    min-width: 5.9rem;
-    min-height: 5.9rem;
-    font-size: 3.4rem;
+    width: 8.8rem;
+    height: 8.8rem;
+    min-width: 8.8rem;
+    min-height: 8.8rem;
+    font-size: 5.1rem;
   }
 
   .home-title-v2 {
@@ -8570,12 +8745,12 @@ and search from colliding. */
 }
 
 .home-hero-v2 .home-om-mark {
-  width: 7rem;
-  height: 7rem;
-  min-width: 7rem;
-  min-height: 7rem;
+  width: 10.5rem;
+  height: 10.5rem;
+  min-width: 10.5rem;
+  min-height: 10.5rem;
   margin-bottom: -0.2rem;
-  font-size: 4.15rem;
+  font-size: 6.25rem;
   color: #d4500a;
   background:
     radial-gradient(circle at 48% 42%, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.16) 28%, transparent 45%),
@@ -8710,11 +8885,11 @@ and search from colliding. */
   }
 
   .home-hero-v2 .home-om-mark {
-    width: 5.9rem;
-    height: 5.9rem;
-    min-width: 5.9rem;
-    min-height: 5.9rem;
-    font-size: 3.4rem;
+    width: 8.8rem;
+    height: 8.8rem;
+    min-width: 8.8rem;
+    min-height: 8.8rem;
+    font-size: 5.1rem;
   }
 
   .home-title-v2 {

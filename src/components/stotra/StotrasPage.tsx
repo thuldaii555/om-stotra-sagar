@@ -2,6 +2,7 @@ import { Search } from 'lucide-react';
 import type { Category, Deity, Stotra } from '../../types';
 import StateMessage from '../common/StateMessage';
 import StotraCard from './StotraCard';
+import { getLocalizedCategoryName, getLocalizedDeityName } from '../../utils/localization';
 
 interface StotrasPageProps {
   stotras: Stotra[];
@@ -55,7 +56,7 @@ export default function StotrasPage({
         emptyTitle: 'अहिलेसम्म सामग्री छैन',
         emptyMessage: 'Admin बाट जाँचिएको सामग्री थप्नुहोस् वा starter collection पुनर्स्थापित गर्नुहोस्।',
         noMatchTitle: 'मिल्ने सामग्री भेटिएन',
-        noMatchMessage: 'अर्को खोज शब्द प्रयोग गर्नुहोस् वा deity/category फिल्टर खाली गर्नुहोस्।',
+        noMatchMessage: 'अर्को खोज शब्द प्रयोग गर्नुहोस् वा देवता/श्रेणी फिल्टर खाली गर्नुहोस्।',
         clearFilters: 'फिल्टर खाली गर्नुहोस्',
       }
     : {
@@ -80,7 +81,7 @@ export default function StotrasPage({
       <div className="search-wrap search-wrap-wide">
         <input
           value={searchQuery}
-          aria-label="Search devotional content"
+          aria-label={language === 'ne' ? 'भक्तिपूर्ण सामग्री खोज्नुहोस्' : 'Search devotional content'}
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder={text.searchPlaceholder}
           className="search-bar"
@@ -92,12 +93,12 @@ export default function StotrasPage({
         <select
           className="admin-input compact-input"
           value={activeDeity || 'All'}
-          aria-label="Filter by deity"
+          aria-label={language === 'ne' ? 'देवताअनुसार छान्नुहोस्' : 'Filter by deity'}
           onChange={(event) => onDeityChange(event.target.value === 'All' ? null : event.target.value)}
         >
           <option value="All">{text.allDeities}</option>
           {deities.map((deity) => (
-            <option key={deity.id} value={deity.name}>{deity.name}</option>
+            <option key={deity.id} value={deity.name}>{getLocalizedDeityName(deity, language)}</option>
           ))}
         </select>
 
@@ -111,7 +112,7 @@ export default function StotrasPage({
             aria-pressed={activeCategory === category.name}
             className={`tag-chip ${activeCategory === category.name ? 'tag-chip-active' : ''}`}
           >
-            {category.name}
+            {getLocalizedCategoryName(category, language)}
           </button>
         ))}
         {hasFilters && (
@@ -170,6 +171,7 @@ export default function StotrasPage({
               searchQuery={searchQuery}
               onOpen={onOpenStotra}
               onToggleFavorite={onToggleFavorite}
+              language={language}
             />
           ))}
         </div>

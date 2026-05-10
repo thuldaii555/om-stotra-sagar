@@ -2,6 +2,37 @@ import type { PoojaBidhi } from '../types';
 
 const SOURCE = 'Original concise home worship guide based on general Hindu puja structure; verify details with family tradition, sampradaya, or a priest.';
 const CAUTION = 'Traditions vary by family, region, and sampradaya. For major rituals, consult a priest or family elder.';
+const SOURCE_NE = 'सामान्य हिन्दू पूजा संरचनामा आधारित संक्षिप्त घरपूजा मार्गदर्शन; परिवार, सम्प्रदाय वा पुरोहितसँग विवरण पुष्टि गर्नुहोस्।';
+const CAUTION_NE = 'परम्परा परिवार, क्षेत्र र सम्प्रदायअनुसार फरक हुन सक्छ। ठूलो विधिका लागि पुरोहित वा परिवारका ज्येष्ठसँग परामर्श गर्नुहोस्।';
+
+const titleNeByTitle: Record<string, string> = {
+  'Ganesh Puja': 'गणेश पूजा',
+  'Shiva Puja': 'शिव पूजा',
+  'Lakshmi Puja': 'लक्ष्मी पूजा',
+  'Saraswati Puja': 'सरस्वती पूजा',
+  'Hanuman Puja': 'हनुमान पूजा',
+  'Satyanarayan Puja': 'सत्यनारायण पूजा',
+  'Durga Puja': 'दुर्गा पूजा',
+  'Surya Puja': 'सूर्य पूजा',
+  'Krishna Puja': 'कृष्ण पूजा',
+  'Rama Puja': 'राम पूजा',
+  'Kali Puja': 'काली पूजा',
+  'Navagraha Puja Basic Guide': 'नवग्रह पूजा आधारभूत विधि',
+};
+
+const deityNeByName: Record<string, string> = {
+  Ganesh: 'गणेश',
+  Shiva: 'शिव',
+  Lakshmi: 'लक्ष्मी',
+  Saraswati: 'सरस्वती',
+  Hanuman: 'हनुमान',
+  Narayana: 'नारायण',
+  Durga: 'दुर्गा',
+  Surya: 'सूर्य',
+  Krishna: 'कृष्ण',
+  Rama: 'राम',
+  Kali: 'काली',
+};
 
 const guide = (
   id: string,
@@ -16,14 +47,18 @@ const guide = (
 ): PoojaBidhi => ({
   id,
   title,
+  titleNe: titleNeByTitle[title],
   deity,
+  deityNe: deityNeByName[deity],
   occasion,
   overview,
   materials,
   steps,
   benefits,
   cautions: CAUTION,
+  cautionsNe: CAUTION_NE,
   source: SOURCE,
+  sourceNe: SOURCE_NE,
   tags: [...new Set([deity.toLowerCase(), 'puja', ...tags])],
 });
 

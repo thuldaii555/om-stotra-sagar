@@ -1,9 +1,16 @@
 import { useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 import { CalendarClock, LocateFixed, MapPin, MoonStar, SunMedium } from 'lucide-react';
 import type { PanchangContent } from '../types';
-import { fetchPanchang, getTodayLocalInfo, type PanchangFetchState } from '../services/panchangService';
+import { fetchPanchang, type PanchangFetchState } from '../services/panchangService';
+import { formatZonedDateTime } from '../utils/dateTime';
 
 const LOCATION_KEY = 'om-stotra-sagar-panchang-location';
+const DEFAULT_LOCATION: PanchangLocationForm = {
+  city: 'Kathmandu, Nepal',
+  latitude: '27.7172',
+  longitude: '85.3240',
+  timezone: 'Asia/Kathmandu',
+};
 
 interface PanchangPageProps {
   content: PanchangContent;
@@ -17,23 +24,23 @@ interface PanchangLocationForm {
   timezone: string;
 }
 
-const getBrowserTimezone = () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'Local time zone';
+const getBrowserTimezone = () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kathmandu';
 
 const getInitialLocation = (): PanchangLocationForm => {
   if (typeof localStorage === 'undefined') {
-    return { city: '', latitude: '', longitude: '', timezone: getBrowserTimezone() };
+    return DEFAULT_LOCATION;
   }
 
   try {
     const saved = JSON.parse(localStorage.getItem(LOCATION_KEY) || 'null') as Partial<PanchangLocationForm> | null;
     return {
-      city: saved?.city || '',
-      latitude: saved?.latitude || '',
-      longitude: saved?.longitude || '',
-      timezone: saved?.timezone || getBrowserTimezone(),
+      city: saved?.city || DEFAULT_LOCATION.city,
+      latitude: saved?.latitude || DEFAULT_LOCATION.latitude,
+      longitude: saved?.longitude || DEFAULT_LOCATION.longitude,
+      timezone: saved?.timezone || DEFAULT_LOCATION.timezone,
     };
   } catch {
-    return { city: '', latitude: '', longitude: '', timezone: getBrowserTimezone() };
+    return DEFAULT_LOCATION;
   }
 };
 
@@ -47,14 +54,15 @@ export default function Panchang({ content, language }: PanchangPageProps) {
   });
   const [isLocating, setIsLocating] = useState(false);
 
-  const localInfo = useMemo(() => getTodayLocalInfo(now), [now]);
+  const timezoneDisplay = location.timezone.trim() || DEFAULT_LOCATION.timezone;
+  const selectedCity = location.city.trim() || DEFAULT_LOCATION.city;
+  const localInfo = useMemo(() => formatZonedDateTime(now, timezoneDisplay, selectedCity, language), [language, now, selectedCity, timezoneDisplay]);
   const dateKey = localInfo.isoDate;
-  const timezoneDisplay = location.timezone.trim() || localInfo.timezone;
 
   const copy = language === 'ne'
     ? {
         eyebrow: 'पञ्चाङ्ग',
-        title: 'पञ्चाङ्ग / Panchang',
+        title: 'पञ्चाङ्ग',
         subtitle: 'दिन, समय, र स्थानको आधारमा दैनिक हिन्दू पात्रो जानकारी।',
         dateTitle: 'मिति र समय',
         locationTitle: 'स्थान',
@@ -65,12 +73,15 @@ export default function Panchang({ content, language }: PanchangPageProps) {
         longitude: 'देशान्तर',
         timezone: 'समय क्षेत्र',
         useLocation: 'मेरो स्थान प्रयोग गर्नुहोस्',
-        notConfigured: 'पञ्चाङ्ग गणना स्रोत अहिले जडान गरिएको छैन। स्थानीय मिति र समय मात्र देखाइएका छन्।',
+        notConfigured: 'पञ्चाङ्ग गणना स्रोत अझै जडान गरिएको छैन। मिति, समय र स्थान देखाइएको छ।',
         error: 'अहिले पञ्चाङ्ग लोड गर्न सकिएन। कृपया स्थान जाँच्नुहोस् वा फेरि प्रयास गर्नुहोस्।',
         loading: 'पञ्चाङ्ग लोड हुँदैछ...',
         exactNote: 'ठ्याक्कै पञ्चाङ्ग मानहरू स्थान, समय क्षेत्र, र गणना विधिमा निर्भर हुन्छन्।',
         browserTime: 'स्थानीय समय',
         browserTimezone: 'समय क्षेत्र',
+        gregorianDate: 'मिति',
+        bikramSambat: 'वि.सं. मिति',
+        bikramSambatPending: 'वि.सं. मिति जडान हुँदैछ',
         selectedLocation: 'चयन गरिएको स्थान',
         manualHelp: 'अक्षांश/देशान्तर राखेपछि Panchang source उपलब्ध भएमा परिणाम तुरुन्तै लोड हुन्छ।',
         unavailable: 'उपलब्ध छैन',
@@ -84,11 +95,11 @@ export default function Panchang({ content, language }: PanchangPageProps) {
         lunarMonth: 'चन्द्र महिना',
         rahuKaal: 'राहुकाल',
         configured: 'स्रोत उपलब्ध छ',
-        provider: 'Provider',
+        provider: 'सेवा प्रदायक',
       }
     : {
         eyebrow: 'Panchang',
-        title: 'Panchang / पञ्चाङ्ग',
+        title: 'Panchang',
         subtitle: 'Daily Hindu almanac based on date, time, and location.',
         dateTitle: 'Date and time',
         locationTitle: 'Location',
@@ -99,12 +110,15 @@ export default function Panchang({ content, language }: PanchangPageProps) {
         longitude: 'Longitude',
         timezone: 'Timezone',
         useLocation: 'Use my location',
-        notConfigured: 'Panchang calculation source is not configured yet. Local date and time are shown.',
+        notConfigured: 'Panchang calculation source is not configured yet. Date, time, and location are shown.',
         error: 'Unable to load Panchang right now. Please check location or try again.',
         loading: 'Loading Panchang...',
         exactNote: 'Exact Panchang values depend on location, timezone, and calculation method.',
         browserTime: 'Local time',
         browserTimezone: 'Timezone',
+        gregorianDate: 'Date',
+        bikramSambat: 'Bikram Sambat',
+        bikramSambatPending: 'Bikram Sambat coming soon',
         selectedLocation: 'Selected location',
         manualHelp: 'Enter latitude and longitude to load Panchang when a source is configured.',
         unavailable: 'Unavailable',
@@ -178,7 +192,7 @@ export default function Panchang({ content, language }: PanchangPageProps) {
     { key: 'rahuKaal', title: copy.rahuKaal, value: formatField(state.result.rahuKaal) },
   ] : [];
 
-  const selectedLocation = location.city || `${location.latitude || '—'}, ${location.longitude || '—'}`;
+  const selectedLocation = location.city || `${location.latitude || '-'}, ${location.longitude || '-'}`;
 
   return (
     <main className="page-container page-shell panchang-page">
@@ -193,7 +207,7 @@ export default function Panchang({ content, language }: PanchangPageProps) {
           <div className="panchang-section-header">
             <div>
               <p className="section-kicker">{copy.dateTitle}</p>
-              <h2 className="card-title">{localInfo.date}</h2>
+              <h2 className="card-title">{localInfo.gregorianDate}</h2>
             </div>
             <div className="today-badge">
               <CalendarClock size={18} />
@@ -202,8 +216,10 @@ export default function Panchang({ content, language }: PanchangPageProps) {
           </div>
 
           <div className="panchang-time-grid">
+            <InfoCard icon={<CalendarClock size={16} />} label={copy.gregorianDate} value={localInfo.gregorianDate} />
+            <InfoCard icon={<CalendarClock size={16} />} label={copy.bikramSambat} value={localInfo.bikramSambat || copy.bikramSambatPending} />
             <InfoCard icon={<SunMedium size={16} />} label={copy.browserTime} value={localInfo.time} />
-            <InfoCard icon={<MapPin size={16} />} label={copy.browserTimezone} value={localInfo.timezone} />
+            <InfoCard icon={<MapPin size={16} />} label={copy.browserTimezone} value={timezoneDisplay} />
           </div>
         </article>
 

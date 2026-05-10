@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ArrowLeft, ArrowRight, Search } from 'lucide-react';
 import type { PoojaBidhi } from '../../types';
+import { getLocalizedDeityName, getLocalizedList, getLocalizedPoojaTitle, getLocalizedText, includesLocalizedQuery } from '../../utils/localization';
 
 interface PoojaPageProps {
   poojaBidhi: PoojaBidhi[];
@@ -60,7 +61,7 @@ export default function PoojaPage({ poojaBidhi, activeDeity, selectedPoojaId, la
     const base = activeDeity ? poojaBidhi.filter((item) => item.deity === activeDeity) : poojaBidhi;
     const search = query.trim().toLowerCase();
     if (!search) return base;
-    return base.filter((item) => [item.title, item.deity, item.occasion, item.overview, ...(item.tags || [])].some((part) => part?.toLowerCase().includes(search)));
+    return base.filter((item) => includesLocalizedQuery([item.title, getLocalizedPoojaTitle(item, 'ne'), item.titleNe, item.deity, getLocalizedDeityName(item.deityNe || item.deity, 'ne'), item.deityNe, item.occasion, item.occasionNe, item.overview, item.overviewNe, item.materials, item.materialsNe, item.steps, item.stepsNe, item.benefits, item.benefitsNe, item.tags], search));
   }, [activeDeity, poojaBidhi, query]);
 
   const selected = visibleItems.find((item) => item.id === selectedId) || null;
@@ -115,8 +116,8 @@ export default function PoojaPage({ poojaBidhi, activeDeity, selectedPoojaId, la
                   className={`pooja-list-item ${selected?.id === item.id ? 'pooja-list-item-active' : ''}`}
                 >
                   <div className="pooja-list-copy">
-                    <p className="pooja-list-title">{item.title}</p>
-                    <p className="pooja-list-meta">{item.deity} · {item.occasion || copy.fallbackBidhi}</p>
+                    <p className="pooja-list-title">{getLocalizedPoojaTitle(item, language)}</p>
+                    <p className="pooja-list-meta">{getLocalizedDeityName(item.deityNe || item.deity, language)} · {getLocalizedText(language, item.occasionNe, item.occasion) || copy.fallbackBidhi}</p>
                   </div>
                   <ArrowRight size={16} className="pooja-list-arrow" />
                 </button>
@@ -132,17 +133,17 @@ export default function PoojaPage({ poojaBidhi, activeDeity, selectedPoojaId, la
                 <ArrowLeft size={16} /> {copy.allGuides}
               </button>
               <p className="page-eyebrow">{selected.occasion || copy.eyebrow}</p>
-              <h2 className="card-title">{selected.title}</h2>
-              <p className="deity-line">{copy.deity}: {selected.deity}</p>
-              <p className="card-copy">{selected.overview}</p>
+              <h2 className="card-title">{getLocalizedPoojaTitle(selected, language)}</h2>
+              <p className="deity-line">{copy.deity}: {getLocalizedDeityName(selected.deityNe || selected.deity, language)}</p>
+              <p className="card-copy">{getLocalizedText(language, selected.overviewNe, selected.overview)}</p>
 
               <PoojaSection title={copy.samagri}>
-                <Checklist items={selected.materials} fallback={copy.notAvailable} />
+                <Checklist items={getLocalizedList(language, selected.materialsNe, selected.materials)} fallback={copy.notAvailable} />
               </PoojaSection>
 
               <PoojaSection title={copy.steps}>
                 <ol className="step-list">
-                  {selected.steps.map((step, index) => (
+                  {getLocalizedList(language, selected.stepsNe, selected.steps).map((step, index) => (
                     <li key={`${step}-${index}`} className="step-item">
                       <span className="step-number">{index + 1}</span>
                       <span>{step}</span>
@@ -152,16 +153,16 @@ export default function PoojaPage({ poojaBidhi, activeDeity, selectedPoojaId, la
               </PoojaSection>
 
               <PoojaSection title={copy.benefits}>
-                <Checklist items={selected.benefits} fallback={copy.notAvailable} />
+                <Checklist items={getLocalizedList(language, selected.benefitsNe, selected.benefits)} fallback={copy.notAvailable} />
               </PoojaSection>
 
               <PoojaSection title={copy.cautions}>
-                <p className="reader-paragraph">{selected.cautions || copy.cautionFallback}</p>
+                <p className="reader-paragraph">{getLocalizedText(language, selected.cautionsNe, selected.cautions) || copy.cautionFallback}</p>
               </PoojaSection>
 
-              {selected.source && (
+              {(selected.source || selected.sourceNe) && (
                 <PoojaSection title={copy.source}>
-                  <p className="reader-paragraph">{selected.source}</p>
+                  <p className="reader-paragraph">{getLocalizedText(language, selected.sourceNe, selected.source)}</p>
                 </PoojaSection>
               )}
 

@@ -1,7 +1,16 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CalendarDays, ChevronRight, Feather, ScrollText, Search, Sparkles } from 'lucide-react';
 import type { Category, Deity, HinduStory, HistoryItem, PoojaBidhi, Stotra } from '../../types';
 import StateMessage from '../common/StateMessage';
+import { formatZonedDateTime } from '../../utils/dateTime';
+import {
+  getLocalizedCategoryName,
+  getLocalizedContentTitle,
+  getLocalizedDeityName,
+  getLocalizedPoojaTitle,
+  getLocalizedText,
+  includesLocalizedQuery,
+} from '../../utils/localization';
 
 interface HomePageProps {
   stotras: Stotra[];
@@ -36,13 +45,13 @@ const getDailyStoraIndex = (stotras: Stotra[]): number => {
 };
 
 const VARA_INFO = [
-  { day: 'Sunday', varaName: 'आइतबार (Ravivar)', deity: 'Surya Dev' },
-  { day: 'Monday', varaName: 'सोमबार (Somvar)', deity: 'Lord Shiva' },
-  { day: 'Tuesday', varaName: 'मंगलबार (Mangalvar)', deity: 'Lord Hanuman & Devi' },
-  { day: 'Wednesday', varaName: 'बुधबार (Budhvar)', deity: 'Lord Ganesha & Vishnu' },
-  { day: 'Thursday', varaName: 'बिहिबार (Brihaspativar)', deity: 'Lord Vishnu & Guru' },
-  { day: 'Friday', varaName: 'शुक्रबार (Shukravar)', deity: 'Devi Lakshmi & Devi' },
-  { day: 'Saturday', varaName: 'शनिबार (Shanivar)', deity: 'Lord Shani & Hanuman' },
+  { en: 'Sunday (Ravivar)', ne: 'आइतबार', deityEn: 'Surya Dev', deityNe: 'सूर्य देव' },
+  { en: 'Monday (Somvar)', ne: 'सोमबार', deityEn: 'Lord Shiva', deityNe: 'भगवान् शिव' },
+  { en: 'Tuesday (Mangalvar)', ne: 'मंगलबार', deityEn: 'Lord Hanuman & Devi', deityNe: 'हनुमानजी र देवी' },
+  { en: 'Wednesday (Budhvar)', ne: 'बुधबार', deityEn: 'Lord Ganesha & Vishnu', deityNe: 'गणेशजी र भगवान् विष्णु' },
+  { en: 'Thursday (Brihaspativar)', ne: 'बिहीबार', deityEn: 'Lord Vishnu & Guru', deityNe: 'भगवान् विष्णु र गुरु' },
+  { en: 'Friday (Shukravar)', ne: 'शुक्रबार', deityEn: 'Devi Lakshmi & Devi', deityNe: 'देवी लक्ष्मी र देवी' },
+  { en: 'Saturday (Shanivar)', ne: 'शनिबार', deityEn: 'Lord Shani & Hanuman', deityNe: 'शनिदेव र हनुमानजी' },
 ] as const;
 
 export default function HomePage({
@@ -59,9 +68,11 @@ export default function HomePage({
   onOpenStotra,
 }: HomePageProps) {
   const [homeSearch, setHomeSearch] = useState('');
+  const [now, setNow] = useState(() => new Date());
   const featuredContent = (filteredStotras.length > 0 ? filteredStotras : stotras).slice(0, 5);
   const dailyStotra = stotras.length > 0 ? stotras[getDailyStoraIndex(stotras)] : null;
   const vara = VARA_INFO[new Date().getDay()];
+  const kathmanduInfo = useMemo(() => formatZonedDateTime(now, 'Asia/Kathmandu', language === 'ne' ? 'काठमाडौं, नेपाल' : 'Kathmandu, Nepal', language), [language, now]);
   const recentStotras = history
     .slice(0, 3)
     .map((item) => stotras.find((stotra) => stotra.id === item.stotraId))
@@ -80,7 +91,7 @@ export default function HomePage({
         ritualGuides: 'पूजा विधि',
         almanac: 'पञ्चाङ्ग',
         almanacGuide: 'हिन्दू पात्रो मार्गदर्शन',
-        search: 'पुस्तकालय खोज्नुहोस्',
+        search: 'खोज्नुहोस्',
         noContent: 'अहिलेसम्म सामग्री छैन',
         noContentCopy: 'Admin बाट जाँचिएको सामग्री थप्नुहोस् वा starter collection पुनर्स्थापित गर्नुहोस्।',
         loadingTitle: 'सामग्री लोड हुँदैछ',
@@ -100,7 +111,7 @@ export default function HomePage({
         ritualGuides: 'ritual guides',
         almanac: 'Panchang',
         almanacGuide: 'Hindu almanac guide',
-        search: 'Search the library',
+        search: 'Search',
         noContent: 'No content available',
         noContentCopy: 'Add content from Admin or restore the starter bundle.',
         loadingTitle: 'Loading content',
@@ -108,41 +119,24 @@ export default function HomePage({
         featuredInLibrary: 'in library',
       };
 
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
   const homeSearchQuery = homeSearch.trim().toLowerCase();
   const homeSearchResults = useMemo(() => {
     if (!homeSearchQuery) return null;
-    const matches = (value?: string) => Boolean(value && value.toLowerCase().includes(homeSearchQuery));
     const deityResults = deities.filter((deity) => (
-      matches(deity.name)
-      || matches(deity.sanskritName)
-      || matches(deity.introduction)
-      || matches(deity.description)
-      || matches(deity.significance)
-      || matches(deity.mantra)
-      || deity.tags.some((tag) => tag.toLowerCase().includes(homeSearchQuery))
+      includesLocalizedQuery([deity.name, getLocalizedDeityName(deity, 'ne'), deity.nameNe, deity.sanskritName, deity.introduction, deity.introductionNe, deity.description, deity.significance, deity.significanceNe, deity.mantra, deity.tags], homeSearchQuery)
     )).slice(0, 4);
     const textResults = stotras.filter((stotra) => (
-      matches(stotra.title)
-      || matches(stotra.alternateTitle)
-      || matches(stotra.deity)
-      || matches(stotra.category)
-      || matches(stotra.content)
-      || matches(stotra.meaning)
-      || matches(stotra.nepaliMeaning)
-      || matches(stotra.benefits)
-      || stotra.tags.some((tag) => tag.toLowerCase().includes(homeSearchQuery))
+      includesLocalizedQuery([stotra.title, getLocalizedContentTitle(stotra, 'ne'), stotra.titleNe, stotra.alternateTitle, stotra.alternateTitleNe, stotra.deity, getLocalizedDeityName(stotra.deityNe || stotra.deity, 'ne'), stotra.deityNe, stotra.category, getLocalizedCategoryName(stotra.categoryNe || stotra.category, 'ne'), stotra.categoryNe, stotra.content, stotra.meaning, stotra.meaningNe, stotra.nepaliMeaning, stotra.wordMeaning, stotra.wordMeaningNe, stotra.benefits, stotra.benefitsNe, stotra.process, stotra.processNe, stotra.tags], homeSearchQuery)
     )).slice(0, 4);
     const poojaResults = poojaBidhi.filter((pooja) => (
-      matches(pooja.title)
-      || matches(pooja.deity)
-      || matches(pooja.occasion)
-      || matches(pooja.overview)
-      || pooja.materials.some((item) => item.toLowerCase().includes(homeSearchQuery))
-      || pooja.steps.some((item) => item.toLowerCase().includes(homeSearchQuery))
-      || pooja.benefits.some((item) => item.toLowerCase().includes(homeSearchQuery))
-      || pooja.tags.some((tag) => tag.toLowerCase().includes(homeSearchQuery))
+      includesLocalizedQuery([pooja.title, getLocalizedPoojaTitle(pooja, 'ne'), pooja.titleNe, pooja.deity, getLocalizedDeityName(pooja.deityNe || pooja.deity, 'ne'), pooja.deityNe, pooja.occasion, pooja.occasionNe, pooja.overview, pooja.overviewNe, pooja.materials, pooja.materialsNe, pooja.steps, pooja.stepsNe, pooja.benefits, pooja.benefitsNe, pooja.cautions, pooja.cautionsNe, pooja.tags], homeSearchQuery)
     )).slice(0, 4);
-    const panchangMatches = /panchang|almanac|tithi|nakshatra|yoga|karana|rahu/i.test(homeSearchQuery);
+    const panchangMatches = /panchang|almanac|tithi|nakshatra|yoga|karana|rahu|पञ्चाङ्ग|तिथि|नक्षत्र|करण|राहु/i.test(homeSearchQuery);
     return { deityResults, textResults, poojaResults, panchangMatches };
   }, [deities, homeSearchQuery, poojaBidhi, stotras]);
   const hasHomeSearch = Boolean(homeSearchQuery);
@@ -176,13 +170,29 @@ export default function HomePage({
     <>
       <section className="home-hero-v2">
         <div className="home-hero-inner">
-          <div className="home-om-mark" aria-hidden="true">ॐ</div>
+          <div className="home-hero-logo-mark">
+            <img
+              src="/images/golden-om-logo-circle.png"
+              alt="Om Stotra Sagar golden Om logo"
+              className="home-hero-logo-image logo-glow"
+              onError={(event) => {
+                event.currentTarget.style.display = 'none';
+              }}
+            />
+            <span className="home-logo-fallback" aria-hidden="true">ॐ</span>
+          </div>
 
           <div className="home-vara-chip">
-            <span className="vara-day-name">{vara.varaName}</span>
+            <span className="vara-day-name">{language === 'ne' ? vara.ne : vara.en}</span>
             <span className="vara-sep">·</span>
-            <span className="vara-deity-name">{vara.deity}</span>
+            <span className="vara-deity-name">{language === 'ne' ? vara.deityNe : vara.deityEn}</span>
           </div>
+
+            <div className="home-date-widget" aria-label={language === 'ne' ? 'मिति र समय' : 'Date and time'}>
+              <span>{kathmanduInfo.bikramSambat || (language === 'ne' ? 'वि.सं. मिति जडान हुँदैछ' : 'Bikram Sambat coming soon')}</span>
+              <span>{kathmanduInfo.gregorianDate}</span>
+              <span>{kathmanduInfo.time} · {kathmanduInfo.city}</span>
+            </div>
 
             <h1 className="home-title-v2">{copy.title}</h1>
             <p className="home-tagline-v2">{copy.tagline}</p>
@@ -242,9 +252,9 @@ export default function HomePage({
                               }}
                             >
                               <div className="home-search-item-copy">
-                                <p className="home-search-item-title">{deity.name}</p>
-                                <p className="home-search-item-meta">{deity.type || 'Other'}</p>
-                                <p className="home-search-item-preview">{truncate([deity.introduction, deity.significance, deity.mantra].filter(Boolean).join(' · ') || deity.description || '', 120)}</p>
+                                <p className="home-search-item-title">{getLocalizedDeityName(deity, language)}</p>
+                                <p className="home-search-item-meta">{language === 'ne' ? 'देवता' : (deity.type || 'Other')}</p>
+                                <p className="home-search-item-preview">{truncate([getLocalizedText(language, deity.introductionNe, deity.introduction), getLocalizedText(language, deity.significanceNe, deity.significance), deity.mantra].filter(Boolean).join(' · ') || deity.description || '', 120)}</p>
                               </div>
                               <ChevronRight size={16} className="home-search-item-arrow" />
                             </button>
@@ -267,9 +277,9 @@ export default function HomePage({
                               }}
                             >
                               <div className="home-search-item-copy">
-                                <p className="home-search-item-title">{stotra.title}</p>
-                                <p className="home-search-item-meta">{stotra.deity} · {stotra.category}</p>
-                                <p className="home-search-item-preview">{truncate(stotra.content || stotra.meaning || stotra.nepaliMeaning || stotra.benefits || '', 120)}</p>
+                                <p className="home-search-item-title">{getLocalizedContentTitle(stotra, language)}</p>
+                                <p className="home-search-item-meta">{getLocalizedDeityName(stotra.deityNe || stotra.deity, language)} · {getLocalizedCategoryName(stotra.categoryNe || stotra.category, language)}</p>
+                                <p className="home-search-item-preview">{truncate(getLocalizedText(language, stotra.meaningNe || stotra.nepaliMeaning, stotra.meaning) || stotra.content || getLocalizedText(language, stotra.benefitsNe, stotra.benefits) || '', 120)}</p>
                               </div>
                               <ChevronRight size={16} className="home-search-item-arrow" />
                             </button>
@@ -292,9 +302,9 @@ export default function HomePage({
                               }}
                             >
                               <div className="home-search-item-copy">
-                                <p className="home-search-item-title">{pooja.title}</p>
-                                <p className="home-search-item-meta">{pooja.deity} · {pooja.occasion || copy.poojaGuides}</p>
-                                <p className="home-search-item-preview">{truncate([pooja.overview, pooja.materials[0], pooja.steps[0]].filter(Boolean).join(' · ') || '', 120)}</p>
+                                <p className="home-search-item-title">{getLocalizedPoojaTitle(pooja, language)}</p>
+                                <p className="home-search-item-meta">{getLocalizedDeityName(pooja.deityNe || pooja.deity, language)} · {getLocalizedText(language, pooja.occasionNe, pooja.occasion) || copy.poojaGuides}</p>
+                                <p className="home-search-item-preview">{truncate([getLocalizedText(language, pooja.overviewNe, pooja.overview), pooja.materialsNe?.[0] || pooja.materials[0], pooja.stepsNe?.[0] || pooja.steps[0]].filter(Boolean).join(' · ') || '', 120)}</p>
                               </div>
                               <ChevronRight size={16} className="home-search-item-arrow" />
                             </button>
@@ -315,7 +325,7 @@ export default function HomePage({
                         >
                           <div className="home-search-item-copy">
                             <p className="home-search-item-title">{searchCopy.panchang}</p>
-                            <p className="home-search-item-meta">Panchang page</p>
+                            <p className="home-search-item-meta">{language === 'ne' ? 'पञ्चाङ्ग पृष्ठ' : 'Panchang page'}</p>
                             <p className="home-search-item-preview">{language === 'ne' ? 'वर्तमान मिति, समय, र उपलब्ध गणनाहरू हेर्नुहोस्।' : 'Open the current date, time, and available calculation notes.'}</p>
                           </div>
                           <ChevronRight size={16} className="home-search-item-arrow" />
@@ -343,8 +353,8 @@ export default function HomePage({
               }}
               className="deity-pill-v2"
             >
-              <span className="deity-pill-initial">{deity.sanskritName?.charAt(0) || deity.name.charAt(0)}</span>
-              <span className="deity-pill-name">{deity.name}</span>
+              <span className="deity-pill-initial">{getLocalizedDeityName(deity, language).charAt(0)}</span>
+              <span className="deity-pill-name">{getLocalizedDeityName(deity, language)}</span>
             </button>
           ))}
         </div>
@@ -361,10 +371,10 @@ export default function HomePage({
             <p className="today-stotra-label">{copy.dailyStotra}</p>
             <button onClick={() => onOpenStotra(dailyStotra)} className="stotra-list-item today-stotra-card">
               <p className="today-stotra-badge">{copy.dailyStotra}</p>
-              <div className="stotra-list-initial">{dailyStotra.title.charAt(0)}</div>
+              <div className="stotra-list-initial">{getLocalizedContentTitle(dailyStotra, language).charAt(0)}</div>
               <div className="stotra-list-body">
-                <p className="today-stotra-title">{dailyStotra.title}</p>
-                <p className="today-stotra-meta">{dailyStotra.deity} · {dailyStotra.category}</p>
+                <p className="today-stotra-title">{getLocalizedContentTitle(dailyStotra, language)}</p>
+                <p className="today-stotra-meta">{getLocalizedDeityName(dailyStotra.deityNe || dailyStotra.deity, language)} · {getLocalizedCategoryName(dailyStotra.categoryNe || dailyStotra.category, language)}</p>
               </div>
               <ChevronRight size={16} className="stotra-list-arrow" />
             </button>
@@ -379,10 +389,10 @@ export default function HomePage({
             <div className="stotra-list-compact">
               {recentStotras.map((stotra) => (
                 <button key={stotra.id} onClick={() => onOpenStotra(stotra)} className="stotra-list-item">
-                  <div className="stotra-list-initial">{stotra.title.charAt(0)}</div>
+                    <div className="stotra-list-initial">{getLocalizedContentTitle(stotra, language).charAt(0)}</div>
                   <div className="stotra-list-body">
-                    <p className="stotra-list-title">{stotra.title}</p>
-                    <p className="stotra-list-meta">{stotra.deity} · {stotra.category}</p>
+                    <p className="stotra-list-title">{getLocalizedContentTitle(stotra, language)}</p>
+                    <p className="stotra-list-meta">{getLocalizedDeityName(stotra.deityNe || stotra.deity, language)} · {getLocalizedCategoryName(stotra.categoryNe || stotra.category, language)}</p>
                   </div>
                   <ChevronRight size={16} className="stotra-list-arrow" />
                 </button>
@@ -408,10 +418,10 @@ export default function HomePage({
                   onClick={() => onOpenStotra(stotra)}
                   className="stotra-list-item"
                 >
-                  <div className="stotra-list-initial">{stotra.title.charAt(0)}</div>
+                  <div className="stotra-list-initial">{getLocalizedContentTitle(stotra, language).charAt(0)}</div>
                   <div className="stotra-list-body">
-                    <p className="stotra-list-title">{stotra.title}</p>
-                    <p className="stotra-list-meta">{stotra.deity} · {stotra.category}</p>
+                    <p className="stotra-list-title">{getLocalizedContentTitle(stotra, language)}</p>
+                    <p className="stotra-list-meta">{getLocalizedDeityName(stotra.deityNe || stotra.deity, language)} · {getLocalizedCategoryName(stotra.categoryNe || stotra.category, language)}</p>
                   </div>
                   <ChevronRight size={16} className="stotra-list-arrow" />
                 </button>

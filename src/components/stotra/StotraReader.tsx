@@ -2,6 +2,7 @@ import { Bookmark, Check, Copy, ImageIcon, Printer, Share2, X } from 'lucide-rea
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { Stotra } from '../../types';
+import { getLocalizedAlternateTitle, getLocalizedCategoryName, getLocalizedContentTitle, getLocalizedDeityName, getLocalizedText } from '../../utils/localization';
 
 export type ReaderFontSize = 'small' | 'medium' | 'large';
 
@@ -89,6 +90,7 @@ interface StotraReaderProps {
   stotra: Stotra | null;
   fontSize: ReaderFontSize;
   isFavorite: boolean;
+  language: 'ne' | 'en';
   onClose: () => void;
   onFontSizeChange: (fontSize: ReaderFontSize) => void;
   onPrint: () => void;
@@ -100,13 +102,51 @@ export default function StotraReader({
   stotra,
   fontSize,
   isFavorite,
+  language,
   onClose,
   onFontSizeChange,
   onPrint,
   onShare,
   onToggleFavorite,
 }: StotraReaderProps) {
-  const meaning = stotra?.meaning || stotra?.nepaliMeaning;
+  const meaning = stotra ? getLocalizedText(language, stotra.meaningNe || stotra.nepaliMeaning, stotra.meaning) : '';
+  const copy = language === 'ne'
+    ? {
+        meaning: 'अर्थ',
+        wordMeaning: 'शब्दार्थ',
+        benefits: 'लाभ',
+        process: 'पाठ गर्ने विधि',
+        source: 'स्रोत',
+        devotionalText: 'मूल पाठ',
+        imageShareError: 'तस्बिर सेयर सुविधा उपलब्ध छैन।',
+        copied: 'पाठ कपी भयो',
+        copyText: 'पाठ क्लिपबोर्डमा कपी गर्नुहोस्',
+        share: 'सेयर गर्नुहोस्',
+        removeFavorite: 'मनपर्नेबाट हटाउनुहोस्',
+        saveFavorite: 'मनपर्नेमा राख्नुहोस्',
+        print: 'प्रिन्ट गर्नुहोस्',
+        shareImage: 'तस्बिरको रूपमा सेयर गर्नुहोस्',
+        close: 'बन्द गर्नुहोस्',
+        shortcuts: 'Esc बन्द · B मनपर्ने · +/- अक्षर आकार',
+      }
+    : {
+        meaning: 'Meaning',
+        wordMeaning: 'Word Meaning',
+        benefits: 'Benefits',
+        process: 'How to Recite / Use',
+        source: 'Source',
+        devotionalText: 'Devotional Text',
+        imageShareError: 'Image sharing not supported.',
+        copied: 'Copied stotra text',
+        copyText: 'Copy stotra text to clipboard',
+        share: 'Share content',
+        removeFavorite: 'Remove from favorites',
+        saveFavorite: 'Save favorite',
+        print: 'Print content',
+        shareImage: 'Share content as image',
+        close: 'Close reader',
+        shortcuts: 'Esc Close · B Bookmark · +/- Font size',
+      };
   const textScriptClass = stotra?.content && /[\u0900-\u097F]/.test(stotra.content) ? 'reader-text-devanagari' : 'reader-text-latin';
   const [imageFailed, setImageFailed] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -135,8 +175,8 @@ export default function StotraReader({
   const handleCopyText = async () => {
     if (!stotra) return;
     const text = [
-      stotra.title,
-      stotra.alternateTitle ? `(${stotra.alternateTitle})` : '',
+      getLocalizedContentTitle(stotra, language),
+      getLocalizedAlternateTitle(stotra, language) ? `(${getLocalizedAlternateTitle(stotra, language)})` : '',
       '',
       stotra.content,
       meaning ? `\nMeaning:\n${meaning}` : '',
@@ -164,7 +204,7 @@ export default function StotraReader({
       setShareImageError(null);
       await generateShareImage(stotra);
     } catch {
-      setShareImageError('Image sharing not supported.');
+      setShareImageError(copy.imageShareError);
     }
   };
 
@@ -211,25 +251,25 @@ export default function StotraReader({
                   <ReaderActionButton
                     onClick={handleCopyText}
                     icon={copied ? <Check size={18} /> : <Copy size={18} />}
-                    ariaLabel={copied ? 'Copied stotra text' : 'Copy stotra text to clipboard'}
+                    ariaLabel={copied ? copy.copied : copy.copyText}
                     active={copied}
                   />
-                  <ReaderActionButton onClick={() => onShare(stotra)} icon={<Share2 size={18} />} ariaLabel="Share content" />
+                  <ReaderActionButton onClick={() => onShare(stotra)} icon={<Share2 size={18} />} ariaLabel={copy.share} />
                   <ReaderActionButton
                     onClick={() => onToggleFavorite(stotra)}
                     icon={<Bookmark size={18} fill={isFavorite ? 'currentColor' : 'none'} />}
-                    ariaLabel={isFavorite ? 'Remove from favorites' : 'Save favorite'}
+                    ariaLabel={isFavorite ? copy.removeFavorite : copy.saveFavorite}
                     active={isFavorite}
                   />
-                  <ReaderActionButton onClick={onPrint} icon={<Printer size={18} />} ariaLabel="Print content" />
-                  <ReaderActionButton onClick={handleShareImage} icon={<ImageIcon size={18} />} ariaLabel="Share content as image" />
-                  <button ref={closeButtonRef} onClick={onClose} className="reader-action reader-close" aria-label="Close reader" title="Close reader">
+                  <ReaderActionButton onClick={onPrint} icon={<Printer size={18} />} ariaLabel={copy.print} />
+                  <ReaderActionButton onClick={handleShareImage} icon={<ImageIcon size={18} />} ariaLabel={copy.shareImage} />
+                  <button ref={closeButtonRef} onClick={onClose} className="reader-action reader-close" aria-label={copy.close} title={copy.close}>
                     <X size={18} />
                   </button>
                 </div>
               </div>
               <div className="reader-shortcuts" aria-hidden="true">
-                <kbd>Esc</kbd> Close &nbsp; <kbd>B</kbd> Bookmark &nbsp; <kbd>+/-</kbd> Font size
+                {copy.shortcuts}
               </div>
               {shareImageError && <p className="reader-inline-message">{shareImageError}</p>}
             </div>
@@ -239,52 +279,52 @@ export default function StotraReader({
 
             <div className="reader-content" ref={contentRef} onScroll={handleScroll}>
               <header className="reader-header reader-header-v2">
-                <h2 id="reader-title" className="reader-title">{stotra.title}</h2>
-                {stotra.alternateTitle && <p className="reader-subtitle devanagari-line">{stotra.alternateTitle}</p>}
-                <p className="reader-meta-v2">{stotra.deity} · {stotra.category}</p>
+                <h2 id="reader-title" className="reader-title">{getLocalizedContentTitle(stotra, language)}</h2>
+                {getLocalizedAlternateTitle(stotra, language) && <p className="reader-subtitle devanagari-line">{getLocalizedAlternateTitle(stotra, language)}</p>}
+                <p className="reader-meta-v2">{getLocalizedDeityName(stotra.deityNe || stotra.deity, language)} · {getLocalizedCategoryName(stotra.categoryNe || stotra.category, language)}</p>
                 <div className="reader-title-rule" />
               </header>
 
               <div className="reader-sections">
                 {stotra.imageUrl && !imageFailed && (
                   <div className="reader-image-frame">
-                    <img src={stotra.imageUrl} alt={stotra.title} className="deity-image" onError={() => setImageFailed(true)} />
+                    <img src={stotra.imageUrl} alt={getLocalizedContentTitle(stotra, language)} className="deity-image" onError={() => setImageFailed(true)} />
                   </div>
                 )}
 
-                <ReaderSection title="Devotional Text">
+                <ReaderSection title={copy.devotionalText}>
                   <div className={`reader-text ${textScriptClass} ${fontSizeClass[fontSize]}`}>{stotra.content}</div>
                 </ReaderSection>
 
                 {meaning && (
                   <section className="reader-meaning-block">
-                    <p className="reader-meaning-label">Meaning</p>
+                    <p className="reader-meaning-label">{copy.meaning}</p>
                     <p className="reader-paragraph whitespace-pre-wrap">{meaning}</p>
                   </section>
                 )}
 
-                {stotra.wordMeaning && (
-                  <ReaderSection title="Word Meaning">
-                    <p className="reader-paragraph whitespace-pre-wrap">{stotra.wordMeaning}</p>
+                {(stotra.wordMeaning || stotra.wordMeaningNe) && (
+                  <ReaderSection title={copy.wordMeaning}>
+                    <p className="reader-paragraph whitespace-pre-wrap">{getLocalizedText(language, stotra.wordMeaningNe, stotra.wordMeaning)}</p>
                   </ReaderSection>
                 )}
 
-                {stotra.benefits && (
+                {(stotra.benefits || stotra.benefitsNe) && (
                   <section className="reader-benefits-block">
-                    <p className="reader-meaning-label">Benefits</p>
-                    <p className="reader-paragraph whitespace-pre-wrap">{stotra.benefits}</p>
+                    <p className="reader-meaning-label">{copy.benefits}</p>
+                    <p className="reader-paragraph whitespace-pre-wrap">{getLocalizedText(language, stotra.benefitsNe, stotra.benefits)}</p>
                   </section>
                 )}
 
-                {stotra.process && (
-                  <ReaderSection title="How to Recite / Use">
-                    <p className="reader-paragraph whitespace-pre-wrap">{stotra.process}</p>
+                {(stotra.process || stotra.processNe) && (
+                  <ReaderSection title={copy.process}>
+                    <p className="reader-paragraph whitespace-pre-wrap">{getLocalizedText(language, stotra.processNe, stotra.process)}</p>
                   </ReaderSection>
                 )}
 
-                {stotra.source && (
-                  <ReaderSection title="Source">
-                    <p className="reader-paragraph whitespace-pre-wrap">{stotra.source}</p>
+                {(stotra.source || stotra.sourceNe) && (
+                  <ReaderSection title={copy.source}>
+                    <p className="reader-paragraph whitespace-pre-wrap">{getLocalizedText(language, stotra.sourceNe, stotra.source)}</p>
                   </ReaderSection>
                 )}
               </div>

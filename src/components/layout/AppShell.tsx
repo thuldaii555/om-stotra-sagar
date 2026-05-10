@@ -45,15 +45,25 @@ export default function AppShell({
 
   return (
     <div className="site-shell app-shell">
-      <a href="#main-content" className="skip-link">Skip to content</a>
+      <a href="#main-content" className="skip-link">{language === 'ne' ? 'मुख्य सामग्रीमा जानुहोस्' : 'Skip to content'}</a>
       <header className="site-header premium-header app-header glass-nav">
         <div className="nav-bar">
-          <button onClick={() => onViewChange('home')} className="brand-v2" aria-label="Home">
-            <span className="brand-om">ॐ</span>
+          <button onClick={() => onViewChange('home')} className="brand-v2" aria-label={labels.home}>
+            <span className="brand-logo-mark">
+              <img
+                src="/images/golden-om-logo-circle.png"
+                alt="Om Stotra Sagar golden Om logo"
+                className="brand-logo-image logo-glow"
+                onError={(event) => {
+                  event.currentTarget.style.display = 'none';
+                }}
+              />
+              <span className="brand-logo-fallback" aria-hidden="true">ॐ</span>
+            </span>
             <span className="brand-name">Om Stotra Sagar</span>
           </button>
 
-          <nav className="nav-menu nav-menu-desktop" aria-label="Primary navigation">
+          <nav className="nav-menu nav-menu-desktop" aria-label={language === 'ne' ? 'मुख्य नेभिगेसन' : 'Primary navigation'}>
             <NavButton active={activeView === 'home'} onClick={() => onViewChange('home')} icon={<Home size={18} />} label={labels.home} />
             <NavButton active={activeView === 'stotras'} onClick={() => onViewChange('stotras')} icon={<ScrollText size={18} />} label={labels.library} />
             <NavButton active={activeView === 'gods'} onClick={() => onViewChange('gods')} icon={<Sparkles size={18} />} label={labels.gods} />
@@ -69,8 +79,8 @@ export default function AppShell({
                   <input
                     autoFocus
                     type="text"
-                    aria-label="Search devotional library"
-                    placeholder={`${labels.search}...`}
+                    aria-label={labels.search}
+                    placeholder={labels.search}
                     value={searchQuery}
                     onChange={(event) => onSearchChange(event.target.value)}
                     className="nav-search-input"
@@ -82,13 +92,13 @@ export default function AppShell({
                       onSearchChange('');
                     }}
                     className="nav-icon-btn"
-                    aria-label="Close search"
+                    aria-label={language === 'ne' ? 'खोज बन्द गर्नुहोस्' : 'Close search'}
                   >
                     <X size={14} />
                   </button>
                 </div>
               ) : (
-                <button type="button" onClick={() => setSearchOpen(true)} className="nav-icon-btn" aria-label="Search">
+                <button type="button" onClick={() => setSearchOpen(true)} className="nav-icon-btn" aria-label={labels.search}>
                   <Search size={18} />
                 </button>
               )}
@@ -96,14 +106,14 @@ export default function AppShell({
             <button
               className="lang-toggle-btn"
               onClick={() => onLanguageChange(language === 'ne' ? 'en' : 'ne')}
-              aria-label="Switch language"
+              aria-label={language === 'ne' ? 'भाषा परिवर्तन गर्नुहोस्' : 'Switch language'}
             >
               {language === 'ne' ? 'EN' : 'नेपाली'}
             </button>
-            <button className="nav-icon-btn" onClick={onThemeChange} aria-label="Toggle color theme" title={theme === 'dark' ? 'Light mode' : 'Dark mode'}>
+            <button className="nav-icon-btn" onClick={onThemeChange} aria-label={language === 'ne' ? 'रङ्ग मोड बदल्नुहोस्' : 'Toggle color theme'} title={theme === 'dark' ? (language === 'ne' ? 'उज्यालो मोड' : 'Light mode') : (language === 'ne' ? 'गाढा मोड' : 'Dark mode')}>
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <button className="menu-button" onClick={onToggleMenu} aria-label="Toggle navigation">
+            <button className="menu-button" onClick={onToggleMenu} aria-label={language === 'ne' ? 'नेभिगेसन खोल्नुहोस् वा बन्द गर्नुहोस्' : 'Toggle navigation'}>
               {isMenuOpen ? <X /> : <Menu />}
             </button>
           </div>
@@ -114,8 +124,8 @@ export default function AppShell({
             <div className="search-wrap">
               <input
                 type="text"
-                aria-label="Search devotional library"
-                placeholder={`${labels.search}...`}
+                aria-label={labels.search}
+                placeholder={labels.search}
                 value={searchQuery}
                 onChange={(event) => onSearchChange(event.target.value)}
                 className="search-bar"
@@ -144,7 +154,7 @@ export default function AppShell({
             <span className="footer-om">ॐ</span>
             <span className="footer-brand">Om Stotra Sagar</span>
           </div>
-          <nav className="footer-v2-links" aria-label="Footer links">
+          <nav className="footer-v2-links" aria-label={language === 'ne' ? 'फुटर लिंकहरू' : 'Footer links'}>
             <button onClick={() => onViewChange('stotras')} className="footer-v2-link">{labels.library}</button>
             <button onClick={() => onViewChange('gods')} className="footer-v2-link">{labels.gods}</button>
             <button onClick={() => onViewChange('pooja')} className="footer-v2-link">{labels.pooja}</button>
@@ -154,7 +164,7 @@ export default function AppShell({
         </div>
       </footer>
 
-      <nav className="bottom-nav" aria-label="Mobile primary navigation">
+      <nav className="bottom-nav" aria-label={language === 'ne' ? 'मोबाइल मुख्य नेभिगेसन' : 'Mobile primary navigation'}>
         <BottomNavTab active={activeView === 'home'} onClick={() => onViewChange('home')} icon={<Home size={20} />} label={labels.home} />
         <BottomNavTab active={activeView === 'stotras'} onClick={() => onViewChange('stotras')} icon={<ScrollText size={20} />} label={labels.library} />
         <BottomNavTab active={activeView === 'gods'} onClick={() => onViewChange('gods')} icon={<Sparkles size={20} />} label={labels.gods} />

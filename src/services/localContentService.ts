@@ -5,7 +5,7 @@ export type StotraInput = Omit<Stotra, 'id'> & { id?: string };
 export type DeityInput = Omit<Deity, 'id'> & { id?: string };
 export type PoojaBidhiInput = Omit<PoojaBidhi, 'id'> & { id?: string };
 export type HinduStoryInput = Omit<HinduStory, 'id'> & { id?: string };
-export type CategoryInput = Pick<Category, 'name' | 'description'> & { id?: string };
+export type CategoryInput = Pick<Category, 'name' | 'nameNe' | 'description' | 'descriptionNe'> & { id?: string };
 export type PanchangContentInput = Partial<PanchangContent>;
 
 const CONTENT_KEY = 'om-stotra-sagar-content';
@@ -81,19 +81,24 @@ export const normalizeStotraInput = (stotra: Partial<Stotra> & { id?: string }, 
   title: cleanText(stotra.title),
   titleNe: cleanOptionalText(stotra.titleNe),
   alternateTitle: cleanOptionalText(stotra.alternateTitle),
+  alternateTitleNe: cleanOptionalText(stotra.alternateTitleNe),
   deity: cleanText(stotra.deity),
+  deityNe: cleanOptionalText(stotra.deityNe),
   category: normalizeCategoryName(stotra.category),
+  categoryNe: cleanOptionalText(stotra.categoryNe),
   imageUrl: cleanOptionalText(stotra.imageUrl),
   content: cleanText(stotra.content),
   meaning: cleanOptionalText(stotra.meaning || stotra.nepaliMeaning),
   meaningNe: cleanOptionalText(stotra.meaningNe),
   nepaliMeaning: cleanOptionalText(stotra.meaning || stotra.nepaliMeaning),
   wordMeaning: cleanOptionalText(stotra.wordMeaning),
+  wordMeaningNe: cleanOptionalText(stotra.wordMeaningNe),
   benefits: cleanOptionalText(stotra.benefits),
   benefitsNe: cleanOptionalText(stotra.benefitsNe),
   process: cleanOptionalText(stotra.process),
   processNe: cleanOptionalText(stotra.processNe),
   source: cleanOptionalText(stotra.source),
+  sourceNe: cleanOptionalText(stotra.sourceNe),
   tags: cleanTags(stotra.tags),
   language: cleanOptionalText(stotra.language),
   script: cleanOptionalText(stotra.script),
@@ -103,7 +108,9 @@ export const normalizeStotraInput = (stotra: Partial<Stotra> & { id?: string }, 
 export const normalizeDeityInput = (deity: Partial<Deity> & { id?: string }, fallbackId?: string): Deity => ({
   id: deity.id || fallbackId || createId('deity'),
   name: cleanText(deity.name),
+  nameNe: cleanOptionalText(deity.nameNe),
   type: deity.type === 'God' || deity.type === 'Goddess' || deity.type === 'Form' || deity.type === 'Other' ? deity.type : 'Other',
+  typeNe: cleanOptionalText(deity.typeNe),
   sanskritName: cleanOptionalText(deity.sanskritName),
   introduction: cleanText(deity.introduction || deity.description),
   introductionNe: cleanOptionalText(deity.introductionNe),
@@ -119,20 +126,31 @@ export const normalizeDeityInput = (deity: Partial<Deity> & { id?: string }, fal
 export const normalizeCategoryInput = (category: Partial<Category> & { id?: string }, fallbackId?: string): Category => ({
   id: category.id || fallbackId || createId('category'),
   name: cleanText(category.name),
+  nameNe: cleanOptionalText(category.nameNe),
   description: cleanOptionalText(category.description),
+  descriptionNe: cleanOptionalText(category.descriptionNe),
 });
 
 export const normalizePoojaBidhiInput = (item: Partial<PoojaBidhi> & { id?: string }, fallbackId?: string): PoojaBidhi => ({
   id: item.id || fallbackId || createId('pooja'),
   title: cleanText(item.title),
+  titleNe: cleanOptionalText(item.titleNe),
   deity: cleanText(item.deity),
+  deityNe: cleanOptionalText(item.deityNe),
   occasion: cleanText(item.occasion),
+  occasionNe: cleanOptionalText(item.occasionNe),
   overview: cleanText(item.overview),
+  overviewNe: cleanOptionalText(item.overviewNe),
   materials: ensureArray<string>(item.materials).map((value) => cleanText(value)).filter(Boolean),
+  materialsNe: ensureArray<string>(item.materialsNe).map((value) => cleanText(value)).filter(Boolean),
   steps: ensureArray<string>(item.steps).map((value) => cleanText(value)).filter(Boolean),
+  stepsNe: ensureArray<string>(item.stepsNe).map((value) => cleanText(value)).filter(Boolean),
   benefits: ensureArray<string>(item.benefits).map((value) => cleanText(value)).filter(Boolean),
+  benefitsNe: ensureArray<string>(item.benefitsNe).map((value) => cleanText(value)).filter(Boolean),
   cautions: cleanOptionalText(item.cautions),
+  cautionsNe: cleanOptionalText(item.cautionsNe),
   source: cleanOptionalText(item.source),
+  sourceNe: cleanOptionalText(item.sourceNe),
   tags: cleanTags(item.tags),
 });
 

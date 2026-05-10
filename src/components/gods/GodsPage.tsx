@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ArrowLeft, ArrowRight, BookOpen, Feather, Sparkles } from 'lucide-react';
 import type { Deity, PoojaBidhi, Stotra } from '../../types';
+import { getLocalizedCategoryName, getLocalizedContentTitle, getLocalizedDeityName, getLocalizedDeityType, getLocalizedPoojaTitle, getLocalizedText } from '../../utils/localization';
 
 interface GodsPageProps {
   deities: Deity[];
@@ -109,6 +110,7 @@ export default function GodsPage({ deities, stotras, poojaBidhi, language, activ
             <DeityCard
               key={deity.id}
               deity={deity}
+              language={language}
               onOpen={() => setSelectedDeityName(deity.name)}
             />
           ))}
@@ -118,16 +120,17 @@ export default function GodsPage({ deities, stotras, poojaBidhi, language, activ
   );
 }
 
-function DeityCard({ deity, onOpen }: { key?: string; deity: Deity; onOpen: () => void }) {
+function DeityCard({ deity, language, onOpen }: { key?: string; deity: Deity; language: 'ne' | 'en'; onOpen: () => void }) {
   const [imageFailed, setImageFailed] = useState(false);
   const hasImage = Boolean(deity.imageUrl) && !imageFailed;
-  const symbol = deity.sanskritName?.trim().charAt(0) || deity.name.trim().charAt(0) || 'Om';
+  const displayName = getLocalizedDeityName(deity, language);
+  const symbol = displayName.trim().charAt(0) || 'Om';
 
   return (
     <button className="deity-tile-card" onClick={onOpen}>
       <div className="deity-tile-media">
         {hasImage ? (
-          <img src={deity.imageUrl} alt={deity.name} className="deity-tile-image" loading="lazy" onError={() => setImageFailed(true)} />
+          <img src={deity.imageUrl} alt={displayName} className="deity-tile-image" loading="lazy" onError={() => setImageFailed(true)} />
         ) : (
           <div className="deity-tile-fallback">
             <div className="symbol-medallion deity-tile-medallion">{symbol}</div>
@@ -135,7 +138,7 @@ function DeityCard({ deity, onOpen }: { key?: string; deity: Deity; onOpen: () =
         )}
       </div>
       <div className="deity-tile-copy">
-        <h2 className="deity-tile-title">{deity.name}</h2>
+        <h2 className="deity-tile-title">{displayName}</h2>
         {deity.sanskritName && <p className="deity-tile-sanskrit devanagari-line">{deity.sanskritName}</p>}
       </div>
     </button>
@@ -184,13 +187,13 @@ function DeityProfile({
           )}
         </div>
         <div className="deity-detail-copy">
-          <p className="page-eyebrow">{deity.type || 'Other'}</p>
-          <h1 className="page-title">{deity.name}</h1>
+          <p className="page-eyebrow">{getLocalizedDeityType(deity, language)}</p>
+          <h1 className="page-title">{getLocalizedDeityName(deity, language)}</h1>
           {deity.sanskritName && <p className="reader-subtitle devanagari-line">{deity.sanskritName}</p>}
-          <p className="page-subtitle">{deity.introduction || deity.description}</p>
+          <p className="page-subtitle">{getLocalizedText(language, deity.introductionNe, deity.introduction || deity.description)}</p>
           <section className="content-block">
             <p className="page-eyebrow">{copy.significance}</p>
-            <p className="reader-paragraph">{deity.significance}</p>
+            <p className="reader-paragraph">{getLocalizedText(language, deity.significanceNe, deity.significance)}</p>
           </section>
           {deity.mantra && <section className="info-callout"><p className="page-eyebrow">{copy.mantra}</p><p className="reader-paragraph devanagari-line">{deity.mantra}</p></section>}
           {deity.tags.length > 0 && <div className="chip-row">{deity.tags.map((tag) => <span key={tag} className="tag-chip tag-chip-muted">#{tag}</span>)}</div>}
@@ -201,16 +204,16 @@ function DeityProfile({
         <div className="section-band-content">
           <div>
             <p className="section-kicker">{copy.related}</p>
-            <h2 className="section-heading">{copy.availableFor} {deity.name}</h2>
+            <h2 className="section-heading">{copy.availableFor} {getLocalizedDeityName(deity, language)}</h2>
           </div>
         </div>
 
         <div className="deity-related-stack">
-          {grouped.map(([category, items]) => <RelatedSection key={category} title={category} icon={<BookOpen size={16} />} items={items} onOpen={onOpenContent} />)}
+          {grouped.map(([category, items]) => <RelatedSection key={category} title={category} icon={<BookOpen size={16} />} items={items} language={language} onOpen={onOpenContent} />)}
           {poojaBidhi.length > 0 && (
             <section className="admin-card deity-related-section">
               <h3 className="section-heading compact-heading"><Feather size={16} /> {copy.pooja}</h3>
-              {poojaBidhi.map((item) => <button key={item.id} onClick={() => onOpenPooja(deity.name)} className="record-card record-button"><span>{item.title}</span><ArrowRight size={16} /></button>)}
+              {poojaBidhi.map((item) => <button key={item.id} onClick={() => onOpenPooja(deity.name)} className="record-card record-button"><span>{getLocalizedPoojaTitle(item, language)}</span><ArrowRight size={16} /></button>)}
             </section>
           )}
           {content.length === 0 && poojaBidhi.length === 0 && (
@@ -225,15 +228,15 @@ function DeityProfile({
   );
 }
 
-function RelatedSection({ title, icon, items, onOpen }: { key?: string; title: string; icon: ReactNode; items: Stotra[]; onOpen: (item: Stotra) => void }) {
+function RelatedSection({ title, icon, items, language, onOpen }: { key?: string; title: string; icon: ReactNode; items: Stotra[]; language: 'ne' | 'en'; onOpen: (item: Stotra) => void }) {
   return (
     <section className="admin-card deity-related-section">
-      <h3 className="section-heading compact-heading">{icon} {title}</h3>
+      <h3 className="section-heading compact-heading">{icon} {getLocalizedCategoryName(title, language)}</h3>
       <div className="record-list">
         {items.map((item) => (
           <button key={item.id} onClick={() => onOpen(item)} className="record-card record-button">
-            <span>{item.title}</span>
-            <span className="tag-chip tag-chip-muted">{item.category}</span>
+            <span>{getLocalizedContentTitle(item, language)}</span>
+            <span className="tag-chip tag-chip-muted">{getLocalizedCategoryName(item.categoryNe || item.category, language)}</span>
           </button>
         ))}
       </div>

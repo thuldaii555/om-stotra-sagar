@@ -3,19 +3,24 @@ export interface Stotra {
   title: string;
   titleNe?: string;
   alternateTitle?: string;
+  alternateTitleNe?: string;
   deity: string;
+  deityNe?: string;
   category: string;
+  categoryNe?: string;
   imageUrl?: string;
   content: string;
   meaning?: string;
   meaningNe?: string;
   nepaliMeaning?: string;
   wordMeaning?: string;
+  wordMeaningNe?: string;
   benefits?: string;
   benefitsNe?: string;
   process?: string;
   processNe?: string;
   source?: string;
+  sourceNe?: string;
   tags: string[];
   language?: string;
   script?: string;
@@ -25,7 +30,9 @@ export interface Stotra {
 export interface Deity {
   id: string;
   name: string;
+  nameNe?: string;
   type?: 'God' | 'Goddess' | 'Form' | 'Other';
+  typeNe?: string;
   sanskritName?: string;
   introduction?: string;
   introductionNe?: string;
@@ -41,20 +48,31 @@ export interface Deity {
 export interface Category {
   id: string;
   name: string;
+  nameNe?: string;
   description?: string;
+  descriptionNe?: string;
 }
 
 export interface PoojaBidhi {
   id: string;
   title: string;
+  titleNe?: string;
   deity: string;
+  deityNe?: string;
   occasion: string;
+  occasionNe?: string;
   overview: string;
+  overviewNe?: string;
   materials: string[];
+  materialsNe?: string[];
   steps: string[];
+  stepsNe?: string[];
   benefits: string[];
+  benefitsNe?: string[];
   cautions?: string;
+  cautionsNe?: string;
   source?: string;
+  sourceNe?: string;
   tags: string[];
 }
 

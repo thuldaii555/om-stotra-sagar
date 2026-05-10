@@ -4,6 +4,68 @@ const TRADITIONAL_SOURCE = 'Traditional devotional text; verify full text before
 const VAIDIKA_SOURCE = 'Vaidika Vignanam reference pattern; verify full text before public release.';
 const commonProcess = 'Recite in a clean, quiet place with attention and devotion. A diya, incense, flowers, or simple mental worship may be used according to family practice.';
 
+const titleNeByTitle: Record<string, string> = {
+  'Hanuman Chalisa': 'हनुमान चालीसा',
+  'Shiva Tandava Stotram': 'शिव ताण्डव स्तोत्रम्',
+  'Mahalakshmi Ashtakam': 'महालक्ष्मी अष्टकम्',
+  'Saraswati Vandana': 'सरस्वती वन्दना',
+  'Ganesh Stotra': 'गणेश स्तोत्र',
+  'Vishnu Sahasranama Opening': 'विष्णु सहस्रनाम प्रारम्भ',
+  'Durga Kavach Opening': 'दुर्गा कवच प्रारम्भ',
+  'Aditya Hridayam Opening': 'आदित्यहृदयम् प्रारम्भ',
+  'Krishna Ashtakam': 'कृष्ण अष्टकम्',
+  'Ram Raksha Stotra Opening': 'रामरक्षा स्तोत्रम् प्रारम्भ',
+  'Shiva Aarti': 'शिव आरती',
+  'Ganesh Aarti': 'गणेश आरती',
+  'Lakshmi Aarti': 'लक्ष्मी आरती',
+  'Hanuman Aarti': 'हनुमान आरती',
+  'Durga Aarti': 'दुर्गा आरती',
+  'Saraswati Aarti': 'सरस्वती आरती',
+  'Gayatri Mantra': 'गायत्री मन्त्र',
+  'Mahamrityunjaya Mantra': 'महामृत्युञ्जय मन्त्र',
+  'Om Namah Shivaya': 'ॐ नमः शिवाय',
+  'Vishnu Stuti': 'विष्णु स्तुति',
+  'Durga Chalisa Excerpt': 'दुर्गा चालीसा अंश',
+  'Kali Stuti': 'काली स्तुति',
+  'Surya Ashtakam': 'सूर्याष्टकम्',
+  'Narayana Kavach Opening': 'नारायण कवच प्रारम्भ',
+  'Parvati Prayer': 'पार्वती प्रार्थना',
+  'Kartikeya Stuti': 'कार्तिकेय स्तुति',
+  'Radha Prayer': 'राधा प्रार्थना',
+};
+
+const deityNeByName: Record<string, string> = {
+  Ganesh: 'गणेश',
+  Shiva: 'शिव',
+  Vishnu: 'विष्णु',
+  Lakshmi: 'लक्ष्मी',
+  Saraswati: 'सरस्वती',
+  Hanuman: 'हनुमान',
+  Durga: 'दुर्गा',
+  Krishna: 'कृष्ण',
+  Rama: 'राम',
+  Kali: 'काली',
+  Surya: 'सूर्य',
+  Narayana: 'नारायण',
+  Parvati: 'पार्वती',
+  Kartikeya: 'कार्तिकेय',
+  Radha: 'राधा',
+};
+
+const categoryNeByName: Record<string, string> = {
+  Stotra: 'स्तोत्र',
+  Stotram: 'स्तोत्रम्',
+  Kavacham: 'कवच',
+  Kavach: 'कवच',
+  Aarti: 'आरती',
+  Ashtakam: 'अष्टकम्',
+  Chalisa: 'चालीसा',
+  Mantra: 'मन्त्र',
+  Prayer: 'प्रार्थना',
+  Vandana: 'वन्दना',
+  Sahasranama: 'सहस्रनाम',
+};
+
 const item = (
   id: string,
   title: string,
@@ -21,9 +83,13 @@ const item = (
 ): Stotra => ({
   id,
   title,
+  titleNe: titleNeByTitle[title] || alternateTitle,
   alternateTitle,
+  alternateTitleNe: alternateTitle,
   deity,
+  deityNe: deityNeByName[deity],
   category,
+  categoryNe: categoryNeByName[category],
   content: content.trim(),
   nepaliMeaning: meaning,
   wordMeaning,

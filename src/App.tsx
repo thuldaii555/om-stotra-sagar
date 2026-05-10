@@ -38,6 +38,7 @@ import {
 } from './services/localContentService';
 import { DEFAULT_CONTENT, DEFAULT_PANCHANG_CONTENT } from './data/defaultContent';
 import type { Category, ContentBundle, Deity, HistoryItem, PoojaBidhi, Stotra } from './types';
+import { getLocalizedCategoryName, getLocalizedContentTitle, getLocalizedDeityName } from './utils/localization';
 
 const StotrasPage = lazy(() => import('./components/stotra/StotrasPage'));
 const FavoritesPage = lazy(() => import('./components/stotra/FavoritesPage'));
@@ -174,15 +175,26 @@ export default function App() {
     return stotras.filter((stotra) => {
       const matchesSearch = !queryText ||
         stotra.title.toLowerCase().includes(queryText) ||
+        getLocalizedContentTitle(stotra, 'ne').toLowerCase().includes(queryText) ||
+        (stotra.titleNe?.toLowerCase().includes(queryText) ?? false) ||
         (stotra.alternateTitle?.toLowerCase().includes(queryText) ?? false) ||
+        (stotra.alternateTitleNe?.toLowerCase().includes(queryText) ?? false) ||
         stotra.deity.toLowerCase().includes(queryText) ||
+        getLocalizedDeityName(stotra.deityNe || stotra.deity, 'ne').toLowerCase().includes(queryText) ||
+        (stotra.deityNe?.toLowerCase().includes(queryText) ?? false) ||
         stotra.category.toLowerCase().includes(queryText) ||
+        getLocalizedCategoryName(stotra.categoryNe || stotra.category, 'ne').toLowerCase().includes(queryText) ||
+        (stotra.categoryNe?.toLowerCase().includes(queryText) ?? false) ||
         stotra.content.toLowerCase().includes(queryText) ||
+        (stotra.meaningNe?.toLowerCase().includes(queryText) ?? false) ||
         (stotra.nepaliMeaning?.toLowerCase().includes(queryText) ?? false) ||
         (stotra.meaning?.toLowerCase().includes(queryText) ?? false) ||
         (stotra.wordMeaning?.toLowerCase().includes(queryText) ?? false) ||
+        (stotra.wordMeaningNe?.toLowerCase().includes(queryText) ?? false) ||
         (stotra.benefits?.toLowerCase().includes(queryText) ?? false) ||
+        (stotra.benefitsNe?.toLowerCase().includes(queryText) ?? false) ||
         (stotra.process?.toLowerCase().includes(queryText) ?? false) ||
+        (stotra.processNe?.toLowerCase().includes(queryText) ?? false) ||
         (stotra.tags?.some((tag) => tag.toLowerCase().includes(queryText)) ?? false);
       const matchesDeity = !activeDeity || normalizeSearch(stotra.deity) === normalizeSearch(activeDeity);
       const matchesCategory = activeCategory === 'All' || normalizeSearch(stotra.category) === normalizeSearch(activeCategory);
@@ -223,7 +235,7 @@ export default function App() {
     const expireSession = () => {
       sessionStorage.removeItem(ADMIN_SESSION_KEY);
       setAdminUnlocked(false);
-      setMessage('Admin session expired after 30 minutes of inactivity.', 'error');
+      setMessage(msg('Admin session expired after 30 minutes of inactivity.', 'एडमिन सत्र ३० मिनेट निष्क्रिय रहेपछि समाप्त भयो।'), 'error');
       handleViewChange('home');
     };
     const refreshSession = () => {
@@ -281,6 +293,8 @@ export default function App() {
     setStatus({ text, kind });
   };
 
+  const msg = (en: string, ne: string) => language === 'ne' ? ne : en;
+
   const clearMessage = () => setStatus(null);
 
   const handleViewChange = (view: AppView) => {
@@ -331,10 +345,10 @@ export default function App() {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(window.location.href);
       }
-      setMessage('Page link copied to clipboard when available.');
+      setMessage(msg('Page link copied to clipboard when available.', 'सम्भव भए पेजको लिंक क्लिपबोर्डमा कपी भयो।'));
     } catch (error) {
       console.error('Share failed:', error);
-      setMessage('Sharing is not available in this browser.', 'error');
+      setMessage(msg('Sharing is not available in this browser.', 'यो ब्राउजरमा सेयर सुविधा उपलब्ध छैन।'), 'error');
     }
   };
 
@@ -351,11 +365,11 @@ export default function App() {
         ...bundle,
         stotras: replaceById(bundle.stotras, next),
       }));
-      setMessage('Devotional content saved.');
+      setMessage(msg('Devotional content saved.', 'भक्तिपूर्ण सामग्री सेभ भयो।'));
       return true;
     } catch (error) {
       console.error('Save stotra failed:', error);
-      setMessage('Could not save devotional content.', 'error');
+      setMessage(msg('Could not save devotional content.', 'भक्तिपूर्ण सामग्री सेभ गर्न सकिएन।'), 'error');
       return false;
     } finally {
       setIsSaving(false);
@@ -363,7 +377,7 @@ export default function App() {
   };
 
   const handleDeleteStotra = (id: string) => {
-    if (!confirm('Delete this stotra from local content?')) return;
+    if (!confirm(msg('Delete this stotra from local content?', 'यो स्तोत्र स्थानीय सामग्रीबाट मेटाउने?'))) return;
     updateContent((bundle) => ({
       ...bundle,
       stotras: removeById(bundle.stotras, id),
@@ -371,7 +385,7 @@ export default function App() {
     removeFavorite(id);
     setFavoriteIds(getFavoriteIds());
     setSelectedStotra((current) => (current?.id === id ? null : current));
-    setMessage('Devotional content deleted.');
+    setMessage(msg('Devotional content deleted.', 'भक्तिपूर्ण सामग्री मेटियो।'));
   };
 
   const handleSaveCategory = (input: CategoryInput, id?: string): Category | null => {
@@ -393,11 +407,11 @@ export default function App() {
             : bundle.stotras,
         };
       });
-      setMessage('Category saved.');
+      setMessage(msg('Category saved.', 'श्रेणी सेभ भयो।'));
       return savedCategory;
     } catch (error) {
       console.error('Save category failed:', error);
-      setMessage('Could not save the category.', 'error');
+      setMessage(msg('Could not save the category.', 'श्रेणी सेभ गर्न सकिएन।'), 'error');
       return null;
     } finally {
       setIsSaving(false);
@@ -407,15 +421,15 @@ export default function App() {
   const handleDeleteCategory = (id: string) => {
     const category = content.categories.find((item) => item.id === id);
     if (category && content.stotras.some((stotra) => normalizeContentName(stotra.category) === normalizeContentName(category.name))) {
-      setMessage('Move or update devotional content using this category before deleting it.', 'error');
+      setMessage(msg('Move or update devotional content using this category before deleting it.', 'यो श्रेणी प्रयोग भएको भक्तिपूर्ण सामग्री सार्नुहोस् वा अपडेट गर्नुहोस्।'), 'error');
       return;
     }
-    if (!confirm('Delete this category from local content?')) return;
+    if (!confirm(msg('Delete this category from local content?', 'यो श्रेणी स्थानीय सामग्रीबाट मेटाउने?'))) return;
     updateContent((bundle) => ({
       ...bundle,
       categories: removeById(bundle.categories, id),
     }));
-    setMessage('Category deleted.');
+    setMessage(msg('Category deleted.', 'श्रेणी मेटियो।'));
   };
 
   const handleSaveDeity = (input: DeityInput, id?: string): Deity | null => {
@@ -441,11 +455,11 @@ export default function App() {
             : bundle.poojaBidhi,
         };
       });
-      setMessage('Deity saved.');
+      setMessage(msg('Deity saved.', 'देवता सेभ भयो।'));
       return savedDeity;
     } catch (error) {
       console.error('Save deity failed:', error);
-      setMessage('Could not save the deity.', 'error');
+      setMessage(msg('Could not save the deity.', 'देवता सेभ गर्न सकिएन।'), 'error');
       return null;
     } finally {
       setIsSaving(false);
@@ -455,15 +469,15 @@ export default function App() {
   const handleDeleteDeity = (id: string) => {
     const deity = content.deities.find((item) => item.id === id);
     if (deity && content.stotras.some((stotra) => normalizeContentName(stotra.deity) === normalizeContentName(deity.name))) {
-      setMessage('Move or update related content using this deity before deleting it.', 'error');
+      setMessage(msg('Move or update related content using this deity before deleting it.', 'यो देवता प्रयोग भएको सम्बन्धित सामग्री सार्नुहोस् वा अपडेट गर्नुहोस्।'), 'error');
       return;
     }
-    if (!confirm('Delete this deity from local content?')) return;
+    if (!confirm(msg('Delete this deity from local content?', 'यो देवता स्थानीय सामग्रीबाट मेटाउने?'))) return;
     updateContent((bundle) => ({
       ...bundle,
       deities: removeById(bundle.deities, id),
     }));
-    setMessage('Deity deleted.');
+    setMessage(msg('Deity deleted.', 'देवता मेटियो।'));
   };
 
   const handleSavePoojaBidhi = (input: PoojaBidhiInput, id?: string): boolean => {
@@ -474,11 +488,11 @@ export default function App() {
         ...bundle,
         poojaBidhi: replaceById(bundle.poojaBidhi, next),
       }));
-      setMessage('Pooja guide saved.');
+      setMessage(msg('Pooja guide saved.', 'पूजा विधि सेभ भयो।'));
       return true;
     } catch (error) {
       console.error('Save pooja failed:', error);
-      setMessage('Could not save the pooja guide.', 'error');
+      setMessage(msg('Could not save the pooja guide.', 'पूजा विधि सेभ गर्न सकिएन।'), 'error');
       return false;
     } finally {
       setIsSaving(false);
@@ -486,12 +500,12 @@ export default function App() {
   };
 
   const handleDeletePoojaBidhi = (id: string) => {
-    if (!confirm('Delete this pooja guide from local content?')) return;
+    if (!confirm(msg('Delete this pooja guide from local content?', 'यो पूजा विधि स्थानीय सामग्रीबाट मेटाउने?'))) return;
     updateContent((bundle) => ({
       ...bundle,
       poojaBidhi: removeById(bundle.poojaBidhi, id),
     }));
-    setMessage('Pooja guide deleted.');
+    setMessage(msg('Pooja guide deleted.', 'पूजा विधि मेटियो।'));
   };
 
   const handleSaveStory = (input: HinduStoryInput, id?: string): boolean => {
@@ -502,11 +516,11 @@ export default function App() {
         ...bundle,
         stories: replaceById(bundle.stories, next),
       }));
-      setMessage('Story saved locally.');
+      setMessage(msg('Story saved locally.', 'कथा स्थानीय रूपमा सेभ भयो।'));
       return true;
     } catch (error) {
       console.error('Save story failed:', error);
-      setMessage('Could not save the story.', 'error');
+      setMessage(msg('Could not save the story.', 'कथा सेभ गर्न सकिएन।'), 'error');
       return false;
     } finally {
       setIsSaving(false);
@@ -521,11 +535,11 @@ export default function App() {
         ...bundle,
         panchang: next,
       }));
-      setMessage('Panchang guide saved locally.');
+      setMessage(msg('Panchang guide saved locally.', 'पञ्चाङ्ग मार्गदर्शन स्थानीय रूपमा सेभ भयो।'));
       return true;
     } catch (error) {
       console.error('Save Panchang failed:', error);
-      setMessage('Could not save the Panchang guide.', 'error');
+      setMessage(msg('Could not save the Panchang guide.', 'पञ्चाङ्ग मार्गदर्शन सेभ गर्न सकिएन।'), 'error');
       return false;
     } finally {
       setIsSaving(false);
@@ -533,12 +547,12 @@ export default function App() {
   };
 
   const handleDeleteStory = (id: string) => {
-    if (!confirm('Delete this story from local content?')) return;
+    if (!confirm(msg('Delete this story from local content?', 'यो कथा स्थानीय सामग्रीबाट मेटाउने?'))) return;
     updateContent((bundle) => ({
       ...bundle,
       stories: removeById(bundle.stories, id),
     }));
-    setMessage('Story deleted locally.');
+    setMessage(msg('Story deleted locally.', 'कथा स्थानीय रूपमा मेटियो।'));
   };
 
   const handleExportAllContent = () => JSON.stringify(normalizeContentBundle(content), null, 2);
@@ -548,11 +562,11 @@ export default function App() {
     try {
       const parsed = JSON.parse(json) as Partial<ContentBundle>;
       updateContent(normalizeContentBundle(parsed));
-      setMessage('Content imported successfully.');
+      setMessage(msg('Content imported successfully.', 'सामग्री सफलतापूर्वक आयात भयो।'));
       return true;
     } catch (error) {
       console.error('Import failed:', error);
-      setMessage('Import failed. Please check the JSON format.', 'error');
+      setMessage(msg('Import failed. Please check the JSON format.', 'आयात असफल भयो। कृपया JSON ढाँचा जाँच्नुहोस्।'), 'error');
       return false;
     } finally {
       setIsSaving(false);
@@ -570,7 +584,7 @@ export default function App() {
       setActiveView('home');
       setActiveCategory('All');
       setActiveDeity(null);
-      setMessage('Local content reset to default starter content.');
+      setMessage(msg('Local content reset to default starter content.', 'स्थानीय सामग्री सुरुको डिफल्ट सामग्रीमा फर्काइयो।'));
     } finally {
       setIsSaving(false);
     }
@@ -578,30 +592,30 @@ export default function App() {
 
   const handleAdminUnlock = (passcode: string) => {
     if (!ADMIN_PASSCODE) {
-      setMessage('Admin passcode is not configured.', 'error');
+      setMessage(msg('Admin passcode is not configured.', 'एडमिन पासकोड जडान गरिएको छैन।'), 'error');
       return false;
     }
     if (passcode !== ADMIN_PASSCODE) {
-      setMessage('Invalid admin passcode.', 'error');
+      setMessage(msg('Invalid admin passcode.', 'एडमिन पासकोड मिलेन।'), 'error');
       return false;
     }
     sessionStorage.setItem(ADMIN_SESSION_KEY, String(Date.now()));
     setAdminUnlocked(true);
-    setMessage('Admin unlocked for this browser session.');
+    setMessage(msg('Admin unlocked for this browser session.', 'यो ब्राउजर सत्रका लागि एडमिन खुल्यो।'));
     return true;
   };
 
   const handleAdminLogout = () => {
     sessionStorage.removeItem(ADMIN_SESSION_KEY);
     setAdminUnlocked(false);
-    setMessage('Admin logged out.');
+    setMessage(msg('Admin logged out.', 'एडमिन लगआउट भयो।'));
     handleViewChange('home');
   };
 
   const handlePublishContent = async (): Promise<boolean> => {
     const password = window.prompt('Enter backend admin password to publish content') || '';
     if (!password) {
-      setMessage('Backend admin password is required to publish.', 'error');
+      setMessage(msg('Backend admin password is required to publish.', 'प्रकाशित गर्न backend एडमिन पासवर्ड आवश्यक छ।'), 'error');
       return false;
     }
     setIsSaving(true);
@@ -638,7 +652,7 @@ export default function App() {
     >
       {status && activeView !== 'admin' && (
         <div className="page-container pt-6" role="status" aria-live="polite" aria-atomic="true">
-          <StateMessage title={status.kind === 'error' ? 'Notice' : 'Update'} message={status.text} tone={status.kind === 'error' ? 'error' : 'neutral'} />
+          <StateMessage title={status.kind === 'error' ? msg('Notice', 'सूचना') : msg('Update', 'अपडेट')} message={status.text} tone={status.kind === 'error' ? 'error' : 'neutral'} />
         </div>
       )}
 
@@ -698,6 +712,7 @@ export default function App() {
         <FavoritesPage
           favoriteStotras={favoriteStotras}
           favoriteStotraIds={favoriteIds}
+          language={language}
           onOpenStotra={handleOpenStotra}
           onToggleFavorite={handleToggleFavorite}
           onBrowseStotras={() => handleViewChange('stotras')}
@@ -739,6 +754,7 @@ export default function App() {
           <AdminAccessGate
             errorMessage={status?.kind === 'error' ? status.text : null}
             message={status?.kind === 'neutral' ? status.text : null}
+            language={language}
             onSubmit={handleAdminUnlock}
             onCancel={() => handleViewChange('home')}
           />
@@ -776,6 +792,7 @@ export default function App() {
         stotra={selectedStotra}
         fontSize={readerFontSize}
         isFavorite={selectedStotra ? favoriteIds.includes(selectedStotra.id) : false}
+        language={language}
         onClose={() => setSelectedStotra(null)}
         onFontSizeChange={handleFontSizeChange}
         onPrint={handlePrint}
@@ -789,26 +806,47 @@ export default function App() {
 function AdminAccessGate({
   message,
   errorMessage,
+  language,
   onSubmit,
   onCancel,
 }: {
   message: string | null;
   errorMessage: string | null;
+  language: Language;
   onSubmit: (passcode: string) => boolean;
   onCancel: () => void;
 }) {
   const [passcode, setPasscode] = useState('');
+  const copy = language === 'ne'
+    ? {
+        eyebrow: 'एडमिन पहुँच',
+        title: 'स्थानीय सामग्री स्टुडियो खोल्नुहोस्',
+        subtitle: 'यो ब्राउजर सत्रका लागि एडमिन पासकोड राख्नुहोस्। यो v1 सामग्री व्यवस्थापनका लागि सरल स्थानीय गेट हो।',
+        admin: 'एडमिन',
+        notice: 'एडमिन सूचना',
+        passcode: 'एडमिन पासकोड',
+        unlock: 'एडमिन खोल्नुहोस्',
+        cancel: 'रद्द गर्नुहोस्',
+      }
+    : {
+        eyebrow: 'Admin Access',
+        title: 'Unlock local content studio',
+        subtitle: 'Enter the admin passcode for this browser session. This is a simple v1 content gate, not production authentication.',
+        admin: 'Admin',
+        notice: 'Admin notice',
+        passcode: 'Admin passcode',
+        unlock: 'Unlock Admin',
+        cancel: 'Cancel',
+      };
 
   return (
     <main className="page-container page-shell">
       <section className="page-hero editorial-card admin-access-card">
-        <p className="page-eyebrow">Admin Access</p>
-        <h1 className="page-title">Unlock local content studio</h1>
-        <p className="page-subtitle">
-          Enter the admin passcode for this browser session. This is a simple v1 content gate, not production authentication.
-        </p>
-        {message && <StateMessage title="Admin" message={message} />}
-        {errorMessage && <StateMessage title="Admin notice" message={errorMessage} tone="error" />}
+        <p className="page-eyebrow">{copy.eyebrow}</p>
+        <h1 className="page-title">{copy.title}</h1>
+        <p className="page-subtitle">{copy.subtitle}</p>
+        {message && <StateMessage title={copy.admin} message={message} />}
+        {errorMessage && <StateMessage title={copy.notice} message={errorMessage} tone="error" />}
         <form
           className="form-stack admin-access-form"
           onSubmit={(event) => {
@@ -820,16 +858,16 @@ function AdminAccessGate({
             type="password"
             value={passcode}
             onChange={(event) => setPasscode(event.target.value)}
-            placeholder="Admin passcode"
+            placeholder={copy.passcode}
             className="admin-input"
             autoComplete="current-password"
           />
           <div className="button-row">
             <button className="action-button" type="submit">
-              Unlock Admin
+              {copy.unlock}
             </button>
             <button className="secondary-button" type="button" onClick={onCancel}>
-              Cancel
+              {copy.cancel}
             </button>
           </div>
         </form>

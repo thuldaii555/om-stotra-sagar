@@ -54,7 +54,7 @@ exports.handler = async function handler(event) {
       const currentFile = await current.json();
       sha = currentFile.sha;
     } else if (current.status !== 404) {
-      return json(502, { error: 'Could not read current GitHub content file.' });
+      return json(502, { error: `GitHub GET returned HTTP ${current.status}` });
     }
 
     const jsonText = JSON.stringify(content, null, 2);

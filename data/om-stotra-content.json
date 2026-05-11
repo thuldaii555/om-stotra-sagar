@@ -1,9 +1,2414 @@
 {
-  "stotras": [],
-  "deities": [],
-  "categories": [],
-  "poojaBidhi": [],
-  "stories": [],
-  "updatedAt": "2026-05-10T00:00:00.000Z",
-  "lastPublishedAt": null
+  "stotras": [
+    {
+      "id": "stotra-hanuman-chalisa",
+      "title": "Hanuman Chalisa",
+      "titleNe": "हनुमान चालीसा",
+      "alternateTitle": "श्री हनुमान चालीसा",
+      "alternateTitleNe": "श्री हनुमान चालीसा",
+      "deity": "Hanuman",
+      "deityNe": "हनुमान",
+      "category": "Chalisa",
+      "categoryNe": "चालीसा",
+      "content": "श्रीगुरु चरन सरोज रज, निज मनु मुकुरु सुधारि।\nबरनऊँ रघुबर बिमल जसु, जो दायकु फल चारि॥\nजय हनुमान ज्ञान गुन सागर। जय कपीस तिहुँ लोक उजागर॥\nरामदूत अतुलित बल धामा। अंजनि-पुत्र पवनसुत नामा॥\nमहाबीर बिक्रम बजरंगी। कुमति निवार सुमति के संगी॥\nसंकट कटै मिटै सब पीरा। जो सुमिरै हनुमत बलबीरा॥\nपवनतनय संकट हरन, मंगल मूरति रूप।\nराम लखन सीता सहित, हृदय बसहु सुर भूप॥ \naru thapdai jaam hai toli..... jo jo le sakinxa tesaile, jay hanuman.",
+      "meaning": "A devotional hymn remembering Hanuman as Rama's servant, the giver of courage, disciplined strength, and protection.",
+      "nepaliMeaning": "A devotional hymn remembering Hanuman as Rama's servant, the giver of courage, disciplined strength, and protection.",
+      "wordMeaning": "Guru charan means the teacher's feet; Ramdoot means messenger of Rama; sankat means difficulty.",
+      "benefits": "Traditionally recited for courage, focus, protection, and steady devotion without treating the hymn as a guaranteed remedy.",
+      "process": "Recite on Tuesdays, Saturdays, before travel, or during Hanuman worship with attention and humility.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "hanuman",
+        "chalisa",
+        "protection",
+        "courage",
+        "devotion"
+      ],
+      "language": "Hindi / Awadhi",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-shiva-tandava",
+      "title": "Shiva Tandava Stotram",
+      "titleNe": "शिव ताण्डव स्तोत्रम्",
+      "alternateTitle": "शिव ताण्डव स्तोत्रम्",
+      "alternateTitleNe": "शिव ताण्डव स्तोत्रम्",
+      "deity": "Shiva",
+      "deityNe": "शिव",
+      "category": "Stotra",
+      "categoryNe": "स्तोत्रम्",
+      "content": "जटाटवीगलज्जलप्रवाहपावितस्थले\nगलेऽवलम्ब्य लम्बितां भुजङ्गतुङ्गमालिकाम्॥\nडमड्डमड्डमड्डमन्निनादवड्डमर्वयं\nचकार चण्डताण्डवं तनोतु नः शिवः शिवम्॥\nजटाकटाहसम्भ्रमभ्रमन्निलिम्पनिर्झरी\nविलोलवीचिवल्लरी विराजमानमूर्धनि॥\nJay shiva shambho",
+      "meaning": "This stotram praises Shiva through the imagery of cosmic dance, flowing Ganga, fire, rhythm, and auspicious transformation.",
+      "nepaliMeaning": "This stotram praises Shiva through the imagery of cosmic dance, flowing Ganga, fire, rhythm, and auspicious transformation.",
+      "wordMeaning": "Tandava is Shiva's cosmic dance; jata means matted locks; Shivam means auspiciousness.",
+      "benefits": "Traditionally read for focus, awe, courage, and contemplative devotion.",
+      "process": "Chant slowly with attention to rhythm. Use a verified edition for complete public release.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "shiva",
+        "stotram",
+        "tandava",
+        "meditation",
+        "sanskrit"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-mahalakshmi-ashtakam",
+      "title": "Mahalakshmi Ashtakam",
+      "titleNe": "महालक्ष्मी अष्टकम्",
+      "alternateTitle": "महालक्ष्मी अष्टकम्",
+      "alternateTitleNe": "महालक्ष्मी अष्टकम्",
+      "deity": "Lakshmi",
+      "deityNe": "लक्ष्मी",
+      "category": "Ashtakam",
+      "categoryNe": "अष्टकम्",
+      "content": "नमस्तेऽस्तु महामाये श्रीपीठे सुरपूजिते।\nशङ्खचक्रगदाहस्ते महालक्ष्मि नमोऽस्तुते॥\nनमस्ते गरुडारूढे कोलासुरभयङ्करि।\nसर्वपापहरे देवि महालक्ष्मि नमोऽस्तुते॥\nसिद्धिबुद्धिप्रदे देवि भुक्तिमुक्तिप्रदायिनि।\nमन्त्रमूर्ते सदा देवि महालक्ष्मि नमोऽस्तुते॥",
+      "meaning": "The hymn praises Lakshmi as auspicious grace, wisdom, prosperity, and divine protection.",
+      "nepaliMeaning": "The hymn praises Lakshmi as auspicious grace, wisdom, prosperity, and divine protection.",
+      "wordMeaning": "Mahalakshmi means great Lakshmi; siddhi and buddhi refer to accomplishment and wisdom.",
+      "benefits": "Traditionally recited for gratitude, household harmony, prosperity, and responsible use of resources.",
+      "process": "Recite on Fridays, Diwali, or during Lakshmi Puja with a clean altar and grateful mind.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "lakshmi",
+        "ashtakam",
+        "prosperity",
+        "friday",
+        "diwali"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-saraswati-vandana",
+      "title": "Saraswati Vandana",
+      "titleNe": "सरस्वती वन्दना",
+      "alternateTitle": "सरस्वती वन्दना",
+      "alternateTitleNe": "सरस्वती वन्दना",
+      "deity": "Saraswati",
+      "deityNe": "सरस्वती",
+      "category": "Other",
+      "categoryNe": "वन्दना",
+      "content": "या कुन्देन्दुतुषारहारधवला या शुभ्रवस्त्रावृता।\nया वीणावरदण्डमण्डितकरा या श्वेतपद्मासना॥\nया ब्रह्माच्युतशंकरप्रभृतिभिर्देवैः सदा वन्दिता।\nसा मां पातु सरस्वती भगवती निःशेषजाड्यापहा॥",
+      "meaning": "This vandana honors Saraswati as the bright, pure source of learning, music, and refined speech.",
+      "nepaliMeaning": "This vandana honors Saraswati as the bright, pure source of learning, music, and refined speech.",
+      "wordMeaning": "Kunda, moon, snow, white cloth, veena, and lotus point to purity, art, and learning.",
+      "benefits": "Traditionally recited before study, teaching, music, writing, and creative work.",
+      "process": "Recite before study or practice, keeping books and instruments respectfully placed.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "saraswati",
+        "vandana",
+        "learning",
+        "music",
+        "students"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-ganesh-stotra",
+      "title": "Ganesh Stotra",
+      "titleNe": "गणेश स्तोत्र",
+      "alternateTitle": "गणेश स्तोत्र",
+      "alternateTitleNe": "गणेश स्तोत्र",
+      "deity": "Ganesh",
+      "deityNe": "गणेश",
+      "category": "Stotra",
+      "categoryNe": "स्तोत्रम्",
+      "content": "वक्रतुण्ड महाकाय सूर्यकोटि समप्रभ।\nनिर्विघ्नं कुरु मे देव सर्वकार्येषु सर्वदा॥\nगजाननं भूतगणादि सेवितं\nकपित्थजम्बूफलचारुभक्षणम्।\nउमासुतं शोकविनाशकारणं\nनमामि विघ्नेश्वरपादपङ्कजम्॥",
+      "meaning": "These prayers remember Ganesh as the remover of obstacles and the deity of auspicious beginnings.",
+      "nepaliMeaning": "These prayers remember Ganesh as the remover of obstacles and the deity of auspicious beginnings.",
+      "wordMeaning": "Vakratunda means curved trunk; Vighneshvara means lord who removes obstacles.",
+      "benefits": "Traditionally recited before new work, study, travel, worship, and important decisions.",
+      "process": "Recite first at the beginning of puja or before starting a task.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "ganesh",
+        "stotram",
+        "beginnings",
+        "wisdom",
+        "obstacle-removal"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-vishnu-sahasranama",
+      "title": "Vishnu Sahasranama Opening",
+      "titleNe": "विष्णु सहस्रनाम प्रारम्भ",
+      "alternateTitle": "विष्णु सहस्रनाम प्रारम्भ",
+      "alternateTitleNe": "विष्णु सहस्रनाम प्रारम्भ",
+      "deity": "Vishnu",
+      "deityNe": "विष्णु",
+      "category": "Other",
+      "categoryNe": "सहस्रनाम",
+      "content": "शुक्लाम्बरधरं विष्णुं शशिवर्णं चतुर्भुजम्।\nप्रसन्नवदनं ध्यायेत् सर्वविघ्नोपशान्तये॥\nव्यासं वसिष्ठनप्तारं शक्तेः पौत्रमकल्मषम्।\nपराशरात्मजं वन्दे शुकतातं तपोनिधिम्॥\nॐ विश्वं विष्णुर्वषट्कारो भूतभव्यभवत्प्रभुः।\nभूतकृद्भूतभृद्भावो भूतात्मा भूतभावनः॥",
+      "meaning": "The opening prepares the mind and begins the thousand names of Vishnu, remembering the divine as the sustainer of all.",
+      "nepaliMeaning": "The opening prepares the mind and begins the thousand names of Vishnu, remembering the divine as the sustainer of all.",
+      "wordMeaning": "Sahasra means thousand; nama means name; Vishvam points to the all-pervading divine.",
+      "benefits": "Traditionally recited for devotion, steadiness, protection, and remembrance of divine qualities.",
+      "process": "Read from a verified edition for full chanting. This starter includes opening verses and first names.",
+      "source": "Vaidika Vignanam reference pattern; verify full text before public release.",
+      "tags": [
+        "vishnu",
+        "sahasranama",
+        "thousand-names",
+        "dharma"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-durga-kavach",
+      "title": "Durga Kavach Opening",
+      "titleNe": "दुर्गा कवच प्रारम्भ",
+      "alternateTitle": "दुर्गा कवच प्रारम्भ",
+      "alternateTitleNe": "दुर्गा कवच प्रारम्भ",
+      "deity": "Durga",
+      "deityNe": "दुर्गा",
+      "category": "Kavacham",
+      "categoryNe": "कवच",
+      "content": "ॐ नमश्चण्डिकायै।\nमार्कण्डेय उवाच।\nयद्गुह्यं परमं लोके सर्वरक्षाकरं नृणाम्।\nयन्न कस्यचिदाख्यातं तन्मे ब्रूहि पितामह॥\nब्रह्मोवाच।\nअस्ति गुह्यतमं विप्र सर्वभूतोपकारकम्।\nदेव्यास्तु कवचं पुण्यं तच्छृणुष्व महामुने॥",
+      "meaning": "This opening introduces Durga Kavach as a protective devotional prayer to the divine mother.",
+      "nepaliMeaning": "This opening introduces Durga Kavach as a protective devotional prayer to the divine mother.",
+      "wordMeaning": "Kavach means armor or protection; Chandika is a powerful name of the goddess.",
+      "benefits": "Traditionally read for courage, protection, and devotional confidence.",
+      "process": "Use a verified edition for full recitation, especially during Navaratri or Durga worship.",
+      "source": "Vaidika Vignanam reference pattern; verify full text before public release.",
+      "tags": [
+        "durga",
+        "kavach",
+        "protection",
+        "navaratri"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-aditya-hridayam",
+      "title": "Aditya Hridayam Opening",
+      "titleNe": "आदित्यहृदयम् प्रारम्भ",
+      "alternateTitle": "आदित्यहृदयम् प्रारम्भ",
+      "alternateTitleNe": "आदित्यहृदयम् प्रारम्भ",
+      "deity": "Surya",
+      "deityNe": "सूर्य",
+      "category": "Stotra",
+      "categoryNe": "स्तोत्रम्",
+      "content": "ततो युद्धपरिश्रान्तं समरे चिन्तया स्थितम्।\nरावणं चाग्रतो दृष्ट्वा युद्धाय समुपस्थितम्॥\nदैवतैश्च समागम्य द्रष्टुमभ्यागतो रणम्।\nउपागम्याब्रवीद्राममगस्त्यो भगवानृषिः॥\nआदित्यहृदयं पुण्यं सर्वशत्रुविनाशनम्।\nजयावहं जपेन्नित्यं अक्षयं परमं शिवम्॥",
+      "meaning": "Aditya Hridayam remembers Surya as the source of clarity, vitality, courage, and renewed resolve.",
+      "nepaliMeaning": "Aditya Hridayam remembers Surya as the source of clarity, vitality, courage, and renewed resolve.",
+      "wordMeaning": "Aditya means sun; hridayam means heart; the hymn is taught to Rama in the Ramayana tradition.",
+      "benefits": "Traditionally recited for confidence, energy, gratitude, and focused action.",
+      "process": "Recite near sunrise or before important work. Use a verified edition for full public text.",
+      "source": "Vaidika Vignanam reference pattern; verify full text before public release.",
+      "tags": [
+        "surya",
+        "stotram",
+        "sunrise",
+        "ramayana"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-krishna-ashtakam",
+      "title": "Krishna Ashtakam",
+      "titleNe": "कृष्ण अष्टकम्",
+      "alternateTitle": "कृष्णाष्टकम्",
+      "alternateTitleNe": "कृष्णाष्टकम्",
+      "deity": "Krishna",
+      "deityNe": "कृष्ण",
+      "category": "Ashtakam",
+      "categoryNe": "अष्टकम्",
+      "content": "वसुदेवसुतं देवं कंसचाणूरमर्दनम्।\nदेवकीपरमानन्दं कृष्णं वन्दे जगद्गुरुम्॥\nअतसीपुष्पसङ्काशं हारनूपुरशोभितम्।\nरत्नकङ्कणकेयूरं कृष्णं वन्दे जगद्गुरुम्॥\nकुटिलालकसंयुक्तं पूर्णचन्द्रनिभाननम्।\nविलसत्कुण्डलधरं कृष्णं वन्दे जगद्गुरुम्॥",
+      "meaning": "This ashtakam praises Krishna as divine teacher, protector, and source of joy.",
+      "nepaliMeaning": "This ashtakam praises Krishna as divine teacher, protector, and source of joy.",
+      "wordMeaning": "Jagadguru means teacher of the world; Vasudevasuta means son of Vasudeva.",
+      "benefits": "Traditionally recited for devotion, joy, humility, and loving remembrance of dharma.",
+      "process": "Recite in the evening, on Janmashtami, or during Krishna worship.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "krishna",
+        "ashtakam",
+        "bhakti",
+        "janmashtami"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-ram-raksha",
+      "title": "Ram Raksha Stotra Opening",
+      "titleNe": "रामरक्षा स्तोत्रम् प्रारम्भ",
+      "alternateTitle": "रामरक्षास्तोत्रम् प्रारम्भ",
+      "alternateTitleNe": "रामरक्षास्तोत्रम् प्रारम्भ",
+      "deity": "Rama",
+      "deityNe": "राम",
+      "category": "Kavacham",
+      "categoryNe": "कवच",
+      "content": "अस्य श्रीरामरक्षास्तोत्रमन्त्रस्य बुधकौशिक ऋषिः।\nश्रीसीतारामचन्द्रो देवता। अनुष्टुप् छन्दः।\nध्यायेदाजानुबाहुं धृतशरधनुषं बद्धपद्मासनस्थम्।\nपीतं वासो वसानं नवकमलदलस्पर्धिनेत्रं प्रसन्नम्॥\nचरितं रघुनाथस्य शतकोटिप्रविस्तरम्।\nएकैकमक्षरं पुंसां महापातकनाशनम्॥",
+      "meaning": "This protective Rama prayer remembers Rama with Sita and invokes courage, clarity, and dharmic conduct.",
+      "nepaliMeaning": "This protective Rama prayer remembers Rama with Sita and invokes courage, clarity, and dharmic conduct.",
+      "wordMeaning": "Raksha means protection; Raghunatha is Rama, lord of the Raghu lineage.",
+      "benefits": "Traditionally recited for courage, protection, and alignment with dharma.",
+      "process": "Read before travel, study, or duties. Use a verified edition for complete recitation.",
+      "source": "Vaidika Vignanam reference pattern; verify full text before public release.",
+      "tags": [
+        "rama",
+        "kavach",
+        "protection",
+        "dharma"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-om-jai-jagdish-hare",
+      "title": "Om Jai Jagdish Hare",
+      "titleNe": "ॐ जय जगदीश हरे",
+      "alternateTitle": "ॐ जय जगदीश हरे",
+      "alternateTitleNe": "ॐ जय जगदीश हरे",
+      "deity": "Vishnu",
+      "deityNe": "विष्णु",
+      "category": "Aarti",
+      "categoryNe": "आरती",
+      "content": "ॐ जय जगदीश हरे, स्वामी जय जगदीश हरे।\nभक्त जनों के संकट, दास जनों के संकट, क्षण में दूर करे॥\nजो ध्यावे फल पावे, दुःख बिनसे मन का।\nसुख संपत्ति घर आवे, कष्ट मिटे तन का॥\nमात पिता तुम मेरे, शरण गहूँ मैं किसकी।\nतुम बिन और न दूजा, आस करूँ जिसकी॥",
+      "meaning": "This aarti offers gratitude and refuge to Jagdish, the Lord of the universe, commonly worshiped as Vishnu.",
+      "nepaliMeaning": "This aarti offers gratitude and refuge to Jagdish, the Lord of the universe, commonly worshiped as Vishnu.",
+      "wordMeaning": "Jagdish means lord of the world; sharan means refuge; dhyave means to meditate or remember.",
+      "benefits": "Traditionally sung at the close of worship to cultivate gratitude and shared devotion.",
+      "process": "Sing during aarti with a lamp according to family practice, usually at the close of puja.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "vishnu",
+        "aarti",
+        "gratitude"
+      ],
+      "language": "Hindi",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-ganesh-aarti",
+      "title": "Ganesh Aarti",
+      "titleNe": "गणेश आरती",
+      "alternateTitle": "जय गणेश जय गणेश",
+      "alternateTitleNe": "जय गणेश जय गणेश",
+      "deity": "Ganesh",
+      "deityNe": "गणेश",
+      "category": "Aarti",
+      "categoryNe": "आरती",
+      "content": "जय गणेश जय गणेश जय गणेश देवा।\nमाता जाकी पार्वती पिता महादेवा॥\nएकदन्त दयावन्त चार भुजाधारी।\nमाथे सिंदूर सोहे मूसे की सवारी॥\nअन्धन को आँख देत, कोढ़िन को काया।\nबाँझन को पुत्र देत, निर्धन को माया॥",
+      "meaning": "Ganesh Aarti celebrates auspicious beginnings, compassion, and reverence for the remover of obstacles.",
+      "nepaliMeaning": "Ganesh Aarti celebrates auspicious beginnings, compassion, and reverence for the remover of obstacles.",
+      "wordMeaning": "Ekadanta means one-tusked; mushaka is the mouse vehicle; deva means divine one.",
+      "benefits": "Traditionally sung during Ganesh Puja, new beginnings, and family gatherings.",
+      "process": "Sing during or after Ganesh Puja. Offer durva, flowers, or sweets as family practice allows.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "ganesh",
+        "aarti",
+        "beginnings"
+      ],
+      "language": "Hindi",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-shiv-aarti",
+      "title": "Shiva Aarti",
+      "titleNe": "शिव आरती",
+      "alternateTitle": "ॐ जय शिव ओंकारा",
+      "alternateTitleNe": "ॐ जय शिव ओंकारा",
+      "deity": "Shiva",
+      "deityNe": "शिव",
+      "category": "Aarti",
+      "categoryNe": "आरती",
+      "content": "ॐ जय शिव ओंकारा, स्वामी जय शिव ओंकारा।\nब्रह्मा विष्णु सदाशिव अर्द्धांगी धारा॥\nएकानन चतुरानन पंचानन राजे।\nहंसासन गरुड़ासन वृषवाहन साजे॥\nदो भुज चार चतुर्भुज दस भुज अति सोहे।\nतीनों रूप निरखता त्रिभुवन जन मोहे॥",
+      "meaning": "Shiva Aarti remembers Shiva as auspicious presence beyond limited form, honored with reverence and peace.",
+      "nepaliMeaning": "Shiva Aarti remembers Shiva as auspicious presence beyond limited form, honored with reverence and peace.",
+      "wordMeaning": "Omkara points to Om; Vrishavahana refers to the bull vehicle; Sadashiva means eternal auspicious Shiva.",
+      "benefits": "Traditionally sung for reverence, calm, and devotional reflection.",
+      "process": "Sing during Shiva worship, Mondays, Mahashivaratri, or evening prayer.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "shiva",
+        "aarti",
+        "monday"
+      ],
+      "language": "Hindi",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-lakshmi-aarti",
+      "title": "Lakshmi Aarti",
+      "titleNe": "लक्ष्मी आरती",
+      "alternateTitle": "ॐ जय लक्ष्मी माता",
+      "alternateTitleNe": "ॐ जय लक्ष्मी माता",
+      "deity": "Lakshmi",
+      "deityNe": "लक्ष्मी",
+      "category": "Aarti",
+      "categoryNe": "आरती",
+      "content": "ॐ जय लक्ष्मी माता, मैया जय लक्ष्मी माता।\nतुमको निशदिन सेवत हर विष्णु विधाता॥\nउमा रमा ब्रह्माणी तुम ही जगमाता।\nसूर्यचन्द्रमा ध्यावत नारद ऋषि गाता॥\nदुर्गा रूप निरंजनि सुख सम्पत्ति दाता।\nजो कोई तुमको ध्यावत ऋद्धि सिद्धि धन पाता॥",
+      "meaning": "Lakshmi Aarti praises grace, gratitude, auspiciousness, household harmony, and responsible prosperity.",
+      "nepaliMeaning": "Lakshmi Aarti praises grace, gratitude, auspiciousness, household harmony, and responsible prosperity.",
+      "wordMeaning": "Mata means mother; sampatti means prosperity; riddhi and siddhi suggest growth and accomplishment.",
+      "benefits": "Traditionally sung on Fridays, Diwali, and after Lakshmi Puja.",
+      "process": "Sing with a lit diya, clean altar, and grateful mood according to household tradition.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "lakshmi",
+        "aarti",
+        "diwali"
+      ],
+      "language": "Hindi",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-hanuman-aarti",
+      "title": "Hanuman Aarti",
+      "titleNe": "हनुमान आरती",
+      "alternateTitle": "आरती कीजै हनुमान लला की",
+      "alternateTitleNe": "आरती कीजै हनुमान लला की",
+      "deity": "Hanuman",
+      "deityNe": "हनुमान",
+      "category": "Aarti",
+      "categoryNe": "आरती",
+      "content": "आरती कीजै हनुमान लला की।\nदुष्ट दलन रघुनाथ कला की॥\nजाके बल से गिरिवर कांपे।\nरोग दोष जाके निकट न झांके॥\nअंजनि पुत्र महा बलदाई।\nसंतन के प्रभु सदा सहाई॥",
+      "meaning": "Hanuman Aarti praises courage, protection, strength, and selfless service to Shri Rama.",
+      "nepaliMeaning": "Hanuman Aarti praises courage, protection, strength, and selfless service to Shri Rama.",
+      "wordMeaning": "Raghunath refers to Rama; Anjani Putra means son of Anjana; santan means devotees or saintly people.",
+      "benefits": "Traditionally sung on Tuesdays, Saturdays, and during Hanuman worship.",
+      "process": "Sing during Hanuman Puja or after reading Hanuman Chalisa.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "hanuman",
+        "aarti",
+        "protection"
+      ],
+      "language": "Hindi",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-durga-aarti",
+      "title": "Durga Aarti",
+      "titleNe": "दुर्गा आरती",
+      "alternateTitle": "जय अम्बे गौरी",
+      "alternateTitleNe": "जय अम्बे गौरी",
+      "deity": "Durga",
+      "deityNe": "दुर्गा",
+      "category": "Aarti",
+      "categoryNe": "आरती",
+      "content": "जय अम्बे गौरी, मैया जय श्यामा गौरी।\nतुमको निशदिन ध्यावत हरि ब्रह्मा शिवरी॥\nमांग सिंदूर विराजत टीको मृगमद को।\nउज्ज्वल से दोऊ नैना चन्द्रवदन नीको॥\nकनक समान कलेवर रक्ताम्बर राजै।\nरक्तपुष्प गलमाला कंठन पर साजै॥",
+      "meaning": "Durga Aarti remembers the divine mother as compassionate, beautiful, powerful, and protective.",
+      "nepaliMeaning": "Durga Aarti remembers the divine mother as compassionate, beautiful, powerful, and protective.",
+      "wordMeaning": "Ambe and Gauri are names of the divine mother; dhyavat means meditating upon or remembering.",
+      "benefits": "Traditionally sung to honor strength, protection, and motherly grace.",
+      "process": "Sing during Durga worship, Fridays, Navaratri, or family evening prayer.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "durga",
+        "aarti",
+        "navaratri"
+      ],
+      "language": "Hindi",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-saraswati-aarti",
+      "title": "Saraswati Aarti",
+      "titleNe": "सरस्वती आरती",
+      "alternateTitle": "जय सरस्वती माता",
+      "alternateTitleNe": "जय सरस्वती माता",
+      "deity": "Saraswati",
+      "deityNe": "सरस्वती",
+      "category": "Aarti",
+      "categoryNe": "आरती",
+      "content": "जय सरस्वती माता, मैया जय सरस्वती माता।\nसद्गुण वैभव शालिनी त्रिभुवन विख्याता॥\nचन्द्रवदनि पद्मासनि द्युति मंगलकारी।\nसोहे शुभ हंस सवारी अतुल तेजधारी॥\nबायें कर में वीणा, दायें कर माला।\nशीश मुकुट मणि सोहे, गल मोतियन माला॥",
+      "meaning": "Saraswati Aarti praises learning, art, refinement, pure speech, and the grace of knowledge.",
+      "nepaliMeaning": "Saraswati Aarti praises learning, art, refinement, pure speech, and the grace of knowledge.",
+      "wordMeaning": "Padmasana means seated on a lotus; veena represents music and learning; hamsa is the swan vehicle.",
+      "benefits": "Traditionally sung during study, music practice, and Saraswati Puja.",
+      "process": "Sing before study, on Vasant Panchami, or before creative work.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "saraswati",
+        "aarti",
+        "learning"
+      ],
+      "language": "Hindi",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-gayatri-mantra",
+      "title": "Gayatri Mantra",
+      "titleNe": "गायत्री मन्त्र",
+      "alternateTitle": "गायत्री मन्त्र",
+      "alternateTitleNe": "गायत्री मन्त्र",
+      "deity": "Surya",
+      "deityNe": "सूर्य",
+      "category": "Mantra",
+      "categoryNe": "मन्त्र",
+      "content": "ॐ भूर्भुवः स्वः\nतत्सवितुर्वरेण्यं\nभर्गो देवस्य धीमहि\nधियो यो नः प्रचोदयात्॥",
+      "meaning": "The Gayatri Mantra prays for illumination of the intellect and movement toward truth.",
+      "nepaliMeaning": "The Gayatri Mantra prays for illumination of the intellect and movement toward truth.",
+      "wordMeaning": "Bhargo means divine radiance; dhiyo means intellects; prachodayat means may inspire or guide.",
+      "benefits": "Traditionally recited for focus, learning, clarity, and inner refinement.",
+      "process": "Chant at dawn, dusk, or before study with calm attention and respect for received tradition.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "surya",
+        "mantra",
+        "clarity",
+        "dawn"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-mahamrityunjaya",
+      "title": "Mahamrityunjaya Mantra",
+      "titleNe": "महामृत्युञ्जय मन्त्र",
+      "alternateTitle": "महामृत्युंजय मन्त्र",
+      "alternateTitleNe": "महामृत्युंजय मन्त्र",
+      "deity": "Shiva",
+      "deityNe": "शिव",
+      "category": "Mantra",
+      "categoryNe": "मन्त्र",
+      "content": "ॐ त्र्यम्बकं यजामहे\nसुगन्धिं पुष्टिवर्धनम्।\nउर्वारुकमिव बन्धनान्\nमृत्योर्मुक्षीय मामृतात्॥",
+      "meaning": "This mantra prays to Shiva for grace, courage, release from fear, and deep peace.",
+      "nepaliMeaning": "This mantra prays to Shiva for grace, courage, release from fear, and deep peace.",
+      "wordMeaning": "Tryambakam means three-eyed one; moksha-related language points to release and freedom.",
+      "benefits": "Traditionally recited for healing prayers, courage, peace, and freedom from fear.",
+      "process": "Chant slowly in a quiet place. For formal japa counts, follow family or guru guidance.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "shiva",
+        "mantra",
+        "healing-prayer",
+        "peace"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-om-namah-shivaya",
+      "title": "Om Namah Shivaya",
+      "titleNe": "ॐ नमः शिवाय",
+      "alternateTitle": "ॐ नमः शिवाय",
+      "alternateTitleNe": "ॐ नमः शिवाय",
+      "deity": "Shiva",
+      "deityNe": "शिव",
+      "category": "Mantra",
+      "categoryNe": "मन्त्र",
+      "content": "ॐ नमः शिवाय\nॐ नमः शिवाय\nॐ नमः शिवाय",
+      "meaning": "This Panchakshari mantra remembers Shiva with reverence, surrender, and inward calm.",
+      "nepaliMeaning": "This Panchakshari mantra remembers Shiva with reverence, surrender, and inward calm.",
+      "wordMeaning": "Namah means reverent salutation. Shivaya means to Shiva, the auspicious one.",
+      "benefits": "Traditionally used for meditation, steadiness, devotion, and quiet repetition.",
+      "process": "Repeat gently during meditation, morning prayer, or quiet reflection.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "shiva",
+        "mantra",
+        "japa",
+        "meditation"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-vishnu-stuti",
+      "title": "Vishnu Stuti",
+      "titleNe": "विष्णु स्तुति",
+      "alternateTitle": "विष्णु स्तुति",
+      "alternateTitleNe": "विष्णु स्तुति",
+      "deity": "Vishnu",
+      "deityNe": "विष्णु",
+      "category": "Other",
+      "categoryNe": "प्रार्थना",
+      "content": "शान्ताकारं भुजगशयनं पद्मनाभं सुरेशं\nविश्वाधारं गगनसदृशं मेघवर्णं शुभाङ्गम्।\nलक्ष्मीकान्तं कमलनयनं योगिभिर्ध्यानगम्यं\nवन्दे विष्णुं भवभयहरं सर्वलोकैकनाथम्॥",
+      "meaning": "This stuti praises Vishnu as peaceful, all-supporting, lotus-eyed, and the refuge of devotees.",
+      "nepaliMeaning": "This stuti praises Vishnu as peaceful, all-supporting, lotus-eyed, and the refuge of devotees.",
+      "wordMeaning": "Shantakaram means peaceful form; Padmanabha means lotus-naveled; Bhavabhaya means worldly fear.",
+      "benefits": "Traditionally recited for peace, refuge, devotion, and remembrance of dharma.",
+      "process": "Recite in a clean, quiet place with attention and devotion. A diya, incense, flowers, or simple mental worship may be used according to family practice.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "vishnu",
+        "prayer",
+        "peace"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-durga-chalisa",
+      "title": "Durga Chalisa Excerpt",
+      "titleNe": "दुर्गा चालीसा अंश",
+      "alternateTitle": "दुर्गा चालीसा अंश",
+      "alternateTitleNe": "दुर्गा चालीसा अंश",
+      "deity": "Durga",
+      "deityNe": "दुर्गा",
+      "category": "Chalisa",
+      "categoryNe": "चालीसा",
+      "content": "नमो नमो दुर्गे सुख करनी।\nनमो नमो अम्बे दुख हरनी॥\nनिरंकार है ज्योति तुम्हारी।\nतिहूँ लोक फैली उजियारी॥\nशशि ललाट मुख महाविशाला।\nनेत्र लाल भृकुटि विकराला॥\nरूप मातु को अधिक सुहावे।\nदरश करत जन अति सुख पावे॥",
+      "meaning": "This chalisa excerpt praises Durga as the compassionate mother who removes sorrow and gives courage.",
+      "nepaliMeaning": "This chalisa excerpt praises Durga as the compassionate mother who removes sorrow and gives courage.",
+      "wordMeaning": "Ambe means mother; ujiyari means light; darshan means reverent seeing.",
+      "benefits": "Traditionally recited for courage, protection, and motherly refuge.",
+      "process": "Recite during Navaratri, Fridays, or Durga worship. Verify a full text before public release.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "durga",
+        "chalisa",
+        "navaratri"
+      ],
+      "language": "Hindi",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-kali-stuti",
+      "title": "Kali Stuti",
+      "titleNe": "काली स्तुति",
+      "alternateTitle": "काली स्तुति",
+      "alternateTitleNe": "काली स्तुति",
+      "deity": "Kali",
+      "deityNe": "काली",
+      "category": "Other",
+      "categoryNe": "प्रार्थना",
+      "content": "ॐ क्रीं कालिकायै नमः।\nजय काली माँ, जय महाकाली।\nभयहारिणि, करुणामयी, भक्तवत्सला मातः।\nअज्ञानतिमिरनाशिनि, शक्तिरूपिणि नमो नमः॥",
+      "meaning": "This original devotional stuti honors Kali as the compassionate mother who removes fear and ignorance.",
+      "nepaliMeaning": "This original devotional stuti honors Kali as the compassionate mother who removes fear and ignorance.",
+      "wordMeaning": "Kreem is a bija associated with Kali; bhayaharin means remover of fear; shakti means divine power.",
+      "benefits": "Used for courage, honest self-reflection, and devotional strength.",
+      "process": "Recite respectfully during Kali worship, new moon observance, or quiet prayer.",
+      "source": "Original devotional starter stuti inspired by traditional Kali worship; verify before public release.",
+      "tags": [
+        "kali",
+        "prayer",
+        "strength"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-surya-ashtakam",
+      "title": "Surya Ashtakam",
+      "titleNe": "सूर्याष्टकम्",
+      "alternateTitle": "सूर्याष्टकम्",
+      "alternateTitleNe": "सूर्याष्टकम्",
+      "deity": "Surya",
+      "deityNe": "सूर्य",
+      "category": "Ashtakam",
+      "categoryNe": "अष्टकम्",
+      "content": "आदिदेव नमस्तुभ्यं प्रसीद मम भास्कर।\nदिवाकर नमस्तुभ्यं प्रभाकर नमोऽस्तु ते॥\nसप्ताश्वरथमारूढं प्रचण्डं कश्यपात्मजम्।\nश्वेतपद्मधरं देवं तं सूर्यं प्रणमाम्यहम्॥\nलोहितं रथमारूढं सर्वलोकपितामहम्।\nमहापापहरं देवं तं सूर्यं प्रणमाम्यहम्॥",
+      "meaning": "This ashtakam praises Surya as the radiant source of light, discipline, and daily life.",
+      "nepaliMeaning": "This ashtakam praises Surya as the radiant source of light, discipline, and daily life.",
+      "wordMeaning": "Bhaskara, Divakara, and Prabhakara are names of the sun; Sapta-ashva means seven horses.",
+      "benefits": "Traditionally recited for gratitude, vitality, clarity, and disciplined routine.",
+      "process": "Recite near sunrise, ideally after bathing or before beginning the day.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "surya",
+        "ashtakam",
+        "sunrise"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-narayana-kavach",
+      "title": "Narayana Kavach Opening",
+      "titleNe": "नारायण कवच प्रारम्भ",
+      "alternateTitle": "नारायण कवच प्रारम्भ",
+      "alternateTitleNe": "नारायण कवच प्रारम्भ",
+      "deity": "Narayana",
+      "deityNe": "नारायण",
+      "category": "Kavacham",
+      "categoryNe": "कवच",
+      "content": "राजोवाच।\nयया गुप्तः सहस्राक्षः सवाहान् रिपुसैनिकान्।\nक्रीडन्निव विनिर्जित्य त्रिलोक्या बुभुजे श्रियम्॥\nभगवंस्तन्ममाख्याहि वर्म नारायणात्मकम्।\nयथाततायिनः शत्रून् येन गुप्तोऽजयन्मृधे॥\nश्रीशुक उवाच।\nवृतः पुरोहितस्त्वाष्ट्रो महेन्द्रायानुपृच्छते।\nनारायणाख्यं वर्माह तदिहैकमनाः शृणु॥",
+      "meaning": "This opening introduces Narayana Kavach as a protective devotional teaching centered on Narayana.",
+      "nepaliMeaning": "This opening introduces Narayana Kavach as a protective devotional teaching centered on Narayana.",
+      "wordMeaning": "Kavach means armor; Narayana-atmakam means centered in Narayana; varma also means protection.",
+      "benefits": "Traditionally read for refuge, courage, and remembrance of divine protection.",
+      "process": "Use a verified Bhagavata Purana edition for complete recitation.",
+      "source": "Vaidika Vignanam reference pattern; verify full text before public release.",
+      "tags": [
+        "narayana",
+        "kavach",
+        "protection"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-parvati-prayer",
+      "title": "Parvati Prayer",
+      "titleNe": "पार्वती प्रार्थना",
+      "alternateTitle": "पार्वती प्रार्थना",
+      "alternateTitleNe": "पार्वती प्रार्थना",
+      "deity": "Parvati",
+      "deityNe": "पार्वती",
+      "category": "Other",
+      "categoryNe": "प्रार्थना",
+      "content": "सर्वमङ्गलमाङ्गल्ये शिवे सर्वार्थसाधिके।\nशरण्ये त्र्यम्बके गौरी नारायणि नमोऽस्तु ते॥\nकात्यायनि महामाये महायोगिन्यधीश्वरि।\nनन्दगोपसुतं देवि पतिं मे कुरु ते नमः॥",
+      "meaning": "This prayer honors the divine mother as auspicious, protective, and compassionate.",
+      "nepaliMeaning": "This prayer honors the divine mother as auspicious, protective, and compassionate.",
+      "wordMeaning": "Sarvamangala means all-auspicious; Gauri is a name of Parvati; Sharanye means giver of refuge.",
+      "benefits": "Traditionally recited for family harmony, courage, and motherly grace.",
+      "process": "Recite in a clean, quiet place with attention and devotion. A diya, incense, flowers, or simple mental worship may be used according to family practice.",
+      "source": "Traditional devotional text; verify full text before public release.",
+      "tags": [
+        "parvati",
+        "prayer",
+        "mother"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-kartikeya-stuti",
+      "title": "Kartikeya Stuti",
+      "titleNe": "कार्तिकेय स्तुति",
+      "alternateTitle": "कार्तिकेय स्तुति",
+      "alternateTitleNe": "कार्तिकेय स्तुति",
+      "deity": "Kartikeya",
+      "deityNe": "कार्तिकेय",
+      "category": "Other",
+      "categoryNe": "प्रार्थना",
+      "content": "ॐ स्कन्दाय नमः।\nशरवणभवाय नमः।\nसुब्रह्मण्याय नमः।\nदेवसेनापतये नमः।\nज्ञानशक्तिधराय नमः।\nकुमाराय नमः।",
+      "meaning": "This simple stuti salutes Kartikeya as Skanda, Subrahmanya, and the disciplined bearer of wisdom and strength.",
+      "nepaliMeaning": "This simple stuti salutes Kartikeya as Skanda, Subrahmanya, and the disciplined bearer of wisdom and strength.",
+      "wordMeaning": "Skanda, Subrahmanya, and Kumara are names of Kartikeya; Devasenapati means commander of the divine hosts.",
+      "benefits": "Used for courage, discipline, study focus, and steady effort.",
+      "process": "Recite on Tuesdays, Skanda Shashti, or before disciplined work.",
+      "source": "Traditional name-based devotional prayer; verify before public release.",
+      "tags": [
+        "kartikeya",
+        "prayer",
+        "skanda",
+        "discipline"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-radha-prayer",
+      "title": "Radha Prayer",
+      "titleNe": "राधा प्रार्थना",
+      "alternateTitle": "राधा प्रार्थना",
+      "alternateTitleNe": "राधा प्रार्थना",
+      "deity": "Radha",
+      "deityNe": "राधा",
+      "category": "Other",
+      "categoryNe": "प्रार्थना",
+      "content": "राधे जय जय माधव दैते।\nगोकुलतरुणीमण्डल महिते॥\nदामोदररति वर्धनवेशे।\nहरिनिष्कुटवृन्दाविपिनेशे॥",
+      "meaning": "This prayer honors Radha as the heart of loving devotion to Krishna.",
+      "nepaliMeaning": "This prayer honors Radha as the heart of loving devotion to Krishna.",
+      "wordMeaning": "Madhava refers to Krishna; Vrindavan imagery points to the devotional world of Radha-Krishna bhakti.",
+      "benefits": "Used for loving remembrance, humility, and devotional sweetness.",
+      "process": "Recite during Radha-Krishna worship, kirtan, or evening prayer.",
+      "source": "Vaidika Vignanam reference pattern; verify full text before public release.",
+      "tags": [
+        "radha",
+        "prayer",
+        "krishna",
+        "bhakti"
+      ],
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "status": "published"
+    },
+    {
+      "id": "stotra-1a128ff0-9006-44bc-ab96-81ecfecdee40",
+      "title": "Saraswati Chalisa",
+      "deity": "Saraswati",
+      "category": "Chalisa",
+      "content": "Jay saraswati mata, paxi aayera haalxu hai? Jay saraswati",
+      "tags": [],
+      "status": "published"
+    },
+    {
+      "id": "stotra-ffd6fa4c-daad-450b-b615-25a74be78a90",
+      "title": "laxmi stuti",
+      "deity": "Lakshmi",
+      "category": "Stotra",
+      "content": "Jay laxmi mata...",
+      "tags": [],
+      "status": "published"
+    },
+    {
+      "id": "stotra-4afad3af-2ff5-484b-be66-b8bebbb757ba",
+      "title": "Bharat Kawach",
+      "deity": "Bharat",
+      "category": "Stotra",
+      "content": "Jay bharat ki",
+      "tags": [],
+      "status": "published"
+    }
+  ],
+  "deities": [
+    {
+      "id": "deity-ganesh",
+      "name": "Ganesh",
+      "nameNe": "गणेश",
+      "type": "God",
+      "typeNe": "देवता",
+      "sanskritName": "श्री गणेश",
+      "introduction": "The deity of wisdom, auspicious beginnings, and obstacle removal.",
+      "introductionNe": "बुद्धि, शुभारम्भ र विघ्न हटाउने देवताको रूपमा गणेशको पूजा गरिन्छ।",
+      "description": "The deity of wisdom, auspicious beginnings, and obstacle removal.",
+      "significance": "Ganesh is traditionally invoked first before study, travel, worship, business, and important new work.",
+      "significanceNe": "अध्ययन, यात्रा, पूजा, व्यवसाय वा कुनै पनि नयाँ काम सुरु गर्नुअघि गणेशको स्मरण गरिन्छ।",
+      "mantra": "ॐ गं गणपतये नमः",
+      "tags": [
+        "ganesh",
+        "beginnings",
+        "wisdom",
+        "obstacle-removal"
+      ],
+      "theme": "from-amber-100 to-orange-50"
+    },
+    {
+      "id": "deity-shiva",
+      "name": "Shiva",
+      "nameNe": "शिव",
+      "type": "God",
+      "typeNe": "देवता",
+      "sanskritName": "श्री शिव",
+      "introduction": "The auspicious lord associated with stillness, transformation, meditation, and grace.",
+      "introductionNe": "शिवलाई ध्यान, वैराग्य, रूपान्तरण र करुणासँग जोडिने महादेवको रूपमा मानिन्छ।",
+      "description": "The auspicious lord associated with stillness, transformation, meditation, and grace.",
+      "significance": "Shiva worship supports inner discipline, humility, peace, and the release of harmful tendencies.",
+      "significanceNe": "शिव उपासनाले आन्तरिक अनुशासन, नम्रता, शान्ति र विकार त्यागको भावलाई बल दिन्छ।",
+      "mantra": "ॐ नमः शिवाय",
+      "tags": [
+        "shiva",
+        "peace",
+        "meditation",
+        "transformation"
+      ],
+      "theme": "from-slate-100 to-blue-50"
+    },
+    {
+      "id": "deity-vishnu",
+      "name": "Vishnu",
+      "nameNe": "विष्णु",
+      "type": "God",
+      "typeNe": "देवता",
+      "sanskritName": "श्री विष्णु",
+      "introduction": "The preserver and sustainer who protects dharma and cosmic balance.",
+      "introductionNe": "धर्म र सृष्टिको सन्तुलन संरक्षण गर्ने पालनकर्ता।",
+      "description": "The preserver and sustainer who protects dharma and cosmic balance.",
+      "significance": "Vishnu is remembered for refuge, steadiness, protection, and devotion rooted in dharma.",
+      "significanceNe": "विष्णुको स्मरण शरण, स्थिरता, रक्षा र धर्ममा आधारित भक्तिका लागि गरिन्छ।",
+      "mantra": "ॐ नमो नारायणाय",
+      "tags": [
+        "vishnu",
+        "protection",
+        "dharma",
+        "preservation"
+      ],
+      "theme": "from-sky-100 to-cyan-50"
+    },
+    {
+      "id": "deity-lakshmi",
+      "name": "Lakshmi",
+      "nameNe": "लक्ष्मी",
+      "type": "Goddess",
+      "typeNe": "देवी",
+      "sanskritName": "श्री लक्ष्मी",
+      "introduction": "The goddess of prosperity, grace, beauty, and auspicious abundance.",
+      "introductionNe": "समृद्धि, कृपा, सौन्दर्य र शुभताको देवी।",
+      "description": "The goddess of prosperity, grace, beauty, and auspicious abundance.",
+      "significance": "Lakshmi is honored for household harmony, gratitude, cleanliness, generosity, and responsible prosperity.",
+      "significanceNe": "लक्ष्मीको पूजा घरको मंगल, कृतज्ञता, स्वच्छता, उदारता र सदुपयोगी समृद्धिका लागि गरिन्छ।",
+      "mantra": "ॐ श्रीं महालक्ष्म्यै नमः",
+      "tags": [
+        "lakshmi",
+        "prosperity",
+        "grace",
+        "auspiciousness"
+      ],
+      "theme": "from-rose-100 to-yellow-50"
+    },
+    {
+      "id": "deity-saraswati",
+      "name": "Saraswati",
+      "nameNe": "सरस्वती",
+      "type": "Goddess",
+      "typeNe": "देवी",
+      "sanskritName": "श्री सरस्वती",
+      "introduction": "The goddess of learning, music, speech, creativity, and refined knowledge.",
+      "introductionNe": "विद्या, संगीत, वाणी, सिर्जना र ज्ञानकी देवी।",
+      "description": "The goddess of learning, music, speech, creativity, and refined knowledge.",
+      "significance": "Saraswati is invoked by students, teachers, artists, and seekers for clarity, humility, and disciplined study.",
+      "significanceNe": "विद्यार्थी, शिक्षक, कलाकार र साधकहरूले स्पष्टता, नम्रता र अनुशासित अध्ययनका लागि सरस्वतीको स्मरण गर्छन्।",
+      "mantra": "ॐ ऐं सरस्वत्यै नमः",
+      "tags": [
+        "saraswati",
+        "knowledge",
+        "learning",
+        "music"
+      ],
+      "theme": "from-sky-100 to-white"
+    },
+    {
+      "id": "deity-hanuman",
+      "name": "Hanuman",
+      "nameNe": "हनुमान",
+      "type": "God",
+      "typeNe": "देवता",
+      "sanskritName": "श्री हनुमान",
+      "introduction": "The devoted servant of Shri Rama, known for strength, courage, humility, and selfless service.",
+      "introductionNe": "श्रीरामका परम भक्त, बल, साहस, नम्रता र सेवाका प्रतीक।",
+      "description": "The devoted servant of Shri Rama, known for strength, courage, humility, and selfless service.",
+      "significance": "Hanuman is remembered for protection, disciplined mind, devotion to Rama, and fearless service.",
+      "significanceNe": "हनुमानको स्मरण रक्षा, अनुशासित मन, रामभक्ति र निडर सेवाका लागि गरिन्छ।",
+      "mantra": "ॐ हनुमते नमः",
+      "tags": [
+        "hanuman",
+        "devotion",
+        "strength",
+        "protection"
+      ],
+      "theme": "from-orange-100 to-red-50"
+    },
+    {
+      "id": "deity-durga",
+      "name": "Durga",
+      "nameNe": "दुर्गा",
+      "type": "Goddess",
+      "typeNe": "देवी",
+      "sanskritName": "श्री दुर्गा",
+      "introduction": "The divine mother who protects, strengthens, and restores balance.",
+      "introductionNe": "रक्षा, शक्ति र सन्तुलन पुनर्स्थापना गर्ने दिव्य माता।",
+      "description": "The divine mother who protects, strengthens, and restores balance.",
+      "significance": "Durga is honored for courage, protection, justice, and the victory of righteousness over harmful force.",
+      "significanceNe": "दुर्गाको पूजा साहस, रक्षा, न्याय र अधर्ममाथि धर्मको विजयका लागि गरिन्छ।",
+      "mantra": "ॐ दुं दुर्गायै नमः",
+      "tags": [
+        "durga",
+        "strength",
+        "protection",
+        "navaratri"
+      ],
+      "theme": "from-rose-100 to-orange-50"
+    },
+    {
+      "id": "deity-krishna",
+      "name": "Krishna",
+      "nameNe": "कृष्ण",
+      "type": "God",
+      "typeNe": "देवता",
+      "sanskritName": "श्री कृष्ण",
+      "introduction": "The beloved teacher and divine guide associated with devotion, wisdom, compassion, and joy.",
+      "introductionNe": "भक्ति, ज्ञान, करुणा र आनन्दसँग सम्बन्धित प्रिय भगवान्।",
+      "description": "The beloved teacher and divine guide associated with devotion, wisdom, compassion, and joy.",
+      "significance": "Krishna is remembered through bhakti, the Bhagavad Gita, kirtan, and stories that teach dharma with love.",
+      "significanceNe": "कृष्णको स्मरण भक्ति, गीताका शिक्षाहरू, कीर्तन र धर्मलाई प्रेमसहित बुझ्नका लागि गरिन्छ।",
+      "mantra": "ॐ कृष्णाय नमः",
+      "tags": [
+        "krishna",
+        "devotion",
+        "wisdom",
+        "joy"
+      ],
+      "theme": "from-indigo-100 to-sky-50"
+    },
+    {
+      "id": "deity-rama",
+      "name": "Rama",
+      "nameNe": "राम",
+      "type": "God",
+      "typeNe": "देवता",
+      "sanskritName": "श्री राम",
+      "introduction": "The ideal king and embodiment of dharma, truth, courage, and compassion.",
+      "introductionNe": "धर्म, सत्य, साहस र करुणाका आदर्श राजा।",
+      "description": "The ideal king and embodiment of dharma, truth, courage, and compassion.",
+      "significance": "Rama is remembered for righteous conduct, family devotion, duty, and steady moral clarity.",
+      "significanceNe": "रामको स्मरण सत्य आचरण, पारिवारिक निष्ठा, कर्तव्य र नैतिक स्पष्टताका लागि गरिन्छ।",
+      "mantra": "श्री राम जय राम जय जय राम",
+      "tags": [
+        "rama",
+        "dharma",
+        "truth",
+        "courage"
+      ],
+      "theme": "from-amber-100 to-rose-50"
+    },
+    {
+      "id": "deity-kali",
+      "name": "Kali",
+      "nameNe": "काली",
+      "type": "Goddess",
+      "typeNe": "देवी",
+      "sanskritName": "श्री काली",
+      "introduction": "The fierce divine mother associated with protection, time, courage, and transformation.",
+      "introductionNe": "रक्षा, काल, साहस र रूपान्तरणसँग सम्बन्धित उग्र दिव्य माता।",
+      "description": "The fierce divine mother associated with protection, time, courage, and transformation.",
+      "significance": "Kali is invoked for fearlessness, protection, and the removal of ignorance and falsehood.",
+      "significanceNe": "कालीको स्मरण निर्भयता, रक्षा र अज्ञान तथा असत्य हटाउने भावका लागि गरिन्छ।",
+      "mantra": "ॐ क्रीं कालिकायै नमः",
+      "tags": [
+        "kali",
+        "protection",
+        "transformation",
+        "strength"
+      ],
+      "theme": "from-zinc-900 to-slate-700"
+    },
+    {
+      "id": "deity-surya",
+      "name": "Surya",
+      "nameNe": "सूर्य",
+      "type": "God",
+      "typeNe": "देवता",
+      "sanskritName": "श्री सूर्य",
+      "introduction": "The solar deity associated with light, vitality, clarity, discipline, and daily order.",
+      "introductionNe": "प्रकाश, स्वास्थ्य, स्पष्टता, अनुशासन र दैनिक कर्मका देवता।",
+      "description": "The solar deity associated with light, vitality, clarity, discipline, and daily order.",
+      "significance": "Surya is remembered at sunrise for healthful routine, gratitude, energy, and clear awareness.",
+      "significanceNe": "सूर्यलाई स्वास्थ्य, दैनिक अनुशासन, कृतज्ञता, ऊर्जा र स्पष्ट चेतनाका लागि स्मरण गरिन्छ।",
+      "mantra": "ॐ घृणिः सूर्याय नमः",
+      "tags": [
+        "surya",
+        "vitality",
+        "clarity",
+        "discipline"
+      ],
+      "theme": "from-yellow-100 to-orange-50"
+    },
+    {
+      "id": "deity-narayana",
+      "name": "Narayana",
+      "nameNe": "नारायण",
+      "type": "God",
+      "typeNe": "देवता",
+      "sanskritName": "श्री नारायण",
+      "introduction": "The all-pervading sustaining presence, closely associated with Vishnu.",
+      "introductionNe": "विष्णुसँग सम्बन्धित सर्वव्यापी पालनकर्ता स्वरूप।",
+      "description": "The all-pervading sustaining presence, closely associated with Vishnu.",
+      "significance": "Narayana is invoked for refuge, preservation, truthfulness, and household devotion.",
+      "significanceNe": "नारायणको स्मरण शरण, संरक्षण, सत्यता र गृहस्थ भक्तिका लागि गरिन्छ।",
+      "mantra": "ॐ नमो नारायणाय",
+      "tags": [
+        "narayana",
+        "refuge",
+        "preservation",
+        "dharma"
+      ],
+      "theme": "from-cyan-100 to-sky-50"
+    },
+    {
+      "id": "deity-parvati",
+      "name": "Parvati",
+      "nameNe": "पार्वती",
+      "type": "Goddess",
+      "typeNe": "देवी",
+      "sanskritName": "श्री पार्वती",
+      "introduction": "The gentle and powerful divine mother, consort of Shiva, associated with love, strength, and family harmony.",
+      "introductionNe": "प्रेम, शक्ति र पारिवारिक मंगलसँग सम्बन्धित कोमल र शक्तिशाली दिव्य माता।",
+      "description": "The gentle and powerful divine mother, consort of Shiva, associated with love, strength, and family harmony.",
+      "significance": "Parvati is honored as motherly grace, disciplined devotion, and the source of Shakti in household and temple worship.",
+      "significanceNe": "पार्वतीलाई मातृकृपा, अनुशासित भक्ति र शक्तिको स्रोतको रूपमा पूजा गरिन्छ।",
+      "mantra": "ॐ पार्वत्यै नमः",
+      "tags": [
+        "parvati",
+        "mother",
+        "shakti",
+        "family"
+      ],
+      "theme": "from-pink-100 to-rose-50"
+    },
+    {
+      "id": "deity-kartikeya",
+      "name": "Kartikeya",
+      "nameNe": "कार्तिकेय",
+      "type": "God",
+      "typeNe": "देवता",
+      "sanskritName": "श्री कार्तिकेय",
+      "introduction": "The youthful commander of the divine forces, associated with courage, discipline, and clarity.",
+      "introductionNe": "साहस, अनुशासन र स्पष्टताका दिव्य सेनापति।",
+      "description": "The youthful commander of the divine forces, associated with courage, discipline, and clarity.",
+      "significance": "Kartikeya is remembered for bravery, spiritual focus, and the ability to meet difficulty with wisdom and restraint.",
+      "significanceNe": "कार्तिकेयको स्मरण वीरता, आध्यात्मिक एकाग्रता र कठिनाइलाई संयमपूर्वक सामना गर्ने बुद्धिका लागि गरिन्छ।",
+      "mantra": "ॐ स्कन्दाय नमः",
+      "tags": [
+        "kartikeya",
+        "courage",
+        "discipline",
+        "skanda"
+      ],
+      "theme": "from-orange-100 to-amber-50"
+    },
+    {
+      "id": "deity-radha",
+      "name": "Radha",
+      "nameNe": "राधा",
+      "type": "Goddess",
+      "typeNe": "देवी",
+      "sanskritName": "श्री राधा",
+      "introduction": "The supreme devotee of Krishna and a symbol of pure love, devotion, and longing for the divine.",
+      "introductionNe": "कृष्णप्रेम, शुद्ध भक्ति र दिव्य प्रेमको प्रतीक।",
+      "description": "The supreme devotee of Krishna and a symbol of pure love, devotion, and longing for the divine.",
+      "significance": "Radha is honored in bhakti traditions as the heart of selfless devotion and loving remembrance of Krishna.",
+      "significanceNe": "राधालाई कृष्णभक्तिको निस्वार्थ प्रेम र मधुर स्मरणको हृदयको रूपमा सम्मान गरिन्छ।",
+      "mantra": "राधे कृष्ण राधे कृष्ण",
+      "tags": [
+        "radha",
+        "bhakti",
+        "love",
+        "krishna"
+      ],
+      "theme": "from-fuchsia-100 to-rose-50"
+    },
+    {
+      "id": "deity-bhairava",
+      "name": "Bhairava",
+      "nameNe": "भैरव",
+      "type": "God",
+      "typeNe": "देवता",
+      "sanskritName": "श्री भैरव",
+      "introduction": "The protective and fierce guardian form associated with time, discipline, and sacred boundaries.",
+      "introductionNe": "संरक्षण, अनुशासन, कालबोध र निर्भय साधनासँग जोडिने रक्षक देवता।",
+      "description": "The protective and fierce guardian form associated with time, discipline, and sacred boundaries.",
+      "significance": "Bhairava is remembered for protection, fearlessness, discipline, and the removal of harmful tendencies.",
+      "significanceNe": "भैरवको स्मरण रक्षा, अनुशासन, भयमुक्त साधना र सीमाना-रक्षक भावका लागि गरिन्छ।",
+      "mantra": "ॐ भैरवाय नमः",
+      "tags": [
+        "bhairava",
+        "protection",
+        "discipline",
+        "guardian"
+      ],
+      "theme": "from-slate-900 to-zinc-700"
+    },
+    {
+      "id": "deity-indra",
+      "name": "Indra",
+      "nameNe": "इन्द्र",
+      "type": "God",
+      "typeNe": "देवता",
+      "sanskritName": "इन्द्र",
+      "introduction": "The king of the gods associated with rain, strength, celestial order, and lordship.",
+      "introductionNe": "देवताहरूका राजा, वर्षा, स्वर्गीय शासन र बलसँग सम्बन्धित देवता।",
+      "description": "The king of the gods associated with rain, strength, celestial order, and lordship.",
+      "significance": "Indra is remembered for rain, abundance, vitality, and the orderly support of life.",
+      "significanceNe": "इन्द्रको पूजा वर्षा, समृद्धि, सामर्थ्य र देवशासनको स्मरणका लागि गरिन्छ।",
+      "mantra": "ॐ इन्द्राय नमः",
+      "tags": [
+        "indra",
+        "rain",
+        "strength",
+        "heaven"
+      ],
+      "theme": "from-sky-100 to-blue-50"
+    },
+    {
+      "id": "deity-a2ef46b0-62d1-4be9-8af2-3af34c43eeaa",
+      "name": "Bharat",
+      "type": "Other",
+      "introduction": "Bharat profile introduction.",
+      "description": "Bharat profile introduction.",
+      "significance": "Add significance before publishing.",
+      "imageCrop": {
+        "x": 0,
+        "y": 0,
+        "scale": 1
+      },
+      "tags": [
+        "bharat"
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "id": "cat-stotra",
+      "name": "Stotra",
+      "nameNe": "स्तोत्र",
+      "description": "Classical praise hymns addressed to a deity or divine principle.",
+      "descriptionNe": "देवता वा दिव्य तत्त्वको स्तुति गर्ने परम्परागत भक्तिपाठ।"
+    },
+    {
+      "id": "cat-stotram",
+      "name": "stotram"
+    },
+    {
+      "id": "cat-kavacham",
+      "name": "Kavacham",
+      "nameNe": "कवच",
+      "description": "Protective devotional compositions and prayers.",
+      "descriptionNe": "रक्षा भावका भक्तिपाठ र प्रार्थनाहरू।"
+    },
+    {
+      "id": "cat-kawach",
+      "name": "Kawach",
+      "nameNe": "कवच",
+      "description": "Protective devotional texts written in common transliteration.",
+      "descriptionNe": "रक्षा र आत्मबलका लागि पाठ गरिने भक्तिपाठ।"
+    },
+    {
+      "id": "cat-aarti",
+      "name": "Aarti",
+      "nameNe": "आरती",
+      "description": "Lamp-offering hymns sung during or at the close of worship.",
+      "descriptionNe": "पूजाको अन्त्यमा गाइने दीप-आराधना गीत।"
+    },
+    {
+      "id": "cat-ashtakam",
+      "name": "Ashtakam",
+      "nameNe": "अष्टकम्",
+      "description": "Eight-verse devotional compositions.",
+      "descriptionNe": "आठ श्लोक वा पदमा आधारित भक्तिपाठ।"
+    },
+    {
+      "id": "cat-chalisa",
+      "name": "Chalisa",
+      "nameNe": "चालीसा",
+      "description": "Forty-verse devotional hymns for focused prayer and remembrance.",
+      "descriptionNe": "स्मरण र प्रार्थनाका लागि चालीस पदमा आधारित भक्तिपाठ।"
+    },
+    {
+      "id": "cat-mantra",
+      "name": "Mantra",
+      "nameNe": "मन्त्र",
+      "description": "Sacred chants for repetition, meditation, or daily remembrance.",
+      "descriptionNe": "जप, ध्यान वा दैनिक स्मरणका लागि पवित्र मन्त्र।"
+    },
+    {
+      "id": "cat-pooja-bidhi",
+      "name": "Pooja Bidhi",
+      "nameNe": "पूजा विधि",
+      "description": "Practical home worship guides and ritual outlines.",
+      "descriptionNe": "घरमै गर्न मिल्ने पूजा विधि र पूजाको रूपरेखा।"
+    },
+    {
+      "id": "cat-vrat-katha",
+      "name": "Vrat Katha",
+      "nameNe": "व्रत कथा",
+      "description": "Stories connected with vows, observances, and festival traditions.",
+      "descriptionNe": "व्रत, पर्व र परम्परासँग जोडिएका कथा।"
+    },
+    {
+      "id": "cat-story",
+      "name": "Story",
+      "nameNe": "कथा",
+      "description": "Devotional stories and sacred narratives for family reading.",
+      "descriptionNe": "परिवारसँग पढ्न मिल्ने भक्तिपूर्ण कथा र पौराणिक प्रसङ्ग।"
+    },
+    {
+      "id": "cat-sadastakam",
+      "name": "Sadastakam",
+      "nameNe": "सदाष्टकम्",
+      "description": "Long-form eight-verse devotional compositions in traditional usage.",
+      "descriptionNe": "परम्परागत प्रयोगमा आउने आठ-श्लोकी भक्तिपाठ।"
+    },
+    {
+      "id": "cat-baan",
+      "name": "Baan",
+      "nameNe": "बाण",
+      "description": "Devotional exclamations, arrows of prayer, or short vigorous praise texts.",
+      "descriptionNe": "भक्तिभावका छोटा, तीव्र र ऊर्जायुक्त स्तुति-पाठ।"
+    },
+    {
+      "id": "cat-other",
+      "name": "Other",
+      "nameNe": "अन्य",
+      "description": "Special devotional content that does not fit the standard categories.",
+      "descriptionNe": "मानक श्रेणीमा नपर्ने विशेष भक्तिपूर्ण सामग्री।"
+    }
+  ],
+  "poojaBidhi": [
+    {
+      "id": "pooja-ganesh",
+      "title": "Ganesh Puja",
+      "titleNe": "गणेश पूजा",
+      "deity": "Ganesh",
+      "deityNe": "गणेश",
+      "occasion": "Before new beginnings, study, travel, business, house rituals, or festivals.",
+      "occasionNe": "नयाँ काम, अध्ययन, यात्रा, व्यवसाय, घर पूजा वा पर्वअघि।",
+      "overview": "A practical home worship flow for auspicious beginnings, clarity, and obstacle removal.",
+      "overviewNe": "शुभारम्भ र विघ्न हटाउन गणेशको सरल पूजा।",
+      "materials": [
+        "Diya",
+        "Incense",
+        "Flowers",
+        "Water",
+        "Durva grass",
+        "Modak or sweets",
+        "Rice / akshata",
+        "Sandalwood paste",
+        "Kumkum"
+      ],
+      "materialsNe": [
+        "दियो",
+        "धूप",
+        "फूल",
+        "जल",
+        "दूर्वा",
+        "मोदक वा मिठाई",
+        "अक्षता",
+        "चन्दन",
+        "कुमकुम"
+      ],
+      "steps": [
+        "Clean the altar and place a Ganesh image or symbol.",
+        "Offer water, sandalwood paste, flowers, durva, and akshata.",
+        "Chant Om Gam Ganapataye Namah or a Ganesh stotra.",
+        "Offer modak, sweets, or fruit as naivedya.",
+        "Perform Ganesh Aarti and pray for wisdom and humility.",
+        "Distribute prasad and begin the work with steadiness."
+      ],
+      "stepsNe": [
+        "पूजा स्थान सफा गर्नुहोस् र आसन मिलाउनुहोस्।",
+        "दियो र धूप बाल्नुहोस्।",
+        "गणेशलाई जल, चन्दन, फूल, दूर्वा र अक्षता अर्पण गर्नुहोस्।",
+        "ॐ गं गणपतये नमः वा गणेश स्तुति पाठ गर्नुहोस्।",
+        "मोदक, मिठाई वा फलफूल नैवेद्य अर्पण गर्नुहोस्।",
+        "गणेश आरती गरी शान्त मनले काम सुरु गर्नुहोस्।"
+      ],
+      "benefits": [
+        "Supports a calm beginning",
+        "Encourages focus and humility",
+        "Traditionally invites auspiciousness"
+      ],
+      "benefitsNe": [
+        "शान्त आरम्भको सहारा",
+        "एकाग्रता र नम्रता बढाउने",
+        "परम्पराअनुसार शुभता आमन्त्रण गर्ने"
+      ],
+      "cautions": "Traditions vary by family, region, and sampradaya. For major rituals, consult a priest or family elder.",
+      "cautionsNe": "परम्परा परिवार, क्षेत्र र सम्प्रदायअनुसार फरक हुन सक्छ। ठूला विधिका लागि पुरोहित वा परिवारका ज्येष्ठसँग परामर्श गर्नुहोस्।",
+      "source": "Original concise home worship guide based on general Hindu puja structure; verify details with family tradition, sampradaya, or a priest.",
+      "sourceNe": "सामान्य हिन्दू पूजा संरचनामा आधारित संक्षिप्त घरपूजा मार्गदर्शन; परिवार, सम्प्रदाय वा पुरोहितसँग विवरण पुष्टि गर्नुहोस्।",
+      "tags": [
+        "ganesh",
+        "puja",
+        "beginnings",
+        "durva",
+        "modak"
+      ]
+    },
+    {
+      "id": "pooja-shiva",
+      "title": "Shiva Puja",
+      "titleNe": "शिव पूजा",
+      "deity": "Shiva",
+      "deityNe": "शिव",
+      "occasion": "Mondays, Mahashivaratri, Pradosh, or personal meditation practice.",
+      "occasionNe": "सोमबार, महाशिवरात्रि, प्रदोष वा व्यक्तिगत ध्यानका लागि।",
+      "overview": "A simple Shiva worship centered on water, bilva leaves, mantra, and inner stillness.",
+      "overviewNe": "जल, बिल्वपत्र, मन्त्र र आन्तरिक शान्तिमा केन्द्रित शिव उपासना।",
+      "materials": [
+        "Diya",
+        "Incense",
+        "Water",
+        "Milk",
+        "Bilva leaves",
+        "Flowers",
+        "Rice / akshata",
+        "Sandalwood paste",
+        "Prayer beads"
+      ],
+      "materialsNe": [
+        "दियो",
+        "धूप",
+        "जल",
+        "दूध",
+        "बिल्वपत्र",
+        "फूल",
+        "अक्षता",
+        "चन्दन",
+        "जपमाला"
+      ],
+      "steps": [
+        "Prepare a clean altar with a Shiva lingam or image.",
+        "Offer water or milk according to family practice.",
+        "Offer bilva leaves, flowers, sandalwood paste, and akshata.",
+        "Chant Om Namah Shivaya or Mahamrityunjaya Mantra.",
+        "Sit quietly for a few minutes in meditation.",
+        "Perform Shiva Aarti and close with gratitude."
+      ],
+      "stepsNe": [
+        "स्वच्छ वेदीमा शिवलिङ्ग वा शिवचित्र राख्नुहोस्।",
+        "दियो र धूप बाल्नुहोस्।",
+        "परम्पराअनुसार जल वा दूध अर्पण गर्नुहोस्।",
+        "बिल्वपत्र, फूल, चन्दन र अक्षता चढाउनुहोस्।",
+        "ॐ नमः शिवाय वा महा मृत्युंजय मन्त्र जप गर्नुहोस्।",
+        "केही समय मौन ध्यान गरेर शिव आरती गर्नुहोस्।"
+      ],
+      "benefits": [
+        "Encourages stillness",
+        "Supports reflective practice",
+        "Traditionally associated with inner strength"
+      ],
+      "benefitsNe": [
+        "शान्ति र आन्तरिक अनुशासन",
+        "आत्मचिन्तनमा सहायता",
+        "साधनात्मक स्थिरता"
+      ],
+      "cautions": "Traditions vary by family, region, and sampradaya. For major rituals, consult a priest or family elder.",
+      "cautionsNe": "परम्परा परिवार, क्षेत्र र सम्प्रदायअनुसार फरक हुन सक्छ। ठूला विधिका लागि पुरोहित वा परिवारका ज्येष्ठसँग परामर्श गर्नुहोस्।",
+      "source": "Original concise home worship guide based on general Hindu puja structure; verify details with family tradition, sampradaya, or a priest.",
+      "sourceNe": "सामान्य हिन्दू पूजा संरचनामा आधारित संक्षिप्त घरपूजा मार्गदर्शन; परिवार, सम्प्रदाय वा पुरोहितसँग विवरण पुष्टि गर्नुहोस्।",
+      "tags": [
+        "shiva",
+        "puja",
+        "bilva",
+        "monday",
+        "mahashivaratri"
+      ]
+    },
+    {
+      "id": "pooja-lakshmi",
+      "title": "Lakshmi Puja",
+      "titleNe": "लक्ष्मी पूजा",
+      "deity": "Lakshmi",
+      "deityNe": "लक्ष्मी",
+      "occasion": "Diwali, Fridays, full moon evenings, or household gratitude prayer.",
+      "occasionNe": "दीपावली, शुक्रबार, पूर्णिमाको साँझ वा घरको कृतज्ञता पूजाका लागि।",
+      "overview": "A home worship flow for gratitude, cleanliness, generosity, and auspicious prosperity.",
+      "overviewNe": "स्वच्छता, कृतज्ञता, उदारता र मंगलका लागि घरमा गरिने लक्ष्मी पूजा।",
+      "materials": [
+        "Diya",
+        "Incense",
+        "Flowers",
+        "Rice / akshata",
+        "Kumkum",
+        "Turmeric",
+        "Coin or kalash",
+        "Lotus if available",
+        "Fruit",
+        "Sweets"
+      ],
+      "materialsNe": [
+        "दियो",
+        "धूप",
+        "फूल",
+        "अक्षता",
+        "कुमकुम",
+        "बेसार",
+        "मिठाई",
+        "जल",
+        "सिक्का वा कलश",
+        "उपलब्ध भए कमल"
+      ],
+      "steps": [
+        "Clean the home entrance and altar area.",
+        "Place Lakshmi image, coin, or kalash on a clean cloth.",
+        "Light diya and incense and offer flowers, kumkum, turmeric, and akshata.",
+        "Chant a Lakshmi mantra, Mahalakshmi Ashtakam, or Lakshmi Aarti.",
+        "Offer sweets or fruit as naivedya.",
+        "Pray for harmony and wise use of resources.",
+        "Share prasad with family."
+      ],
+      "stepsNe": [
+        "घरको प्रवेशद्वार र पूजा स्थान सफा गर्नुहोस्।",
+        "लक्ष्मीको तस्वीर, कलश वा सिक्का सफा कपडामा राख्नुहोस्।",
+        "दियो बालेर फूल, कुमकुम, बेसार र अक्षता अर्पण गर्नुहोस्।",
+        "लक्ष्मी मन्त्र, महालक्ष्मी अष्टकम् वा लक्ष्मी आरती पाठ गर्नुहोस्।",
+        "मिठाई वा फलफूल नैवेद्य अर्पण गर्नुहोस्।",
+        "परिवारसँग प्रार्थना र प्रसाद बाँड्नुहोस्।"
+      ],
+      "benefits": [
+        "Encourages gratitude and order",
+        "Supports household harmony",
+        "Traditionally linked with prosperity"
+      ],
+      "benefitsNe": [
+        "कृतज्ञता र सुव्यवस्था",
+        "घरको मंगल र समरसता",
+        "समृद्धिलाई जिम्मेवारीसहित ग्रहण गर्ने भाव"
+      ],
+      "cautions": "Traditions vary by family, region, and sampradaya. For major rituals, consult a priest or family elder.",
+      "cautionsNe": "परम्परा परिवार, क्षेत्र र सम्प्रदायअनुसार फरक हुन सक्छ। ठूला विधिका लागि पुरोहित वा परिवारका ज्येष्ठसँग परामर्श गर्नुहोस्।",
+      "source": "Original concise home worship guide based on general Hindu puja structure; verify details with family tradition, sampradaya, or a priest.",
+      "sourceNe": "सामान्य हिन्दू पूजा संरचनामा आधारित संक्षिप्त घरपूजा मार्गदर्शन; परिवार, सम्प्रदाय वा पुरोहितसँग विवरण पुष्टि गर्नुहोस्।",
+      "tags": [
+        "lakshmi",
+        "puja",
+        "diwali",
+        "friday",
+        "prosperity"
+      ]
+    },
+    {
+      "id": "pooja-saraswati",
+      "title": "Saraswati Puja",
+      "titleNe": "सरस्वती पूजा",
+      "deity": "Saraswati",
+      "deityNe": "सरस्वती",
+      "occasion": "Vasant Panchami, study beginnings, music practice, or creative work.",
+      "occasionNe": "वसन्त पञ्चमी, अध्ययन सुरु, संगीत अभ्यास वा सिर्जनात्मक कामअघि।",
+      "overview": "A respectful worship flow for learning, art, music, writing, and clear speech.",
+      "overviewNe": "विद्या, कला, संगीत, लेखन र स्पष्ट वाणीका लागि सम्मानपूर्वक पूजा।",
+      "materials": [
+        "Books or writing tools",
+        "Musical instrument if used",
+        "Diya",
+        "Incense",
+        "White flowers",
+        "White cloth",
+        "Fruit",
+        "Clean water"
+      ],
+      "materialsNe": [
+        "पुस्तक वा लेखन सामग्री",
+        "संगीत वाद्य",
+        "दियो",
+        "धूप",
+        "सेता फूल",
+        "सेतो कपडा",
+        "फलफूल",
+        "स्वच्छ जल"
+      ],
+      "steps": [
+        "Place books or instruments respectfully near the altar.",
+        "Light diya and incense.",
+        "Offer white flowers, water, and akshata.",
+        "Chant Om Aim Saraswatyai Namah or Saraswati Vandana.",
+        "Pray for disciplined study and humble learning.",
+        "Avoid placing books directly on the floor after worship.",
+        "Close with a short reading or practice session."
+      ],
+      "stepsNe": [
+        "पुस्तक वा वाद्ययन्त्रलाई सम्मानपूर्वक वेदी नजिक राख्नुहोस्।",
+        "दियो र धूप बाल्नुहोस्।",
+        "सेता फूल, जल र अक्षता अर्पण गर्नुहोस्।",
+        "ॐ ऐं सरस्वत्यै नमः वा सरस्वती वन्दना पाठ गर्नुहोस्।",
+        "अनुशासित अध्ययन र नम्र सिकाइका लागि प्रार्थना गर्नुहोस्।",
+        "पूजापछि पुस्तक वा वाद्यलाई सम्मानका साथ राख्नुहोस्।"
+      ],
+      "benefits": [
+        "Encourages study discipline",
+        "Supports creative focus",
+        "Traditionally linked with clarity of speech"
+      ],
+      "benefitsNe": [
+        "अध्ययनमा अनुशासन",
+        "सर्जनशील एकाग्रता",
+        "स्पष्ट वाणी र बौद्धिक शुद्धता"
+      ],
+      "cautions": "Traditions vary by family, region, and sampradaya. For major rituals, consult a priest or family elder.",
+      "cautionsNe": "परम्परा परिवार, क्षेत्र र सम्प्रदायअनुसार फरक हुन सक्छ। ठूला विधिका लागि पुरोहित वा परिवारका ज्येष्ठसँग परामर्श गर्नुहोस्।",
+      "source": "Original concise home worship guide based on general Hindu puja structure; verify details with family tradition, sampradaya, or a priest.",
+      "sourceNe": "सामान्य हिन्दू पूजा संरचनामा आधारित संक्षिप्त घरपूजा मार्गदर्शन; परिवार, सम्प्रदाय वा पुरोहितसँग विवरण पुष्टि गर्नुहोस्।",
+      "tags": [
+        "saraswati",
+        "puja",
+        "learning",
+        "books",
+        "vasant-panchami"
+      ]
+    },
+    {
+      "id": "pooja-hanuman",
+      "title": "Hanuman Puja",
+      "titleNe": "हनुमान पूजा",
+      "deity": "Hanuman",
+      "deityNe": "हनुमान",
+      "occasion": "Tuesdays, Saturdays, before difficult work, or when seeking courage and discipline.",
+      "occasionNe": "मङ्गलबार, शनिबार, कठिन कामअघि वा साहस र अनुशासन चाहिँदा।",
+      "overview": "A devotional worship flow emphasizing strength, humility, service, and protection.",
+      "overviewNe": "बल, नम्रता, सेवा र सुरक्षामा जोड दिने भक्तिपूर्ण पूजा।",
+      "materials": [
+        "Diya",
+        "Incense",
+        "Flowers",
+        "Sindoor",
+        "Red cloth if available",
+        "Fruit",
+        "Sweets",
+        "Prayer beads"
+      ],
+      "materialsNe": [
+        "दियो",
+        "धूप",
+        "फूल",
+        "सिन्दूर",
+        "रातो कपडा",
+        "फलफूल",
+        "मिठाई",
+        "जपमाला"
+      ],
+      "steps": [
+        "Clean the prayer place and sit with attention.",
+        "Offer flowers, sindoor, and incense respectfully.",
+        "Chant Om Hanumate Namah or read Hanuman Chalisa.",
+        "Offer fruit or sweets as naivedya.",
+        "Pray for courage, discipline, and service-minded action.",
+        "Perform Hanuman Aarti and distribute prasad."
+      ],
+      "stepsNe": [
+        "पूजा स्थान सफा गरेर ध्यानपूर्वक बस्नुहोस्।",
+        "फूल, सिन्दूर र धूप श्रद्धापूर्वक अर्पण गर्नुहोस्।",
+        "ॐ हनुमते नमः वा हनुमान चालीसा पाठ गर्नुहोस्।",
+        "फलफूल वा मिठाई नैवेद्य अर्पण गर्नुहोस्।",
+        "साहस, अनुशासन र सेवाभावका लागि प्रार्थना गर्नुहोस्।",
+        "हनुमान आरती गरी प्रसाद वितरण गर्नुहोस्।"
+      ],
+      "benefits": [
+        "Supports courage and discipline",
+        "Encourages selfless service",
+        "Traditionally associated with protection"
+      ],
+      "benefitsNe": [
+        "साहस र अनुशासन",
+        "सेवाभावको विकास",
+        "रक्षात्मक भक्ति"
+      ],
+      "cautions": "Traditions vary by family, region, and sampradaya. For major rituals, consult a priest or family elder.",
+      "cautionsNe": "परम्परा परिवार, क्षेत्र र सम्प्रदायअनुसार फरक हुन सक्छ। ठूला विधिका लागि पुरोहित वा परिवारका ज्येष्ठसँग परामर्श गर्नुहोस्।",
+      "source": "Original concise home worship guide based on general Hindu puja structure; verify details with family tradition, sampradaya, or a priest.",
+      "sourceNe": "सामान्य हिन्दू पूजा संरचनामा आधारित संक्षिप्त घरपूजा मार्गदर्शन; परिवार, सम्प्रदाय वा पुरोहितसँग विवरण पुष्टि गर्नुहोस्।",
+      "tags": [
+        "hanuman",
+        "puja",
+        "tuesday",
+        "saturday",
+        "sindoor"
+      ]
+    },
+    {
+      "id": "pooja-satyanarayan",
+      "title": "Satyanarayan Puja",
+      "titleNe": "सत्यनारायण पूजा",
+      "deity": "Narayana",
+      "deityNe": "नारायण",
+      "occasion": "Full moon, family milestones, gratitude rituals, and household gatherings.",
+      "occasionNe": "पूर्णिमा, परिवारिक उत्सव, कृतज्ञता र गृहपूजाका अवसरमा।",
+      "overview": "A household puja centered on truthfulness, gratitude, family devotion, and shared katha.",
+      "overviewNe": "सत्य, कृतज्ञता, पारिवारिक भक्ति र साझा कथामा केन्द्रित गृहपूजा।",
+      "materials": [
+        "Kalash",
+        "Diya",
+        "Incense",
+        "Flowers",
+        "Tulsi leaves",
+        "Fruit",
+        "Sweet offering",
+        "Rice / akshata",
+        "Panchamrit where used"
+      ],
+      "materialsNe": [
+        "कलश",
+        "दियो",
+        "धूप",
+        "फूल",
+        "तुलसी पात",
+        "फलफूल",
+        "मिठाई",
+        "अक्षता",
+        "पञ्चामृत (प्रयोग भए)"
+      ],
+      "steps": [
+        "Prepare the altar and invite family members to sit together.",
+        "Place Narayana or Satyanarayan image and kalash if used.",
+        "Offer flowers, tulsi, fruit, and light the lamp.",
+        "Read Satyanarayan katha or a family-approved summary.",
+        "Chant Vishnu or Narayana mantra.",
+        "Offer prasad and share the story together.",
+        "Close with gratitude and blessings for truthful living."
+      ],
+      "stepsNe": [
+        "पूजा स्थान तयार गरेर परिवारलाई सँगै बसाउनुहोस्।",
+        "नारायण वा सत्यनारायणको प्रतिमा र कलश राख्नुहोस्।",
+        "फूल, तुलसी पात, जल र दीप अर्पण गर्नुहोस्।",
+        "सत्यनारायण कथा वा परिवारले स्वीकृत छोटो पाठ पढ्नुहोस्।",
+        "विष्णु वा नारायण मन्त्र जप गर्नुहोस्।",
+        "प्रसाद अर्पण गरी कथा परिवारसँग साझा गर्नुहोस्।"
+      ],
+      "benefits": [
+        "Supports family devotion",
+        "Encourages gratitude and truthfulness",
+        "Traditionally used for auspicious household events"
+      ],
+      "benefitsNe": [
+        "पारिवारिक भक्ति",
+        "सत्य र कृतज्ञताको संस्कार",
+        "मङ्गलमय अवसरमा उपयुक्त"
+      ],
+      "cautions": "Traditions vary by family, region, and sampradaya. For major rituals, consult a priest or family elder.",
+      "cautionsNe": "परम्परा परिवार, क्षेत्र र सम्प्रदायअनुसार फरक हुन सक्छ। ठूला विधिका लागि पुरोहित वा परिवारका ज्येष्ठसँग परामर्श गर्नुहोस्।",
+      "source": "Original concise home worship guide based on general Hindu puja structure; verify details with family tradition, sampradaya, or a priest.",
+      "sourceNe": "सामान्य हिन्दू पूजा संरचनामा आधारित संक्षिप्त घरपूजा मार्गदर्शन; परिवार, सम्प्रदाय वा पुरोहितसँग विवरण पुष्टि गर्नुहोस्।",
+      "tags": [
+        "narayana",
+        "puja",
+        "satyanarayan",
+        "family",
+        "truth",
+        "tulsi"
+      ]
+    },
+    {
+      "id": "pooja-durga",
+      "title": "Durga Puja",
+      "titleNe": "दुर्गा पूजा",
+      "deity": "Durga",
+      "deityNe": "दुर्गा",
+      "occasion": "Navaratri, Fridays, or whenever courage and protection are remembered.",
+      "occasionNe": "नवरात्रि, शुक्रबार वा शक्ति र सुरक्षाको प्रार्थना गर्दा।",
+      "overview": "A devotional practice for honoring the divine mother and her protective strength.",
+      "overviewNe": "दिव्य माताको संरक्षण, साहस र शक्ति स्मरण गर्ने भक्ति विधि।",
+      "materials": [
+        "Diya",
+        "Incense",
+        "Red flowers",
+        "Water",
+        "Red cloth",
+        "Kumkum",
+        "Rice / akshata",
+        "Fruit",
+        "Sweets"
+      ],
+      "materialsNe": [
+        "दियो",
+        "धूप",
+        "रातो फूल",
+        "जल",
+        "रातो कपडा",
+        "कुमकुम",
+        "अक्षता",
+        "फलफूल",
+        "मिठाई"
+      ],
+      "steps": [
+        "Place a Durga image or symbol on a clean altar.",
+        "Light diya and incense.",
+        "Offer water, red flowers, kumkum, and akshata.",
+        "Chant Om Dum Durgayai Namah, Durga Aarti, or a short stotra.",
+        "Offer fruit or sweets as naivedya.",
+        "Pray for courage, protection, and righteous action.",
+        "Perform aarti and share prasad."
+      ],
+      "stepsNe": [
+        "सफा वेदीमा दुर्गाको प्रतिमा वा प्रतीक राख्नुहोस्।",
+        "दियो र धूप बाल्नुहोस्।",
+        "जल, रातो फूल, कुमकुम र अक्षता अर्पण गर्नुहोस्।",
+        "ॐ दुं दुर्गायै नमः, दुर्गा आरती वा संक्षिप्त स्तुति पाठ गर्नुहोस्।",
+        "फलफूल वा मिठाई नैवेद्य अर्पण गर्नुहोस्।",
+        "साहस, सुरक्षा र धर्मपालनका लागि प्रार्थना गर्नुहोस्।"
+      ],
+      "benefits": [
+        "Supports courage and resilience",
+        "Encourages protective devotion",
+        "Traditionally used in Navaratri observance"
+      ],
+      "benefitsNe": [
+        "साहस र सहनशीलता",
+        "रक्षात्मक भक्ति",
+        "नवरात्रिको अभ्याससँग जोडिएको"
+      ],
+      "cautions": "Traditions vary by family, region, and sampradaya. For major rituals, consult a priest or family elder.",
+      "cautionsNe": "परम्परा परिवार, क्षेत्र र सम्प्रदायअनुसार फरक हुन सक्छ। ठूला विधिका लागि पुरोहित वा परिवारका ज्येष्ठसँग परामर्श गर्नुहोस्।",
+      "source": "Original concise home worship guide based on general Hindu puja structure; verify details with family tradition, sampradaya, or a priest.",
+      "sourceNe": "सामान्य हिन्दू पूजा संरचनामा आधारित संक्षिप्त घरपूजा मार्गदर्शन; परिवार, सम्प्रदाय वा पुरोहितसँग विवरण पुष्टि गर्नुहोस्।",
+      "tags": [
+        "durga",
+        "puja",
+        "navaratri",
+        "mother",
+        "strength"
+      ]
+    },
+    {
+      "id": "pooja-surya",
+      "title": "Surya Puja",
+      "titleNe": "सूर्य पूजा",
+      "deity": "Surya",
+      "deityNe": "सूर्य",
+      "occasion": "Sunrise worship, Sundays, or gratitude for health, light, and energy.",
+      "occasionNe": "सूर्योदय पूजा, आइतबार वा स्वास्थ्य र ऊर्जाका लागि।",
+      "overview": "A simple sunrise devotion for clarity, vitality, routine, and gratitude.",
+      "overviewNe": "प्रकाश, स्वास्थ्य, अनुशासन र दैनिक कृतज्ञताका लागि सूर्योदय भक्ति।",
+      "materials": [
+        "Clean water",
+        "Copper vessel if available",
+        "Diya",
+        "Red flower",
+        "Rice / akshata",
+        "Fruit"
+      ],
+      "materialsNe": [
+        "स्वच्छ जल",
+        "तामाको भाँडो",
+        "दियो",
+        "रातो फूल",
+        "अक्षता",
+        "फलफूल"
+      ],
+      "steps": [
+        "Stand or sit respectfully near sunrise.",
+        "Offer water or arghya according to family practice.",
+        "Offer a red flower and akshata if using an altar.",
+        "Chant Gayatri Mantra, Surya mantra, or Surya Ashtakam.",
+        "Offer gratitude for light, health, and daily rhythm.",
+        "Begin the day with disciplined intention."
+      ],
+      "stepsNe": [
+        "सूर्योदयतिर श्रद्धापूर्वक उभिनुहोस् वा बस्नुहोस्।",
+        "परम्पराअनुसार जल वा अर्घ्य अर्पण गर्नुहोस्।",
+        "रातो फूल र अक्षता अर्पण गर्नुहोस्।",
+        "गायत्री मन्त्र, सूर्य मन्त्र वा सूर्याष्टकम् पाठ गर्नुहोस्।",
+        "प्रकाश, स्वास्थ्य र दैनिक अनुशासनका लागि कृतज्ञता व्यक्त गर्नुहोस्।",
+        "दिनको सुरुवात संयमित र स्पष्ट संकल्पसहित गर्नुहोस्।"
+      ],
+      "benefits": [
+        "Supports daily routine",
+        "Encourages gratitude",
+        "Traditionally linked with vitality and clarity"
+      ],
+      "benefitsNe": [
+        "दैनिक अनुशासन",
+        "कृतज्ञता र ऊर्जा",
+        "स्पष्ट चेतना"
+      ],
+      "cautions": "Traditions vary by family, region, and sampradaya. For major rituals, consult a priest or family elder.",
+      "cautionsNe": "परम्परा परिवार, क्षेत्र र सम्प्रदायअनुसार फरक हुन सक्छ। ठूला विधिका लागि पुरोहित वा परिवारका ज्येष्ठसँग परामर्श गर्नुहोस्।",
+      "source": "Original concise home worship guide based on general Hindu puja structure; verify details with family tradition, sampradaya, or a priest.",
+      "sourceNe": "सामान्य हिन्दू पूजा संरचनामा आधारित संक्षिप्त घरपूजा मार्गदर्शन; परिवार, सम्प्रदाय वा पुरोहितसँग विवरण पुष्टि गर्नुहोस्।",
+      "tags": [
+        "surya",
+        "puja",
+        "sunrise",
+        "sunday",
+        "arghya"
+      ]
+    },
+    {
+      "id": "pooja-krishna",
+      "title": "Krishna Puja",
+      "titleNe": "कृष्ण पूजा",
+      "deity": "Krishna",
+      "deityNe": "कृष्ण",
+      "occasion": "Janmashtami, Ekadashi, evenings, or daily bhakti practice.",
+      "occasionNe": "जन्माष्टमी, एकादशी, साँझको भक्ति वा दैनिक भजनका लागि।",
+      "overview": "A loving worship flow for devotion, joy, music, and remembrance of Krishna.",
+      "overviewNe": "भक्ति, आनन्द, संगीत र कृष्ण-स्मरणमा केन्द्रित प्रेमपूर्ण पूजा।",
+      "materials": [
+        "Diya",
+        "Incense",
+        "Flowers",
+        "Tulsi leaves",
+        "Butter or sweets where used",
+        "Fruit",
+        "Water",
+        "Peacock feather decoration if available"
+      ],
+      "materialsNe": [
+        "दियो",
+        "धूप",
+        "फूल",
+        "तुलसी पात",
+        "माखन वा मिठाई",
+        "फलफूल",
+        "जल",
+        "मोरपखेरु सजावट (भए)"
+      ],
+      "steps": [
+        "Arrange Krishna image or murti respectfully.",
+        "Light diya and incense.",
+        "Offer water, flowers, tulsi, and fruit.",
+        "Chant Om Krishnaya Namah, Krishna Ashtakam, or kirtan.",
+        "Offer makhan, sweets, or simple naivedya according to custom.",
+        "Pray for love, humility, and dharmic understanding.",
+        "Perform aarti or sing a short bhajan."
+      ],
+      "stepsNe": [
+        "कृष्णको प्रतिमा वा मूर्ति श्रद्धापूर्वक मिलाउनुहोस्।",
+        "दियो र धूप बाल्नुहोस्।",
+        "जल, फूल, तुलसी पात र फलफूल अर्पण गर्नुहोस्।",
+        "ॐ कृष्णाय नमः, कृष्णाष्टकम् वा कीर्तन पाठ गर्नुहोस्।",
+        "माखन, मिठाई वा साधारण नैवेद्य अर्पण गर्नुहोस्।",
+        "प्रेम, नम्रता र धर्मबोधका लागि प्रार्थना गर्नुहोस्।"
+      ],
+      "benefits": [
+        "Encourages loving devotion",
+        "Supports joy and humility",
+        "Connects family worship with kirtan and stories"
+      ],
+      "benefitsNe": [
+        "प्रेमपूर्ण भक्ति",
+        "आनन्द र नम्रता",
+        "कीर्तन र कथासँग जोडिने"
+      ],
+      "cautions": "Traditions vary by family, region, and sampradaya. For major rituals, consult a priest or family elder.",
+      "cautionsNe": "परम्परा परिवार, क्षेत्र र सम्प्रदायअनुसार फरक हुन सक्छ। ठूला विधिका लागि पुरोहित वा परिवारका ज्येष्ठसँग परामर्श गर्नुहोस्।",
+      "source": "Original concise home worship guide based on general Hindu puja structure; verify details with family tradition, sampradaya, or a priest.",
+      "sourceNe": "सामान्य हिन्दू पूजा संरचनामा आधारित संक्षिप्त घरपूजा मार्गदर्शन; परिवार, सम्प्रदाय वा पुरोहितसँग विवरण पुष्टि गर्नुहोस्।",
+      "tags": [
+        "krishna",
+        "puja",
+        "janmashtami",
+        "bhakti",
+        "tulsi"
+      ]
+    },
+    {
+      "id": "pooja-rama",
+      "title": "Rama Puja",
+      "titleNe": "राम पूजा",
+      "deity": "Rama",
+      "deityNe": "राम",
+      "occasion": "Ram Navami, Thursdays, family worship, or before duties requiring courage and integrity.",
+      "occasionNe": "रामनवमी, बिहीबार, परिवारिक पूजा वा कर्तव्य-शक्तिका लागि।",
+      "overview": "A worship flow centered on dharma, truthfulness, family devotion, and steady conduct.",
+      "overviewNe": "धर्म, सत्य, कर्तव्य र पारिवारिक भक्ति केन्द्रित पूजा।",
+      "materials": [
+        "Diya",
+        "Incense",
+        "Flowers",
+        "Tulsi leaves if used",
+        "Fruit",
+        "Sweets",
+        "Water",
+        "Rice / akshata"
+      ],
+      "materialsNe": [
+        "दियो",
+        "धूप",
+        "फूल",
+        "तुलसी पात",
+        "फलफूल",
+        "मिठाई",
+        "जल",
+        "अक्षता"
+      ],
+      "steps": [
+        "Place Rama, Sita, Lakshmana, and Hanuman image if available.",
+        "Light diya and incense.",
+        "Offer water, flowers, tulsi, and akshata.",
+        "Chant Shri Ram Jai Ram or read from Ram Raksha / Ramayana.",
+        "Offer fruit or sweets as naivedya.",
+        "Pray for truthful speech, courage, and responsibility.",
+        "Perform aarti and share prasad."
+      ],
+      "stepsNe": [
+        "राम, सीता, लक्ष्मण र हनुमानको चित्र वा मूर्ति भए सम्मानपूर्वक मिलाउनुहोस्।",
+        "दियो र धूप बाल्नुहोस्।",
+        "जल, फूल, तुलसी पात र अक्षता अर्पण गर्नुहोस्।",
+        "श्री राम जय राम वा रामरक्षा स्तोत्र/रामायणको पाठ गर्नुहोस्।",
+        "फलफूल वा मिठाई नैवेद्य अर्पण गर्नुहोस्।",
+        "सत्य, कर्तव्य र साहसका लागि प्रार्थना गर्नुहोस्।"
+      ],
+      "benefits": [
+        "Encourages dharmic reflection",
+        "Supports family devotion",
+        "Traditionally associated with courage and truth"
+      ],
+      "benefitsNe": [
+        "धर्मचिन्तन",
+        "पारिवारिक निष्ठा",
+        "सत्य र साहसको स्मरण"
+      ],
+      "cautions": "Traditions vary by family, region, and sampradaya. For major rituals, consult a priest or family elder.",
+      "cautionsNe": "परम्परा परिवार, क्षेत्र र सम्प्रदायअनुसार फरक हुन सक्छ। ठूला विधिका लागि पुरोहित वा परिवारका ज्येष्ठसँग परामर्श गर्नुहोस्।",
+      "source": "Original concise home worship guide based on general Hindu puja structure; verify details with family tradition, sampradaya, or a priest.",
+      "sourceNe": "सामान्य हिन्दू पूजा संरचनामा आधारित संक्षिप्त घरपूजा मार्गदर्शन; परिवार, सम्प्रदाय वा पुरोहितसँग विवरण पुष्टि गर्नुहोस्।",
+      "tags": [
+        "rama",
+        "puja",
+        "ram-navami",
+        "dharma",
+        "family"
+      ]
+    },
+    {
+      "id": "pooja-kali",
+      "title": "Kali Puja",
+      "titleNe": "काली पूजा",
+      "deity": "Kali",
+      "deityNe": "काली",
+      "occasion": "Kali Puja, Amavasya, Navaratri, or prayers for courage and transformation.",
+      "occasionNe": "काली पूजा, अमावस्या, नवरात्रि वा निर्भय प्रार्थनाका लागि।",
+      "overview": "A respectful home worship outline for Kali as the fierce compassionate mother.",
+      "overviewNe": "कालीलाइ शक्तिशाली र करुणामयी माताको रूपमा सम्मान गर्ने गृहविधि।",
+      "materials": [
+        "Diya",
+        "Incense",
+        "Red flowers",
+        "Water",
+        "Kumkum",
+        "Rice / akshata",
+        "Fruit",
+        "Sweets",
+        "Red cloth if available"
+      ],
+      "materialsNe": [
+        "दियो",
+        "धूप",
+        "रातो फूल",
+        "जल",
+        "कुमकुम",
+        "अक्षता",
+        "फलफूल",
+        "मिठाई",
+        "रातो कपडा"
+      ],
+      "steps": [
+        "Prepare the altar respectfully and keep the mood calm.",
+        "Light diya and incense.",
+        "Offer water, red flowers, kumkum, and akshata.",
+        "Chant Om Kreem Kalikayai Namah or a simple Kali stuti.",
+        "Offer fruit or sweets as naivedya.",
+        "Pray for courage, truthfulness, and removal of harmful tendencies.",
+        "Close with aarti or silent gratitude."
+      ],
+      "stepsNe": [
+        "शान्त भावमा स्वच्छ वेदी तयार गर्नुहोस्।",
+        "दियो र धूप बाल्नुहोस्।",
+        "जल, रातो फूल, कुमकुम र अक्षता अर्पण गर्नुहोस्।",
+        "ॐ क्रीं कालिकायै नमः वा सरल काली स्तुति पाठ गर्नुहोस्।",
+        "फलफूल वा मिठाई नैवेद्य अर्पण गर्नुहोस्।",
+        "निर्भयता, सत्यता र हानिकारक बानी हटाउन प्रार्थना गर्नुहोस्।"
+      ],
+      "benefits": [
+        "Supports courage and self-reflection",
+        "Encourages release of fear",
+        "Honors protective motherly grace"
+      ],
+      "benefitsNe": [
+        "निर्भयता र आत्मचिन्तन",
+        "भय र असत्यबाट विमुक्ति",
+        "शक्तिसाधना"
+      ],
+      "cautions": "Traditions vary by family, region, and sampradaya. For major rituals, consult a priest or family elder.",
+      "cautionsNe": "परम्परा परिवार, क्षेत्र र सम्प्रदायअनुसार फरक हुन सक्छ। ठूला विधिका लागि पुरोहित वा परिवारका ज्येष्ठसँग परामर्श गर्नुहोस्।",
+      "source": "Original concise home worship guide based on general Hindu puja structure; verify details with family tradition, sampradaya, or a priest.",
+      "sourceNe": "सामान्य हिन्दू पूजा संरचनामा आधारित संक्षिप्त घरपूजा मार्गदर्शन; परिवार, सम्प्रदाय वा पुरोहितसँग विवरण पुष्टि गर्नुहोस्।",
+      "tags": [
+        "kali",
+        "puja",
+        "amavasya",
+        "shakti",
+        "courage"
+      ]
+    },
+    {
+      "id": "pooja-navagraha",
+      "title": "Navagraha Puja Basic Guide",
+      "titleNe": "नवग्रह पूजा आधारभूत विधि",
+      "deity": "Surya",
+      "deityNe": "सूर्य",
+      "occasion": "Before major beginnings, during family observances, or when guided by tradition.",
+      "occasionNe": "महत्त्वपूर्ण कामअघि, पारिवारिक कर्मकाण्डमा वा परम्परा अनुसार।",
+      "overview": "A simple educational home guide for honoring the nine grahas with respect and humility.",
+      "overviewNe": "नौ ग्रहलाई सम्मानपूर्वक सम्झने सरल गृहमार्गदर्शन।",
+      "materials": [
+        "Diya",
+        "Incense",
+        "Nine flowers or mixed flowers",
+        "Water",
+        "Rice / akshata",
+        "Sandalwood paste",
+        "Kumkum",
+        "Fruit",
+        "Simple naivedya"
+      ],
+      "materialsNe": [
+        "दियो",
+        "धूप",
+        "नौवटा फूल वा मिश्रित फूल",
+        "जल",
+        "अक्षता",
+        "चन्दन",
+        "कुमकुम",
+        "फलफूल",
+        "साधारण नैवेद्य"
+      ],
+      "steps": [
+        "Clean the altar and arrange a simple Navagraha symbol or nine small places.",
+        "Light diya and incense.",
+        "Take a sankalpa for balanced conduct and humility.",
+        "Offer water, flowers, and akshata to each graha respectfully.",
+        "Chant simple names: Surya, Chandra, Mangala, Budha, Guru, Shukra, Shani, Rahu, Ketu.",
+        "Offer fruit or simple naivedya.",
+        "Pray for wisdom, patience, and responsible action.",
+        "For formal remedies or dosha-related rituals, consult a qualified priest."
+      ],
+      "stepsNe": [
+        "साधारण नवग्रह प्रतीक वा नौ साना स्थान मिलाउनुहोस्।",
+        "दियो र धूप बाल्नुहोस्।",
+        "संयम र नम्रताका लागि सङ्कल्प गर्नुहोस्।",
+        "सूर्य, चन्द्र, मङ्गल, बुध, गुरु, शुक्र, शनि, राहु र केतुका नाम अर्पणपूर्वक स्मरण गर्नुहोस्।",
+        "फलफूल वा सरल नैवेद्य अर्पण गर्नुहोस्।",
+        "बुद्धि, धैर्य र जिम्मेवार कर्मका लागि प्रार्थना गर्नुहोस्।"
+      ],
+      "benefits": [
+        "Encourages humility and reflection",
+        "Supports respectful awareness of time cycles",
+        "Useful as a basic family education guide"
+      ],
+      "benefitsNe": [
+        "समयचक्रप्रति सम्मान",
+        "नम्रता र अनुशासन",
+        "परिवारलाई सरल शिक्षा"
+      ],
+      "cautions": "Traditions vary by family, region, and sampradaya. For major rituals, consult a priest or family elder.",
+      "cautionsNe": "परम्परा परिवार, क्षेत्र र सम्प्रदायअनुसार फरक हुन सक्छ। ठूला विधिका लागि पुरोहित वा परिवारका ज्येष्ठसँग परामर्श गर्नुहोस्।",
+      "source": "Original concise home worship guide based on general Hindu puja structure; verify details with family tradition, sampradaya, or a priest.",
+      "sourceNe": "सामान्य हिन्दू पूजा संरचनामा आधारित संक्षिप्त घरपूजा मार्गदर्शन; परिवार, सम्प्रदाय वा पुरोहितसँग विवरण पुष्टि गर्नुहोस्।",
+      "tags": [
+        "surya",
+        "puja",
+        "navagraha",
+        "graha",
+        "basic-guide"
+      ]
+    }
+  ],
+  "stories": [
+    {
+      "id": "story-ganesha-parents",
+      "title": "Ganesha and the Wisdom of Parents",
+      "deity": "Ganesh",
+      "summary": "Ganesha teaches that wisdom includes honoring loving guidance.",
+      "story": "In a familiar story, Shiva and Parvati ask their sons to circle the world. Kartikeya leaves quickly on his vehicle, but Ganesha pauses and thinks deeply. He walks around his parents, saying they are his whole world. The story is remembered not as a contest of speed, but as a lesson in insight, reverence, and understanding what truly matters.",
+      "lesson": "Wisdom grows when intelligence is joined with humility and respect.",
+      "source": "Traditional Hindu narrative; original family-friendly retelling for starter content. Verify details before public release.",
+      "tags": [
+        "ganesh",
+        "wisdom",
+        "family"
+      ]
+    },
+    {
+      "id": "story-hanuman-ram",
+      "title": "Hanuman’s Devotion to Shri Rama",
+      "deity": "Hanuman",
+      "summary": "Hanuman shows that devotion becomes powerful when it is selfless and steady.",
+      "story": "Hanuman serves Shri Rama with courage, strength, and complete humility. Whether crossing the ocean, finding Sita, carrying Rama’s message, or bringing the life-giving herb for Lakshmana, his power is always offered in service. His devotion is active, practical, and free from pride.",
+      "lesson": "Great strength becomes sacred when it is used in service of dharma.",
+      "source": "Traditional Hindu narrative; original family-friendly retelling for starter content. Verify details before public release.",
+      "tags": [
+        "hanuman",
+        "rama",
+        "devotion"
+      ]
+    },
+    {
+      "id": "story-shiva-halahala",
+      "title": "Shiva Drinking Halahala",
+      "deity": "Shiva",
+      "summary": "A story of sacrifice, responsibility, and protection of the world from harm.",
+      "story": "During the churning of the ocean, many treasures appeared, but so did a terrible poison called Halahala. The gods and asuras were frightened because it threatened all beings. Shiva accepted the poison to protect the world, holding it in his throat. He became known as Nilakantha, the blue-throated one.",
+      "lesson": "True greatness protects others with courage and restraint.",
+      "source": "Traditional Hindu narrative; original family-friendly retelling for starter content. Verify details before public release.",
+      "tags": [
+        "shiva",
+        "sacrifice",
+        "samudra-manthan"
+      ]
+    },
+    {
+      "id": "story-krishna-govardhan",
+      "title": "Krishna Lifting Govardhan",
+      "deity": "Krishna",
+      "summary": "Krishna protects the people of Vrindavan and teaches humility before nature and divine care.",
+      "story": "When the people of Vrindavan prepared a ritual out of fear, Krishna guided them to honor Govardhan Hill, the cows, and the land that sustained them. Indra became angry and sent heavy rain. Krishna lifted Govardhan like an umbrella, sheltering the people and animals until the storm ended.",
+      "lesson": "Protection and humility are stronger than pride.",
+      "source": "Traditional Hindu narrative; original family-friendly retelling for starter content. Verify details before public release.",
+      "tags": [
+        "krishna",
+        "govardhan",
+        "protection"
+      ]
+    },
+    {
+      "id": "story-prahlad-narasimha",
+      "title": "Prahlad and Narasimha",
+      "deity": "Narayana",
+      "summary": "Faith remains steady even when circumstances are difficult or fearful.",
+      "story": "Prahlad was devoted to Vishnu even though his father Hiranyakashipu opposed that devotion. The king tried to prove that no divine presence could protect Prahlad. When he struck a pillar, Narasimha appeared in a form beyond the king’s conditions and protected the child devotee.",
+      "lesson": "Steady faith can outlast fear and injustice.",
+      "source": "Traditional Hindu narrative; original family-friendly retelling for starter content. Verify details before public release.",
+      "tags": [
+        "narayana",
+        "narasimha",
+        "faith"
+      ]
+    },
+    {
+      "id": "story-rama-bridge",
+      "title": "Rama and the Bridge to Lanka",
+      "deity": "Rama",
+      "summary": "A story of shared effort, duty, and righteous purpose.",
+      "story": "To reach Lanka and rescue Sita, Rama’s allies worked together to build a bridge across the ocean. Each contribution mattered, from the strongest vanaras to the smallest helpers. The bridge became a symbol of cooperation guided by dharma and love.",
+      "lesson": "A righteous purpose becomes stronger when carried by many hands.",
+      "source": "Traditional Hindu narrative; original family-friendly retelling for starter content. Verify details before public release.",
+      "tags": [
+        "rama",
+        "ramayana",
+        "cooperation"
+      ]
+    },
+    {
+      "id": "story-durga-mahishasura",
+      "title": "Durga and Mahishasura",
+      "deity": "Durga",
+      "summary": "Durga’s victory teaches courage, justice, and protection from destructive force.",
+      "story": "Mahishasura’s arrogance brought suffering to the worlds. The divine powers joined and manifested Durga, who rode forth with strength, calm, and wisdom. After a great battle, she defeated Mahishasura and restored balance.",
+      "lesson": "Courage guided by righteousness can restore balance.",
+      "source": "Traditional Hindu narrative; original family-friendly retelling for starter content. Verify details before public release.",
+      "tags": [
+        "durga",
+        "navaratri",
+        "victory"
+      ]
+    },
+    {
+      "id": "story-surya-karna",
+      "title": "Surya and Karna",
+      "deity": "Surya",
+      "summary": "Karna’s story connects discipline, generosity, identity, and the light of Surya.",
+      "story": "Karna is remembered as the son of Surya, born with armor and earrings. His life is complex, marked by generosity, loyalty, struggle, and difficult choices. Surya’s light in the story suggests dignity, discipline, and the burden of living honorably in hard circumstances.",
+      "lesson": "Duty and generosity need wisdom to become complete.",
+      "source": "Traditional Hindu narrative; original family-friendly retelling for starter content. Verify details before public release.",
+      "tags": [
+        "surya",
+        "karna",
+        "mahabharata"
+      ]
+    },
+    {
+      "id": "story-saraswati-knowledge",
+      "title": "Saraswati and the Gift of Knowledge",
+      "deity": "Saraswati",
+      "summary": "Knowledge is a gift that becomes valuable when used with care and humility.",
+      "story": "Saraswati is honored wherever learning, music, speech, and insight are treated as sacred. A book, a song, a thoughtful word, or a disciplined practice can become worship when used for truth and kindness. Her stories remind students that learning is not only information, but refinement of character.",
+      "lesson": "Knowledge is most beautiful when it serves wisdom and compassion.",
+      "source": "Traditional Hindu narrative; original family-friendly retelling for starter content. Verify details before public release.",
+      "tags": [
+        "saraswati",
+        "knowledge",
+        "learning"
+      ]
+    },
+    {
+      "id": "story-lakshmi-humility",
+      "title": "Lakshmi and Humility",
+      "deity": "Lakshmi",
+      "summary": "Prosperity becomes meaningful when it is paired with humility, cleanliness, and gratitude.",
+      "story": "Stories of Lakshmi often teach that abundance stays where there is respect, cleanliness, generosity, and disciplined living. Wealth without gratitude can become restless, but prosperity used wisely nourishes the whole household.",
+      "lesson": "Humility helps prosperity remain meaningful and nourishing.",
+      "source": "Traditional Hindu narrative; original family-friendly retelling for starter content. Verify details before public release.",
+      "tags": [
+        "lakshmi",
+        "prosperity",
+        "gratitude"
+      ]
+    },
+    {
+      "id": "story-samudra-manthan",
+      "title": "Samudra Manthan",
+      "deity": "Narayana",
+      "summary": "The churning of the ocean shows cooperation, patience, danger, and divine guidance.",
+      "story": "The gods and asuras churned the ocean seeking amrita. Many treasures emerged, but so did poison, testing everyone’s courage. Vishnu guided the process, Shiva protected the world from poison, and Lakshmi emerged from the ocean as a sign of auspicious grace.",
+      "lesson": "Great goals require patience, cooperation, and wise handling of danger.",
+      "source": "Traditional Hindu narrative; original family-friendly retelling for starter content. Verify details before public release.",
+      "tags": [
+        "samudra-manthan",
+        "vishnu",
+        "lakshmi",
+        "shiva"
+      ]
+    },
+    {
+      "id": "story-markandeya",
+      "title": "Markandeya and Mahamrityunjaya",
+      "deity": "Shiva",
+      "summary": "Markandeya’s devotion to Shiva is remembered with the spirit of the Mahamrityunjaya prayer.",
+      "story": "Markandeya was blessed with deep devotion but was destined for a short life. When the appointed time came, he held tightly to the Shiva lingam and prayed with full faith. Shiva protected him and blessed him, and the story became a symbol of devotion that faces fear with surrender.",
+      "lesson": "Devotion gives courage when life feels uncertain.",
+      "source": "Traditional Hindu narrative; original family-friendly retelling for starter content. Verify details before public release.",
+      "tags": [
+        "markandeya",
+        "shiva",
+        "mahamrityunjaya"
+      ]
+    },
+    {
+      "id": "story-dhruva",
+      "title": "Dhruva’s Devotion",
+      "deity": "Narayana",
+      "summary": "Dhruva’s steady tapas teaches focus, hurt transformed into devotion, and divine grace.",
+      "story": "Dhruva was a young prince who felt rejected and hurt. Guided by Narada, he turned his pain into disciplined devotion to Narayana. His focus became so steady that he received divine grace and is remembered as Dhruva, the fixed star.",
+      "lesson": "Pain can become strength when guided by devotion and discipline.",
+      "source": "Traditional Hindu narrative; original family-friendly retelling for starter content. Verify details before public release.",
+      "tags": [
+        "dhruva",
+        "narayana",
+        "devotion"
+      ]
+    },
+    {
+      "id": "story-sudama-krishna",
+      "title": "Sudama and Krishna",
+      "deity": "Krishna",
+      "summary": "The friendship of Sudama and Krishna teaches love beyond wealth or status.",
+      "story": "Sudama, a poor Brahmin and childhood friend of Krishna, visited Krishna with a humble gift of flattened rice. Krishna welcomed him with deep affection and honored the gift as love itself. Sudama returned home changed, remembering that true friendship does not measure worth by possessions.",
+      "lesson": "Sincere love matters more than the size of an offering.",
+      "source": "Traditional Hindu narrative; original family-friendly retelling for starter content. Verify details before public release.",
+      "tags": [
+        "krishna",
+        "sudama",
+        "friendship"
+      ]
+    },
+    {
+      "id": "story-savitri-satyavan",
+      "title": "Savitri and Satyavan",
+      "deity": "Narayana",
+      "summary": "Savitri’s wisdom, courage, and devotion are remembered in the story of Satyavan.",
+      "story": "Savitri chose Satyavan knowing his life would be short. When Yama came for him, she followed with dignity, wisdom, and unwavering devotion. Through her careful speech and virtue, she won blessings and the restoration of Satyavan’s life.",
+      "lesson": "Courage joined with wisdom and devotion can face even the hardest trials.",
+      "source": "Traditional Hindu narrative; original family-friendly retelling for starter content. Verify details before public release.",
+      "tags": [
+        "savitri",
+        "satyavan",
+        "devotion"
+      ]
+    }
+  ],
+  "panchang": {
+    "introTitle": "Educational Panchang Guide",
+    "intro": "This local-first guide explains common Panchang concepts for learning and daily devotional awareness. It does not calculate live timings. Exact values vary by location, time zone, sunrise, tradition, and calculation method.",
+    "terms": [
+      {
+        "name": "Tithi",
+        "description": "The lunar day, based on the angular relationship between the Sun and Moon.",
+        "practicalMeaning": "Used to understand vrata, festival, fasting, and puja timing. Always check the local tithi for formal observance.",
+        "title": "Tithi",
+        "text": "The lunar day, based on the angular relationship between the Sun and Moon. Practical use: Used to understand vrata, festival, fasting, and puja timing. Always check the local tithi for formal observance."
+      },
+      {
+        "name": "Nakshatra",
+        "description": "A lunar mansion or star grouping connected with the Moon position.",
+        "practicalMeaning": "Often referenced for muhurta, naming, samskara, and traditional timing decisions.",
+        "title": "Nakshatra",
+        "text": "A lunar mansion or star grouping connected with the Moon position. Practical use: Often referenced for muhurta, naming, samskara, and traditional timing decisions."
+      },
+      {
+        "name": "Yoga",
+        "description": "A Panchang factor calculated from the combined positions of the Sun and Moon.",
+        "practicalMeaning": "Used as one factor among several when judging the quality of time for an activity.",
+        "title": "Yoga",
+        "text": "A Panchang factor calculated from the combined positions of the Sun and Moon. Practical use: Used as one factor among several when judging the quality of time for an activity."
+      },
+      {
+        "name": "Karana",
+        "description": "Half of a tithi, used in traditional calendrical division.",
+        "practicalMeaning": "Consulted for ritual planning and auspicious timing traditions.",
+        "title": "Karana",
+        "text": "Half of a tithi, used in traditional calendrical division. Practical use: Consulted for ritual planning and auspicious timing traditions."
+      },
+      {
+        "name": "Rahu Kaal",
+        "description": "A daytime period many families avoid for beginning important work.",
+        "practicalMeaning": "Check local sunrise and weekday-based calculation before starting travel, business, or major new tasks.",
+        "title": "Rahu Kaal",
+        "text": "A daytime period many families avoid for beginning important work. Practical use: Check local sunrise and weekday-based calculation before starting travel, business, or major new tasks."
+      },
+      {
+        "name": "Paksha",
+        "description": "The lunar fortnight: Shukla Paksha is the waxing half and Krishna Paksha is the waning half.",
+        "practicalMeaning": "Helps users understand where the day sits in the lunar month and why some vrata or festivals occur in a specific fortnight.",
+        "title": "Paksha",
+        "text": "The lunar fortnight: Shukla Paksha is the waxing half and Krishna Paksha is the waning half. Practical use: Helps users understand where the day sits in the lunar month and why some vrata or festivals occur in a specific fortnight."
+      },
+      {
+        "name": "Masa",
+        "description": "The lunar month used in Hindu calendar traditions, with naming varying by regional system.",
+        "practicalMeaning": "Use it to identify festival seasons, vrata months, and month-specific observances.",
+        "title": "Masa",
+        "text": "The lunar month used in Hindu calendar traditions, with naming varying by regional system. Practical use: Use it to identify festival seasons, vrata months, and month-specific observances."
+      },
+      {
+        "name": "Muhurta",
+        "description": "An auspicious time window selected using several Panchang factors and tradition-specific rules.",
+        "practicalMeaning": "For weddings, griha pravesh, upanayana, or major rites, consult a trusted Panchang or priest.",
+        "title": "Muhurta",
+        "text": "An auspicious time window selected using several Panchang factors and tradition-specific rules. Practical use: For weddings, griha pravesh, upanayana, or major rites, consult a trusted Panchang or priest."
+      },
+      {
+        "name": "Sunrise / Sunset",
+        "description": "Local sunrise and sunset anchor many daily Panchang calculations.",
+        "practicalMeaning": "Use location-specific values; a timing for one city should not be assumed correct for another.",
+        "title": "Sunrise / Sunset",
+        "text": "Local sunrise and sunset anchor many daily Panchang calculations. Practical use: Use location-specific values; a timing for one city should not be assumed correct for another."
+      },
+      {
+        "name": "Locality / Timezone",
+        "description": "Panchang values depend on geographic location and time zone.",
+        "practicalMeaning": "Set or check the correct city when using any formal Panchang source.",
+        "title": "Locality / Timezone",
+        "text": "Panchang values depend on geographic location and time zone. Practical use: Set or check the correct city when using any formal Panchang source."
+      }
+    ],
+    "dailyNotes": [
+      {
+        "name": "Daily worship rhythm",
+        "description": "Many families begin with bathing, lighting a diya, and reading a mantra or stotra.",
+        "practicalMeaning": "Use a short daily practice consistently rather than trying to perform a complex ritual every day.",
+        "title": "Daily worship rhythm",
+        "text": "Many families begin with bathing, lighting a diya, and reading a mantra or stotra. Practical use: Use a short daily practice consistently rather than trying to perform a complex ritual every day."
+      },
+      {
+        "name": "Festival verification",
+        "description": "Festival dates can differ by region because tithi at sunrise, moonrise, or specific time windows may matter.",
+        "practicalMeaning": "Before public announcements or formal observance, verify with a trusted local calendar.",
+        "title": "Festival verification",
+        "text": "Festival dates can differ by region because tithi at sunrise, moonrise, or specific time windows may matter. Practical use: Before public announcements or formal observance, verify with a trusted local calendar."
+      },
+      {
+        "name": "Family tradition",
+        "description": "Sampradaya and family customs may prioritize different rules for vrata, puja, or festival timing.",
+        "practicalMeaning": "Follow the tradition you have received for formal worship.",
+        "title": "Family tradition",
+        "text": "Sampradaya and family customs may prioritize different rules for vrata, puja, or festival timing. Practical use: Follow the tradition you have received for formal worship."
+      },
+      {
+        "name": "No live calculation",
+        "description": "This page is educational content only and does not compute live Panchang values.",
+        "practicalMeaning": "Use it to understand terms, then consult a reliable local Panchang for exact timings.",
+        "title": "No live calculation",
+        "text": "This page is educational content only and does not compute live Panchang values. Practical use: Use it to understand terms, then consult a reliable local Panchang for exact timings."
+      }
+    ],
+    "disclaimer": "Exact Panchang values vary by location, time zone, sunrise, calendar tradition, and calculation method. Verify formal timings with a trusted local Panchang, family tradition, or priest."
+  },
+  "updatedAt": "2026-05-11T05:13:29.284Z",
+  "lastPublishedAt": "2026-05-11T05:13:29.284Z",
+  "sourceVersion": "github-2026-05-11T05:13:29.284Z"
 }

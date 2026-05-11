@@ -1149,6 +1149,21 @@
       "tags": [
         "bharat"
       ]
+    },
+    {
+      "id": "deity-cd237cf6-f10a-4dff-9e49-407a1fd7fa4c",
+      "name": "Thuldai Bhagwan",
+      "type": "God",
+      "introduction": "Jay hos",
+      "description": "Jay hos",
+      "significance": "",
+      "mantra": "Om thuldai bhrum bhrum swaha",
+      "imageCrop": {
+        "x": 0,
+        "y": 0,
+        "scale": 1
+      },
+      "tags": []
     }
   ],
   "categories": [
@@ -2408,7 +2423,7 @@
     ],
     "disclaimer": "Exact Panchang values vary by location, time zone, sunrise, calendar tradition, and calculation method. Verify formal timings with a trusted local Panchang, family tradition, or priest."
   },
-  "updatedAt": "2026-05-11T05:13:29.284Z",
-  "lastPublishedAt": "2026-05-11T05:13:29.284Z",
-  "sourceVersion": "github-2026-05-11T05:13:29.284Z"
+  "updatedAt": "2026-05-11T05:18:06.278Z",
+  "lastPublishedAt": "2026-05-11T05:18:06.278Z",
+  "sourceVersion": "github-2026-05-11T05:18:06.278Z"
 }

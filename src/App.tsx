@@ -734,7 +734,19 @@ export default function App() {
       ) : activeView === 'stories' ? (
         <StoriesPage stories={stories} activeDeity={activeDeity} language={language} />
       ) : activeView === 'panchang' ? (
-        <Panchang content={panchang} language={language} />
+        <Panchang
+          content={panchang}
+          language={language}
+          stotras={stotras}
+          deities={deities}
+          poojaBidhi={poojaBidhi}
+          onOpenStotra={handleOpenStotra}
+          onOpenPooja={handleOpenPooja}
+          onOpenDeity={(deity) => {
+            setActiveDeity(deity);
+            handleViewChange('gods');
+          }}
+        />
       ) : activeView === 'favorites' ? (
         <FavoritesPage
           favoriteStotras={favoriteStotras}

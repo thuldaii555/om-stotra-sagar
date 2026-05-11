@@ -124,6 +124,7 @@ export interface PanchangField {
   name: string;
   start?: string;
   end?: string;
+  endTime?: string;
 }
 
 export interface PanchangLocation {
@@ -147,6 +148,13 @@ export interface PanchangResult {
   paksha?: PanchangField | null;
   lunarMonth?: PanchangField | null;
   rahuKaal?: PanchangField | null;
+  abhijitMuhurat?: PanchangField | null;
+  gulikaKaal?: PanchangField | null;
+  yamaganda?: PanchangField | null;
+  weekday?: PanchangField | null;
+  weekdayLord?: string;
+  festivals?: string[];
+  specialOccasions?: string[];
   rawSummary?: string;
   message?: string;
 }

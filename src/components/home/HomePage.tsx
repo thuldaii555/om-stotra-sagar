@@ -1,8 +1,10 @@
-﻿import { useEffect, useMemo, useState } from 'react';
-import { Calendar, CalendarDays, ChevronRight, Feather, Loader2, MapPin, Moon, Search, Sparkles, Sun, Star } from 'lucide-react';
-import type { Category, Deity, HinduStory, HistoryItem, PoojaBidhi, Stotra } from '../../types';
+﻿import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Calendar, CalendarDays, ChevronRight, Feather, Loader2, MapPin, Search, Sparkles, Sun } from 'lucide-react';
+import type { Category, Deity, HinduStory, HistoryItem, PanchangField, PanchangResult, PoojaBidhi, Stotra } from '../../types';
 import StateMessage from '../common/StateMessage';
 import { formatZonedDateTime } from '../../utils/dateTime';
+import { fetchPanchang, getTodayIsoDate, readSavedPanchangLocation } from '../../services/panchangService';
+import { getDailyRecommendations } from '../../utils/dailyRecommendations';
 import {
   getLocalizedCategoryName,
   getLocalizedContentTitle,
@@ -33,16 +35,6 @@ interface HomePageProps {
   onNavigate: (view: 'stotras' | 'gods' | 'pooja' | 'panchang') => void;
   onOpenStotra: (stotra: Stotra) => void;
   onToggleFavorite: (stotra: Stotra) => void;
-}
-
-interface HomePanchangData {
-  tithi?: { name: string; end_time?: string };
-  nakshatra?: { name: string; end_time?: string };
-  yoga?: { name: string };
-  vedic_weekday?: string;
-  sunrise?: string;
-  sunset?: string;
-  paksha?: string;
 }
 
 const getDailyStoraIndex = (stotras: Stotra[]): number => {
@@ -78,9 +70,10 @@ export default function HomePage({
   onOpenStotra,
 }: HomePageProps) {
   const [homeSearch, setHomeSearch] = useState('');
-  const [homePanchang, setHomePanchang] = useState<HomePanchangData | null>(null);
+  const [homePanchang, setHomePanchang] = useState<PanchangResult | null>(null);
   const [panchangLoading, setPanchangLoading] = useState(true);
-  const [panchangCity, setPanchangCity] = useState('Loading...');
+  const [panchangCity, setPanchangCity] = useState(language === 'ne' ? 'काठमाडौं, नेपाल' : 'Kathmandu, Nepal');
+  const [panchangUnavailable, setPanchangUnavailable] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const featuredContent = (filteredStotras.length > 0 ? filteredStotras : stotras).slice(0, 5);
   const dailyStotra = stotras.length > 0 ? stotras[getDailyStoraIndex(stotras)] : null;
@@ -138,34 +131,22 @@ export default function HomePage({
   }, []);
 
   useEffect(() => {
-    async function load(la: number, lo: number, tz: number, city: string) {
-      try {
-        const r = await fetch(`/.netlify/functions/get-panchang?lat=${la}&lon=${lo}&tzone=${tz}`);
-        if (!r.ok) throw new Error();
-        const d = await r.json();
-        setHomePanchang(d.panchang || null);
-        setPanchangCity(city);
-      } catch {
-        setHomePanchang(null);
-        setPanchangCity(city);
-      } finally {
-        setPanchangLoading(false);
-      }
+    async function load(la: number, lo: number, tz: string, city: string) {
+      const result = await fetchPanchang({
+        date: getTodayIsoDate(),
+        lat: la,
+        lng: lo,
+        timezone: tz,
+        language,
+      });
+      setHomePanchang(result.result);
+      setPanchangUnavailable(result.status !== 'success');
+      setPanchangCity(city);
+      setPanchangLoading(false);
     }
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (p) => {
-          const tz = -(new Date().getTimezoneOffset() / 60);
-          const city = Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop()?.replace(/_/g, ' ') || 'Your Location';
-          load(p.coords.latitude, p.coords.longitude, tz, city);
-        },
-        () => load(27.7172, 85.3240, 5.75, 'Kathmandu'),
-        { timeout: 5000 }
-      );
-    } else {
-      load(27.7172, 85.3240, 5.75, 'Kathmandu');
-    }
-  }, []);
+    const saved = readSavedPanchangLocation();
+    load(saved.lat, saved.lng, saved.timezone, saved.city);
+  }, [language]);
 
   const homeSearchQuery = homeSearch.trim().toLowerCase();
   const homeSearchResults = useMemo(() => {
@@ -207,6 +188,16 @@ export default function HomePage({
         clear: 'Clear search',
       };
 
+  const dailyRecommendations = useMemo(() => getDailyRecommendations({
+    weekday: homePanchang?.weekday?.name,
+    tithi: homePanchang?.tithi?.name,
+    nakshatra: homePanchang?.nakshatra?.name,
+    festivals: [...(homePanchang?.festivals || []), ...(homePanchang?.specialOccasions || [])],
+    stotras,
+    deities,
+    poojaBidhi,
+  }), [deities, homePanchang, poojaBidhi, stotras]);
+
   const truncate = (value: string, limit = 120) => (value.length > limit ? `${value.slice(0, limit).trimEnd()}…` : value);
 
   return (
@@ -240,81 +231,6 @@ export default function HomePage({
             <h1 className="home-title-v2">{copy.title}</h1>
             <p className="home-tagline-v2">{copy.tagline}</p>
 
-            <button
-              className="home-panchang-widget"
-              onClick={() => onNavigate('panchang')}
-              aria-label="View full panchang"
-            >
-              <div className="hpw-top-row">
-                <div className="hpw-eyebrow-group">
-                  <Calendar size={12} className="hpw-cal-icon" />
-                  <span className="hpw-eyebrow">आजको पञ्चाङ्ग · Today's Panchang</span>
-                </div>
-                <div className="hpw-right">
-                  {!panchangLoading && (
-                    <span className="hpw-location-label">
-                      <MapPin size={9} /> {panchangCity}
-                    </span>
-                  )}
-                  <ChevronRight size={13} className="hpw-chevron" />
-                </div>
-              </div>
-
-              {panchangLoading ? (
-                <div className="hpw-loading">
-                  <Loader2 size={14} className="hpw-spinner" />
-                  <span>Loading...</span>
-                </div>
-              ) : homePanchang ? (
-                <div className="hpw-grid">
-                  {homePanchang.tithi?.name && (
-                    <div className="hpw-cell">
-                      <span className="hpw-cell-label">Tithi</span>
-                      <span className="hpw-cell-val">{homePanchang.tithi.name}</span>
-                    </div>
-                  )}
-                  {homePanchang.nakshatra?.name && (
-                    <div className="hpw-cell">
-                      <span className="hpw-cell-label">Nakshatra</span>
-                      <span className="hpw-cell-val">{homePanchang.nakshatra.name}</span>
-                    </div>
-                  )}
-                  {homePanchang.yoga?.name && (
-                    <div className="hpw-cell">
-                      <span className="hpw-cell-label">Yoga</span>
-                      <span className="hpw-cell-val">{homePanchang.yoga.name}</span>
-                    </div>
-                  )}
-                  {homePanchang.paksha && (
-                    <div className="hpw-cell">
-                      <span className="hpw-cell-label">Paksha</span>
-                      <span className="hpw-cell-val">{homePanchang.paksha}</span>
-                    </div>
-                  )}
-                  {homePanchang.sunrise && (
-                    <div className="hpw-cell hpw-cell-inline">
-                      <Sun size={11} className="hpw-sun" />
-                      <span className="hpw-cell-val">{homePanchang.sunrise}</span>
-                    </div>
-                  )}
-                  {homePanchang.sunset && (
-                    <div className="hpw-cell hpw-cell-inline">
-                      <Moon size={11} className="hpw-moon" />
-                      <span className="hpw-cell-val">{homePanchang.sunset}</span>
-                    </div>
-                  )}
-                  {homePanchang.vedic_weekday && (
-                    <div className="hpw-cell hpw-cell-inline">
-                      <Star size={11} className="hpw-sun" />
-                      <span className="hpw-cell-val">{homePanchang.vedic_weekday}</span>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <p className="hpw-unavail">Tap to view panchang</p>
-              )}
-            </button>
-
             <div className="search-wrap search-wrap-wide home-search-wrap">
               <input
                 value={homeSearch}
@@ -325,6 +241,50 @@ export default function HomePage({
               />
               <Search className="search-icon" size={18} />
             </div>
+
+            <button
+              className="home-panchang-widget home-panchang-widget-full"
+              onClick={() => onNavigate('panchang')}
+              aria-label="View full panchang"
+            >
+              <div className="hpw-top-row">
+                <div className="hpw-eyebrow-group">
+                  <Calendar size={12} className="hpw-cal-icon" />
+                  <span className="hpw-eyebrow">{language === 'ne' ? 'आजको पञ्चाङ्ग' : 'Today’s Panchang'}</span>
+                </div>
+                <div className="hpw-right">
+                  <span className="hpw-location-label"><MapPin size={9} /> {panchangCity}</span>
+                  <ChevronRight size={13} className="hpw-chevron" />
+                </div>
+              </div>
+
+              {panchangLoading ? (
+                <div className="hpw-loading hpw-loading-panel">
+                  <Loader2 size={16} className="hpw-spinner" />
+                  <span>{language === 'ne' ? 'लोड हुँदैछ...' : 'Loading...'}</span>
+                </div>
+              ) : (
+                <>
+                  <div className="hpw-grid hpw-grid-full">
+                    <PanchangMiniCell label={language === 'ne' ? 'वार' : 'Weekday'} value={homePanchang?.weekday?.name || (language === 'ne' ? vara.ne : vara.en)} />
+                    <PanchangMiniCell label={language === 'ne' ? 'मिति' : 'Date'} value={getTodayIsoDate()} />
+                    <PanchangMiniCell label={language === 'ne' ? 'तिथि' : 'Tithi'} value={formatHomeField(homePanchang?.tithi, language)} />
+                    <PanchangMiniCell label={language === 'ne' ? 'नक्षत्र' : 'Nakshatra'} value={formatHomeField(homePanchang?.nakshatra, language)} />
+                    <PanchangMiniCell label={language === 'ne' ? 'योग' : 'Yoga'} value={formatHomeField(homePanchang?.yoga, language)} />
+                    <PanchangMiniCell label={language === 'ne' ? 'करण' : 'Karana'} value={formatHomeField(homePanchang?.karana, language)} />
+                    <PanchangMiniCell label={language === 'ne' ? 'राहुकाल' : 'Rahu Kaal'} value={formatHomeField(homePanchang?.rahuKaal, language)} />
+                    <PanchangMiniCell label={language === 'ne' ? 'सूर्योदय' : 'Sunrise'} value={formatHomeField(homePanchang?.sunrise, language)} icon={<Sun size={11} className="hpw-sun" />} />
+                    <PanchangMiniCell label={language === 'ne' ? 'सूर्यास्त' : 'Sunset'} value={formatHomeField(homePanchang?.sunset, language)} />
+                  </div>
+                  {homePanchang?.festivals?.[0] || homePanchang?.specialOccasions?.[0] ? (
+                    <p className="hpw-special">{homePanchang.festivals?.[0] || homePanchang.specialOccasions?.[0]}</p>
+                  ) : panchangUnavailable ? (
+                    <p className="hpw-unavail">{language === 'ne' ? 'पञ्चाङ्ग विवरण अहिले उपलब्ध छैन।' : 'Panchang details are temporarily unavailable.'}</p>
+                  ) : null}
+                  <span className="hpw-action">{language === 'ne' ? 'पूरा पञ्चाङ्ग हेर्नुहोस्' : 'View full Panchang'}</span>
+                </>
+              )}
+            </button>
 
             {hasHomeSearch ? (
               <section className="home-search-results-panel">
@@ -445,27 +405,32 @@ export default function HomePage({
         </section>
 
       {!hasHomeSearch && (
-      <section className="home-deity-row-v2">
-        <div className="home-deity-scroll">
-          {deities.slice(0, 8).map((deity) => (
-            <button
-              key={deity.id}
-              onClick={() => {
-                onDeityChange(deity.name);
-                onNavigate('gods');
-              }}
-              className="deity-pill-v2"
-            >
-              <span className="deity-pill-initial">{getLocalizedDeityName(deity, language).charAt(0)}</span>
-              <span className="deity-pill-name">{getLocalizedDeityName(deity, language)}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-      )}
-
-      {!hasHomeSearch && (
       <main className="home-content-v2">
+        <section className="home-daily-recs">
+          <div className="home-section-header">
+            <div>
+              <h2 className="home-section-title">{language === 'ne' ? 'आजका सिफारिस गरिएका पाठ' : 'Today’s recommended prayers'}</h2>
+              <p className="home-section-sub">{language === 'ne' ? 'आजका देवता' : 'Today’s presiding deities'}: {dailyRecommendations.deities.length > 0 ? dailyRecommendations.deities.map(deity => getLocalizedDeityName(deity, language)).join(', ') : dailyRecommendations.deityNames.join(', ')}</p>
+            </div>
+          </div>
+          <div className="home-rec-grid">
+            {dailyRecommendations.stotras.slice(0, 5).map(stotra => (
+              <button key={stotra.id} className="home-rec-card" onClick={() => onOpenStotra(stotra)}>
+                <Sparkles size={16} />
+                <span>{getLocalizedContentTitle(stotra, language)}</span>
+                <ChevronRight size={15} />
+              </button>
+            ))}
+            {dailyRecommendations.pooja.slice(0, Math.max(0, 5 - dailyRecommendations.stotras.length)).map(pooja => (
+              <button key={pooja.id} className="home-rec-card" onClick={() => onOpenPooja(pooja)}>
+                <Feather size={16} />
+                <span>{getLocalizedPoojaTitle(pooja, language)}</span>
+                <ChevronRight size={15} />
+              </button>
+            ))}
+          </div>
+        </section>
+
         {dailyStotra && (
           <section>
             <div className="home-section-header">
@@ -568,5 +533,20 @@ export default function HomePage({
       )}
     </>
   );
+}
+
+function PanchangMiniCell({ label, value, icon }: { label: string; value: string; icon?: ReactNode }) {
+  return (
+    <div className={`hpw-cell ${icon ? 'hpw-cell-inline' : ''}`}>
+      {icon}
+      <span className="hpw-cell-label">{label}</span>
+      <span className="hpw-cell-val">{value}</span>
+    </div>
+  );
+}
+
+function formatHomeField(field: PanchangField | null | undefined, language: 'ne' | 'en'): string {
+  if (!field?.name) return language === 'ne' ? 'उपलब्ध छैन' : 'Not available';
+  return field.endTime || field.end ? `${field.name} · ${field.endTime || field.end}` : field.name;
 }
 

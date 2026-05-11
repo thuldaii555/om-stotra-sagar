@@ -1,429 +1,208 @@
-import { useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
-import { CalendarClock, LocateFixed, MapPin, MoonStar, SunMedium } from 'lucide-react';
-import type { PanchangContent } from '../types';
-import { fetchPanchang, type PanchangFetchState } from '../services/panchangService';
-import { formatZonedDateTime } from '../utils/dateTime';
-import { t } from '../utils/i18n';
+import { useState, useEffect, useCallback, type ChangeEvent } from 'react';
+import { MapPin, RefreshCw, Sun, Moon, Star, Clock, AlertCircle, Loader2, ChevronDown } from 'lucide-react';
 
-const LOCATION_KEY = 'om-stotra-sagar-panchang-location';
-const DEFAULT_LOCATION: PanchangLocationForm = {
-  city: 'Kathmandu, Nepal',
-  latitude: '27.7172',
-  longitude: '85.3240',
-  timezone: 'Asia/Kathmandu',
-};
-
-interface PanchangPageProps {
-  content: PanchangContent;
-  language: 'ne' | 'en';
+interface PData {
+  tithi?: { name: string; end_time?: string; lord?: string };
+  nakshatra?: { name: string; end_time?: string; lord?: string };
+  yoga?: { name: string; end_time?: string };
+  karana?: { name: string };
+  vedic_weekday?: string;
+  lunar_month?: string;
+  sunrise?: string; sunset?: string;
+  moonrise?: string; moonset?: string;
+  paksha?: string; ritu?: string;
 }
 
-interface PanchangLocationForm {
-  city: string;
-  latitude: string;
-  longitude: string;
-  timezone: string;
-}
+const CITIES = [
+  { name: 'Kathmandu', lat: 27.7172, lon: 85.3240, tz: 5.75 },
+  { name: 'Pokhara', lat: 28.2096, lon: 83.9856, tz: 5.75 },
+  { name: 'Birgunj', lat: 27.0104, lon: 84.8777, tz: 5.75 },
+  { name: 'New Delhi', lat: 28.6139, lon: 77.2090, tz: 5.5 },
+  { name: 'Mumbai', lat: 19.0760, lon: 72.8777, tz: 5.5 },
+  { name: 'Varanasi', lat: 25.3176, lon: 82.9739, tz: 5.5 },
+  { name: 'Kolkata', lat: 22.5726, lon: 88.3639, tz: 5.5 },
+  { name: 'London', lat: 51.5074, lon: -0.1278, tz: 0 },
+  { name: 'New York', lat: 40.7128, lon: -74.006, tz: -5 },
+  { name: 'Sydney', lat: -33.869, lon: 151.209, tz: 10 },
+];
 
-const getBrowserTimezone = () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kathmandu';
+export default function PanchangPage({ language = 'en' }: { language?: string; content?: unknown }) {
+  const todayStr = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
 
-const getInitialLocation = (): PanchangLocationForm => {
-  if (typeof localStorage === 'undefined') {
-    return DEFAULT_LOCATION;
-  }
+  const [data, setData] = useState<PData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [cityName, setCityName] = useState('Detecting...');
+  const [lat, setLat] = useState(27.7172);
+  const [lon, setLon] = useState(85.3240);
+  const [tz, setTz] = useState(5.75);
+  const [date, setDate] = useState(todayStr);
+  const [showCities, setShowCities] = useState(false);
 
-  try {
-    const saved = JSON.parse(localStorage.getItem(LOCATION_KEY) || 'null') as Partial<PanchangLocationForm> | null;
-    return {
-      city: saved?.city || DEFAULT_LOCATION.city,
-      latitude: saved?.latitude || DEFAULT_LOCATION.latitude,
-      longitude: saved?.longitude || DEFAULT_LOCATION.longitude,
-      timezone: saved?.timezone || DEFAULT_LOCATION.timezone,
-    };
-  } catch {
-    return DEFAULT_LOCATION;
-  }
-};
-
-export default function Panchang({ content, language }: PanchangPageProps) {
-  const [now, setNow] = useState(() => new Date());
-  const [location, setLocation] = useState<PanchangLocationForm>(() => getInitialLocation());
-  const [state, setState] = useState<PanchangFetchState>({
-    status: 'loading',
-    result: null,
-    message: '',
-  });
-  const [isLocating, setIsLocating] = useState(false);
-
-  const timezoneDisplay = location.timezone.trim() || DEFAULT_LOCATION.timezone;
-  const selectedCity = location.city.trim() || DEFAULT_LOCATION.city;
-  const selectedCityDisplay = language === 'ne' && selectedCity === 'Kathmandu, Nepal' ? 'काठमाडौं, नेपाल' : selectedCity;
-  const localInfo = useMemo(() => formatZonedDateTime(now, timezoneDisplay, selectedCity, language), [language, now, selectedCity, timezoneDisplay]);
-  const dateKey = localInfo.isoDate;
-  const statusLabel = state.status === 'success'
-    ? (language === 'ne' ? 'सफल' : 'success')
-    : state.status === 'loading'
-      ? (language === 'ne' ? 'लोड हुँदैछ' : 'loading')
-      : state.status === 'notConfigured'
-        ? (language === 'ne' ? 'जडान छैन' : 'notConfigured')
-        : (language === 'ne' ? 'त्रुटि' : 'error');
-
-  const copy = language === 'ne'
-    ? {
-        eyebrow: 'पञ्चाङ्ग',
-        title: t('dailyPanchang', language),
-        subtitle: 'दिन, समय, र स्थानको आधारमा दैनिक हिन्दू पात्रो जानकारी।',
-        dateTitle: 'मिति र समय',
-        locationTitle: 'स्थान',
-        resultTitle: 'पञ्चाङ्ग विवरण',
-        sourceTitle: 'स्रोत स्थिति',
-        city: 'शहर',
-        latitude: 'अक्षांश',
-        longitude: 'देशान्तर',
-        timezone: 'समय क्षेत्र',
-        useLocation: 'मेरो स्थान प्रयोग गर्नुहोस्',
-        notConfigured: 'पञ्चाङ्ग गणना स्रोत अझै जडान गरिएको छैन। मिति, समय र स्थान देखाइएको छ।',
-        error: 'अहिले पञ्चाङ्ग लोड गर्न सकिएन। कृपया स्थान जाँच्नुहोस् वा फेरि प्रयास गर्नुहोस्।',
-        loading: 'पञ्चाङ्ग लोड हुँदैछ...',
-        exactNote: 'ठ्याक्कै पञ्चाङ्ग मानहरू स्थान, समय क्षेत्र, र गणना विधिमा निर्भर हुन्छन्।',
-        browserTime: 'स्थानीय समय',
-        browserTimezone: 'समय क्षेत्र',
-        gregorianDate: 'मिति',
-        bikramSambat: 'वि.सं. मिति',
-        bikramSambatPending: 'वि.सं. मिति जडान हुँदैछ',
-        selectedLocation: 'चयन गरिएको स्थान',
-        manualHelp: 'अक्षांश/देशान्तर राखेपछि पञ्चाङ्ग स्रोत उपलब्ध भएमा परिणाम तुरुन्तै लोड हुन्छ।',
-        unavailable: 'उपलब्ध छैन',
-        sunrise: 'सूर्योदय',
-        sunset: 'सूर्यास्त',
-        tithi: 'तिथि',
-        nakshatra: 'नक्षत्र',
-        yoga: 'योग',
-        karana: 'करण',
-        paksha: 'पक्ष',
-        lunarMonth: 'चन्द्र महिना',
-        rahuKaal: 'राहुकाल',
-        configured: 'स्रोत उपलब्ध छ',
-        provider: 'सेवा प्रदायक',
-      }
-    : {
-        eyebrow: 'Panchang',
-        title: 'Panchang',
-        subtitle: 'Daily Hindu almanac based on date, time, and location.',
-        dateTitle: 'Date and time',
-        locationTitle: 'Location',
-        resultTitle: 'Panchang details',
-        sourceTitle: 'Source status',
-        city: 'City',
-        latitude: 'Latitude',
-        longitude: 'Longitude',
-        timezone: 'Timezone',
-        useLocation: 'Use my location',
-        notConfigured: 'Panchang calculation source is not configured yet. Date, time, and location are shown.',
-        error: 'Unable to load Panchang right now. Please check location or try again.',
-        loading: 'Loading Panchang...',
-        exactNote: 'Exact Panchang values depend on location, timezone, and calculation method.',
-        browserTime: 'Local time',
-        browserTimezone: 'Timezone',
-        gregorianDate: 'Date',
-        bikramSambat: 'Bikram Sambat',
-        bikramSambatPending: 'Bikram Sambat coming soon',
-        selectedLocation: 'Selected location',
-        manualHelp: 'After entering latitude and longitude, the Panchang source will load as soon as it becomes available.',
-        unavailable: 'Unavailable',
-        sunrise: 'Sunrise',
-        sunset: 'Sunset',
-        tithi: 'Tithi',
-        nakshatra: 'Nakshatra',
-        yoga: 'Yoga',
-        karana: 'Karana',
-        paksha: 'Paksha',
-        lunarMonth: 'Lunar month',
-        rahuKaal: 'Rahu Kaal',
-        configured: 'Source available',
-        provider: 'Provider',
-      };
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), 1000);
-    return () => window.clearInterval(timer);
+  const fetch_ = useCallback(async (la: number, lo: number, t: number, dt: string) => {
+    setLoading(true); setError('');
+    try {
+      const r = await fetch(`/.netlify/functions/get-panchang?lat=${la}&lon=${lo}&tzone=${t}&date=${dt}`);
+      if (!r.ok) throw new Error((await r.json()).error || 'API error');
+      setData((await r.json()).panchang);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'API error');
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
-    if (typeof localStorage === 'undefined') return;
-    localStorage.setItem(LOCATION_KEY, JSON.stringify(location));
-  }, [location]);
+    navigator.geolocation?.getCurrentPosition(
+      (p) => {
+        const t2 = -(new Date().getTimezoneOffset() / 60);
+        const city = Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop()?.replace(/_/g, ' ') || 'Your Location';
+        setLat(p.coords.latitude); setLon(p.coords.longitude); setTz(t2); setCityName(city);
+        fetch_(p.coords.latitude, p.coords.longitude, t2, date);
+      },
+      () => { setCityName('Kathmandu'); fetch_(27.7172, 85.3240, 5.75, date); },
+      { timeout: 5000 }
+    );
+  }, [date, fetch_]);
 
-  useEffect(() => {
-    const latitude = Number(location.latitude);
-    const longitude = Number(location.longitude);
-    const timezone = location.timezone.trim();
+  function pickCity(c: typeof CITIES[0]) {
+    setLat(c.lat); setLon(c.lon); setTz(c.tz); setCityName(c.name);
+    setShowCities(false); fetch_(c.lat, c.lon, c.tz, date);
+  }
+  function onDateChange(e: ChangeEvent<HTMLInputElement>) {
+    setDate(e.target.value); fetch_(lat, lon, tz, e.target.value);
+  }
 
-    if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || !timezone) {
-      setState({
-        status: 'notConfigured',
-        result: null,
-        message: copy.notConfigured,
-      });
-      return;
-    }
+  const elements = data ? [
+    { icon: '', label: language === 'ne' ? 'तिथि' : 'Tithi', val: data.tithi?.name, sub: data.tithi?.end_time },
+    { icon: '⭐', label: language === 'ne' ? 'नक्षत्र' : 'Nakshatra', val: data.nakshatra?.name, sub: data.nakshatra?.end_time },
+    { icon: '', label: language === 'ne' ? 'योग' : 'Yoga', val: data.yoga?.name, sub: data.yoga?.end_time },
+    { icon: '⚡', label: language === 'ne' ? 'करण' : 'Karana', val: data.karana?.name, sub: undefined },
+    { icon: '', label: language === 'ne' ? 'वार' : 'Vara', val: data.vedic_weekday, sub: undefined },
+    { icon: '☽', label: language === 'ne' ? 'पक्ष' : 'Paksha', val: data.paksha, sub: undefined },
+    { icon: '', label: language === 'ne' ? 'मास' : 'Lunar Month', val: data.lunar_month, sub: undefined },
+    { icon: '', label: language === 'ne' ? 'ऋतु' : 'Ritu (Season)', val: data.ritu, sub: undefined },
+  ].filter(e => e.val) : [];
 
-    let cancelled = false;
-    const timeout = window.setTimeout(async () => {
-      setState((current) => ({ ...current, status: 'loading', message: '' }));
-      const next = await fetchPanchang({
-        date: dateKey,
-        lat: latitude,
-        lng: longitude,
-        timezone,
-        language,
-      });
-      if (!cancelled) {
-        setState(next);
-      }
-    }, 350);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timeout);
-    };
-  }, [copy.notConfigured, dateKey, language, location.latitude, location.longitude, location.timezone]);
-
-  const resultFields = state.result ? [
-    { key: 'sunrise', title: copy.sunrise, value: formatField(state.result.sunrise) },
-    { key: 'sunset', title: copy.sunset, value: formatField(state.result.sunset) },
-    { key: 'tithi', title: copy.tithi, value: formatField(state.result.tithi) },
-    { key: 'nakshatra', title: copy.nakshatra, value: formatField(state.result.nakshatra) },
-    { key: 'yoga', title: copy.yoga, value: formatField(state.result.yoga) },
-    { key: 'karana', title: copy.karana, value: formatField(state.result.karana) },
-    { key: 'paksha', title: copy.paksha, value: formatField(state.result.paksha) },
-    { key: 'lunarMonth', title: copy.lunarMonth, value: formatField(state.result.lunarMonth) },
-    { key: 'rahuKaal', title: copy.rahuKaal, value: formatField(state.result.rahuKaal) },
-  ] : [];
+  const timings = data ? [
+    { icon: <Sun size={18} />, label: 'Sunrise', val: data.sunrise, accent: 'var(--saffron)' },
+    { icon: <Moon size={18} />, label: 'Sunset', val: data.sunset, accent: 'var(--muted)' },
+    { icon: <Star size={18} />, label: 'Moonrise', val: data.moonrise, accent: 'var(--gold-bright)' },
+    { icon: <Clock size={18} />, label: 'Moonset', val: data.moonset, accent: 'var(--muted-light)' },
+  ].filter(t => t.val) : [];
 
   return (
-    <main className="page-container page-shell panchang-page">
-      <section className="page-hero editorial-card premium-hero-card">
-        <p className="page-eyebrow">{copy.eyebrow}</p>
-        <h1 className="page-title">{copy.title}</h1>
-        <p className="page-subtitle">{copy.subtitle}</p>
-      </section>
+    <main className="page-container panchang-page">
+      <div className="panchang-header">
+        <p className="panchang-eyebrow">पञ्चाङ्ग</p>
+        <h1 className="page-title" style={{ margin: 0 }}>
+          {language === 'ne' ? 'दैनिक पञ्चाङ्ग' : 'Daily Panchang'}
+        </h1>
+        <p className="page-subtitle">
+          {language === 'ne'
+            ? 'तिथि, नक्षत्र, योग, करण र मुहूर्त'
+            : 'Tithi · Nakshatra · Yoga · Karana · Timings'}
+        </p>
+      </div>
 
-      <section className="content-grid panchang-layout">
-        <article className="panchang-card panchang-dashboard visual-card">
-          <div className="panchang-section-header">
-            <div>
-              <p className="section-kicker">{copy.dateTitle}</p>
-              <h2 className="card-title">{localInfo.gregorianDate}</h2>
+      <div className="panchang-controls">
+        <div style={{ position: 'relative' }}>
+          <button className="panch-ctrl-btn" onClick={() => setShowCities(s => !s)}>
+            <MapPin size={14} /> {cityName} <ChevronDown size={12} />
+          </button>
+          {showCities && (
+            <div className="panch-city-dropdown">
+              <button className="panch-city-detect" onClick={() => {
+                setShowCities(false);
+                navigator.geolocation?.getCurrentPosition(
+                  (p) => {
+                    const t2 = -(new Date().getTimezoneOffset() / 60);
+                    const city = Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop()?.replace(/_/g, ' ') || 'Auto';
+                    setLat(p.coords.latitude); setLon(p.coords.longitude); setTz(t2); setCityName(city);
+                    fetch_(p.coords.latitude, p.coords.longitude, t2, date);
+                  },
+                  () => {},
+                  { timeout: 5000 }
+                );
+              }}>
+                <MapPin size={12} /> Use my current location
+              </button>
+              {CITIES.map(c => (
+                <button key={c.name} className="panch-city-opt" onClick={() => pickCity(c)}>{c.name}</button>
+              ))}
             </div>
-            <div className="today-badge">
-              <CalendarClock size={18} />
-              <span>{copy.browserTime}</span>
+          )}
+        </div>
+
+        <input type="date" value={date} onChange={onDateChange} className="panch-date-input" />
+
+        <button className="panch-ctrl-btn panch-refresh" onClick={() => fetch_(lat, lon, tz, date)} aria-label="Refresh">
+          <RefreshCw size={14} className={loading ? 'spin-icon' : ''} />
+        </button>
+      </div>
+
+      {loading && (
+        <div className="panch-state-center">
+          <Loader2 size={32} className="spin-icon" style={{ color: 'var(--saffron)' }} />
+          <p style={{ color: 'var(--muted)', fontSize: '14px' }}>Loading panchang for {cityName}...</p>
+        </div>
+      )}
+
+      {error && !loading && (
+        <div className="panch-error-box">
+          <AlertCircle size={18} />
+          <div>
+            <p style={{ fontWeight: 600, margin: '0 0 4px', fontSize: '14px' }}>Could not load panchang</p>
+            <p style={{ margin: 0, fontSize: '13px', opacity: 0.8 }}>{error}</p>
+            {error.includes('PANCHANG_API_KEY') && (
+              <p style={{ margin: '6px 0 0', fontSize: '12px', opacity: 0.6 }}>
+                Add PANCHANG_API_KEY to Netlify env vars. Get a free key at freeastrologyapi.com
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {data && !loading && (
+        <>
+          <section className="panch-section">
+            <h2 className="panch-section-title">
+              {language === 'ne' ? 'पञ्च अंग' : 'Five Elements (Pañchāṅga)'}
+            </h2>
+            <div className="panch-elements-grid">
+              {elements.map(el => (
+                <div key={el.label} className="panch-elem-card">
+                  <span className="pec-icon">{el.icon}</span>
+                  <span className="pec-label">{el.label}</span>
+                  <span className="pec-val">{el.val}</span>
+                  {el.sub && <span className="pec-sub">until {el.sub}</span>}
+                </div>
+              ))}
             </div>
-          </div>
+          </section>
 
-          <div className="panchang-time-grid">
-            <InfoCard icon={<CalendarClock size={16} />} label={copy.gregorianDate} value={localInfo.gregorianDate} />
-            <InfoCard icon={<CalendarClock size={16} />} label={copy.bikramSambat} value={localInfo.bikramSambat || copy.bikramSambatPending} />
-            <InfoCard icon={<SunMedium size={16} />} label={copy.browserTime} value={localInfo.time} />
-            <InfoCard icon={<MapPin size={16} />} label={copy.browserTimezone} value={timezoneDisplay} />
-          </div>
-        </article>
-
-        <article className="panchang-card panchang-dashboard visual-card">
-          <div className="panchang-section-header">
-            <div>
-              <p className="section-kicker">{copy.locationTitle}</p>
-              <h2 className="card-title">{selectedCityDisplay}</h2>
-            </div>
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={handleUseLocation(
-                setLocation,
-                setIsLocating,
-                setState,
-                language === 'ne' ? 'हालको स्थान' : 'Current location',
-                copy.error
-              )}
-            >
-              <LocateFixed size={16} /> {isLocating ? (language === 'ne' ? 'स्थान लिँदै...' : 'Locating...') : copy.useLocation}
-            </button>
-          </div>
-
-          <div className="panchang-form-grid">
-            <Field
-              label={copy.city}
-              value={location.city}
-              onChange={(value) => setLocation((current) => ({ ...current, city: value }))}
-              placeholder={language === 'ne' ? 'शहर वा क्षेत्र' : 'City or region'}
-            />
-            <Field
-              label={copy.latitude}
-              value={location.latitude}
-              onChange={(value) => setLocation((current) => ({ ...current, latitude: value }))}
-              placeholder="27.7172"
-            />
-            <Field
-              label={copy.longitude}
-              value={location.longitude}
-              onChange={(value) => setLocation((current) => ({ ...current, longitude: value }))}
-              placeholder="85.3240"
-            />
-            <Field
-              label={copy.timezone}
-              value={location.timezone}
-              onChange={(value) => setLocation((current) => ({ ...current, timezone: value }))}
-              placeholder={getBrowserTimezone()}
-            />
-          </div>
-
-          <p className="panchang-help-text">{copy.manualHelp}</p>
-          <div className="chip-row">
-            <span className="tag-chip tag-chip-muted">{copy.selectedLocation}</span>
-            <span className="tag-chip tag-chip-muted">{location.timezone || localInfo.timezone}</span>
-          </div>
-        </article>
-
-        <article className="panchang-card panchang-dashboard visual-card">
-          <div className="panchang-section-header">
-            <div>
-              <p className="section-kicker">{copy.resultTitle}</p>
-              <h2 className="card-title">
-                {state.status === 'success'
-                  ? (state.result?.message || copy.configured)
-                  : state.status === 'loading'
-                    ? copy.loading
-                    : copy.unavailable}
+          {timings.length > 0 && (
+            <section className="panch-section">
+              <h2 className="panch-section-title">
+                {language === 'ne' ? 'समय तालिका' : 'Timings'}
               </h2>
-            </div>
-            <div className="today-summary-pill today-summary-pill-soft">
-              <MoonStar size={16} />
-              <span>{statusLabel}</span>
-            </div>
-          </div>
-
-          {state.status === 'success' && state.result ? (
-            <>
-              <div className="panchang-result-grid">
-                {resultFields.map((field) => (
-                  <div key={field.key} className="panchang-result-item">
-                    <p className="panchang-result-label">{field.title}</p>
-                    <p className="panchang-result-value">{field.value}</p>
+              <div className="panch-timings-grid">
+                {timings.map(t => (
+                  <div key={t.label} className="panch-timing-card">
+                    <span style={{ color: t.accent }}>{t.icon}</span>
+                    <span className="ptc-label">{t.label}</span>
+                    <span className="ptc-val">{t.val}</span>
                   </div>
                 ))}
               </div>
-              {state.result.rawSummary && <p className="panchang-summary">{state.result.rawSummary}</p>}
-            </>
-          ) : state.status === 'loading' ? (
-            <div className="panchang-status-card">
-              <p className="card-copy">{copy.loading}</p>
-            </div>
-          ) : (
-            <div className="panchang-status-card">
-              <p className="card-copy">{state.message || copy.notConfigured}</p>
-            </div>
+            </section>
           )}
-        </article>
-
-        <article className="panchang-card panchang-dashboard visual-card">
-          <div className="panchang-section-header">
-            <div>
-              <p className="section-kicker">{copy.sourceTitle}</p>
-              <h2 className="card-title">{language === 'ne' ? t('panchangGuideTitle', language) : content.introTitle}</h2>
-            </div>
-          </div>
-          <div className="soft-divider" />
-          <p className="reader-paragraph">{language === 'ne' ? t('panchangDisclaimer', language) : (content.disclaimer || copy.exactNote)}</p>
-          {state.result?.provider && (
-            <div className="info-callout">
-              <p className="page-eyebrow">{copy.provider}</p>
-              <p className="reader-paragraph">{state.result.provider}</p>
-            </div>
-          )}
-        </article>
-      </section>
+        </>
+      )}
     </main>
   );
 }
-
-function Field({
-  label,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-}) {
-  return (
-    <label className="panchang-field">
-      <span className="panchang-field-label">{label}</span>
-      <input
-        className="admin-input panchang-field-input"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-      />
-    </label>
-  );
-}
-
-function InfoCard({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
-  return (
-    <div className="panchang-info-card">
-      <div className="panchang-info-icon">{icon}</div>
-      <div>
-        <p className="panchang-result-label">{label}</p>
-        <p className="panchang-result-value">{value}</p>
-      </div>
-    </div>
-  );
-}
-
-function handleUseLocation(
-  setLocation: Dispatch<SetStateAction<PanchangLocationForm>>,
-  setIsLocating: Dispatch<SetStateAction<boolean>>,
-  setState: Dispatch<SetStateAction<PanchangFetchState>>,
-  fallbackCity: string,
-  errorMessage: string
-) {
-  return () => {
-    if (!navigator.geolocation) {
-      setState({ status: 'error', result: null, message: errorMessage });
-      return;
-    }
-    setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        setLocation((current) => ({
-          ...current,
-          city: current.city || fallbackCity,
-          latitude: latitude.toFixed(4),
-          longitude: longitude.toFixed(4),
-          timezone: getBrowserTimezone(),
-        }));
-        setIsLocating(false);
-      },
-      () => {
-        setIsLocating(false);
-        if (errorMessage) {
-          setState({ status: 'error', result: null, message: errorMessage });
-        }
-      },
-      { enableHighAccuracy: false, timeout: 10000 }
-    );
-  };
-}
-
-function formatField(field?: { name: string; start?: string; end?: string } | null) {
-  if (!field) return '—';
-  const parts = [field.name, field.start, field.end].filter(Boolean);
-  return parts.length > 0 ? parts.join(' · ') : '—';
-}
-
-
-

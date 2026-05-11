@@ -1,11 +1,12 @@
-import { useMemo, useState, type ChangeEvent, type FormEvent, type ReactNode, type TextareaHTMLAttributes } from 'react';
-import { Download, FileText, Layers, RotateCcw, ScrollText, Sparkles, Trash2, Upload, X } from 'lucide-react';
+﻿import { useMemo, useState, type ChangeEvent, type FormEvent, type ReactNode, type TextareaHTMLAttributes } from 'react';
+import { Download, FileText, Languages, Layers, Loader2, RotateCcw, ScrollText, Sparkles, Trash2, Upload, X } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfjsWorkerUrl from 'pdfjs-dist/build/pdf.worker.mjs?url';
 import type { Category, Deity, HinduStory, PanchangContent, PoojaBidhi, Stotra } from '../../types';
 import type { CategoryInput, DeityInput, HinduStoryInput, PoojaBidhiInput, StotraInput } from '../../services/localContentService';
 import { getLocalizedCategoryName, getLocalizedContentTitle, getLocalizedDeityName, getLocalizedDeityType, getLocalizedPoojaTitle, getLocalizedText } from '../../utils/localization';
 import { DEFAULT_IMAGE_CROP, getDeityImageSrc, getDeityImageStyle } from '../../utils/deityImage';
+import ImageCropper from '../common/ImageCropper';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
 
@@ -56,41 +57,6 @@ const textFromList = (items?: string[]) => (items || []).join('\n');
 const tagsFromText = (value: string) => value.split(',').map((item) => item.trim()).filter(Boolean);
 const tagsToText = (items?: string[]) => (items || []).join(', ');
 const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
-const MAX_DEITY_IMAGE_BYTES = 1024 * 1024;
-
-async function optimizeImageFile(file: File): Promise<{ dataUrl: string; warning?: string }> {
-  if (!/^image\/(png|jpe?g|webp)$/i.test(file.type)) {
-    throw new Error('Upload a JPG, PNG, or WebP image.');
-  }
-
-  const imageUrl = URL.createObjectURL(file);
-  try {
-    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = () => reject(new Error('Could not read image.'));
-      img.src = imageUrl;
-    });
-    const maxSide = 600;
-    const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
-    const width = Math.max(1, Math.round(image.naturalWidth * scale));
-    const height = Math.max(1, Math.round(image.naturalHeight * scale));
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Canvas image compression is not supported.');
-    ctx.drawImage(image, 0, 0, width, height);
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.84);
-    const approxBytes = Math.ceil((dataUrl.length - dataUrl.indexOf(',') - 1) * 0.75);
-    return {
-      dataUrl,
-      warning: approxBytes > MAX_DEITY_IMAGE_BYTES ? 'Image is still larger than 1 MB after resizing. Use a smaller image before publishing.' : undefined,
-    };
-  } finally {
-    URL.revokeObjectURL(imageUrl);
-  }
-}
 
 async function extractPdfText(file: File): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
@@ -196,78 +162,78 @@ const adminLabels = {
     publishing: 'Publishing...',
   },
   ne: {
-    save: 'सेभ गर्नुहोस्',
-    edit: 'सम्पादन',
-    delete: 'मेटाउनुहोस्',
-    search: 'खोज्नुहोस्',
-    deity: 'देवता',
-    category: 'श्रेणी',
-    meaning: 'अर्थ',
-    benefits: 'लाभ',
-    source: 'स्रोत',
-    tags: 'ट्यागहरू',
-    introduction: 'परिचय',
-    significance: 'महत्त्व',
-    mantra: 'मन्त्र',
-    process: 'पाठ गर्ने विधि',
-    logout: 'लगआउट',
-    export: 'JSON निर्यात',
-    import: 'JSON आयात',
-    reset: 'पूर्ववत् गर्नुहोस्',
-    publish: 'GitHub मा प्रकाशित गर्नुहोस्',
-    title: 'शीर्षक',
-    alternateTitle: 'वैकल्पिक शीर्षक',
-    name: 'नाम',
-    sanskritName: 'संस्कृत नाम',
-    imageUrl: 'तस्बिर URL वैकल्पिक',
-    contentFullText: 'पूरा पाठ',
-    wordMeaning: 'शब्दार्थ',
-    occasion: 'अवसर',
-    overview: 'सारांश',
-    materials: 'सामग्री',
-    steps: 'विधि',
-    cautions: 'सावधानीहरू',
-    description: 'विवरण',
-    commaSeparated: 'अल्पविरामले छुट्याउनुहोस्',
-    exportedJson: 'निर्यात गरिएको JSON वा आयात गर्ने JSON यहाँ राख्नुहोस्',
-    saving: 'सेभ हुँदैछ...',
-    create: 'सिर्जना गर्नुहोस्',
-    newItem: 'नयाँ',
-    typeNew: 'नयाँ लेख्नुहोस्',
-    noDeity: 'देवता छैन',
-    other: 'अन्य',
-    nepaliFields: 'नेपाली प्रदर्शन विवरण',
-    nameNe: 'नेपाली नाम',
-    titleNe: 'नेपाली शीर्षक',
-    alternateTitleNe: 'नेपाली वैकल्पिक शीर्षक',
-    introductionNe: 'नेपाली परिचय',
-    significanceNe: 'नेपाली महत्व',
-    descriptionNe: 'नेपाली विवरण',
-    meaningNe: 'नेपाली अर्थ',
-    wordMeaningNe: 'नेपाली शब्दार्थ',
-    benefitsNe: 'नेपाली लाभ',
-    processNe: 'नेपाली पाठ विधि',
-    occasionNe: 'नेपाली अवसर',
-    overviewNe: 'नेपाली सारांश',
-    materialsNe: 'नेपाली सामग्री',
-    stepsNe: 'नेपाली विधि',
-    cautionsNe: 'नेपाली सावधानीहरू',
-    deitiesProfiles: 'देवता / प्रोफाइल',
-    devotionalContent: 'भक्ति सामग्री',
-    poojaBidhi: 'पूजा विधि',
-    categories: 'श्रेणीहरू',
-    backupPublish: 'ब्याकअप र प्रकाशन',
-    saveDeity: 'देवता सेभ',
-    saveCategory: 'श्रेणी सेभ',
-    saveContent: 'भक्ति सामग्री सेभ',
-    savePooja: 'पूजा मार्गदर्शन सेभ',
-    clear: 'खाली',
-    publishing: 'प्रकाशन हुँदै...',
+    save: 'à¤¸à¥‡à¤­ à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+    edit: 'à¤¸à¤®à¥à¤ªà¤¾à¤¦à¤¨',
+    delete: 'à¤®à¥‡à¤Ÿà¤¾à¤‰à¤¨à¥à¤¹à¥‹à¤¸à¥',
+    search: 'à¤–à¥‹à¤œà¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+    deity: 'à¤¦à¥‡à¤µà¤¤à¤¾',
+    category: 'à¤¶à¥à¤°à¥‡à¤£à¥€',
+    meaning: 'à¤…à¤°à¥à¤¥',
+    benefits: 'à¤²à¤¾à¤­',
+    source: 'à¤¸à¥à¤°à¥‹à¤¤',
+    tags: 'à¤Ÿà¥à¤¯à¤¾à¤—à¤¹à¤°à¥‚',
+    introduction: 'à¤ªà¤°à¤¿à¤šà¤¯',
+    significance: 'à¤®à¤¹à¤¤à¥à¤¤à¥à¤µ',
+    mantra: 'à¤®à¤¨à¥à¤¤à¥à¤°',
+    process: 'à¤ªà¤¾à¤  à¤—à¤°à¥à¤¨à¥‡ à¤µà¤¿à¤§à¤¿',
+    logout: 'à¤²à¤—à¤†à¤‰à¤Ÿ',
+    export: 'JSON à¤¨à¤¿à¤°à¥à¤¯à¤¾à¤¤',
+    import: 'JSON à¤†à¤¯à¤¾à¤¤',
+    reset: 'à¤ªà¥‚à¤°à¥à¤µà¤µà¤¤à¥ à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+    publish: 'GitHub à¤®à¤¾ à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¿à¤¤ à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+    title: 'à¤¶à¥€à¤°à¥à¤·à¤•',
+    alternateTitle: 'à¤µà¥ˆà¤•à¤²à¥à¤ªà¤¿à¤• à¤¶à¥€à¤°à¥à¤·à¤•',
+    name: 'à¤¨à¤¾à¤®',
+    sanskritName: 'à¤¸à¤‚à¤¸à¥à¤•à¥ƒà¤¤ à¤¨à¤¾à¤®',
+    imageUrl: 'à¤¤à¤¸à¥à¤¬à¤¿à¤° URL à¤µà¥ˆà¤•à¤²à¥à¤ªà¤¿à¤•',
+    contentFullText: 'à¤ªà¥‚à¤°à¤¾ à¤ªà¤¾à¤ ',
+    wordMeaning: 'à¤¶à¤¬à¥à¤¦à¤¾à¤°à¥à¤¥',
+    occasion: 'à¤…à¤µà¤¸à¤°',
+    overview: 'à¤¸à¤¾à¤°à¤¾à¤‚à¤¶',
+    materials: 'à¤¸à¤¾à¤®à¤—à¥à¤°à¥€',
+    steps: 'à¤µà¤¿à¤§à¤¿',
+    cautions: 'à¤¸à¤¾à¤µà¤§à¤¾à¤¨à¥€à¤¹à¤°à¥‚',
+    description: 'à¤µà¤¿à¤µà¤°à¤£',
+    commaSeparated: 'à¤…à¤²à¥à¤ªà¤µà¤¿à¤°à¤¾à¤®à¤²à¥‡ à¤›à¥à¤Ÿà¥à¤¯à¤¾à¤‰à¤¨à¥à¤¹à¥‹à¤¸à¥',
+    exportedJson: 'à¤¨à¤¿à¤°à¥à¤¯à¤¾à¤¤ à¤—à¤°à¤¿à¤à¤•à¥‹ JSON à¤µà¤¾ à¤†à¤¯à¤¾à¤¤ à¤—à¤°à¥à¤¨à¥‡ JSON à¤¯à¤¹à¤¾à¤ à¤°à¤¾à¤–à¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+    saving: 'à¤¸à¥‡à¤­ à¤¹à¥à¤à¤¦à¥ˆà¤›...',
+    create: 'à¤¸à¤¿à¤°à¥à¤œà¤¨à¤¾ à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+    newItem: 'à¤¨à¤¯à¤¾à¤',
+    typeNew: 'à¤¨à¤¯à¤¾à¤ à¤²à¥‡à¤–à¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+    noDeity: 'à¤¦à¥‡à¤µà¤¤à¤¾ à¤›à¥ˆà¤¨',
+    other: 'à¤…à¤¨à¥à¤¯',
+    nepaliFields: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤ªà¥à¤°à¤¦à¤°à¥à¤¶à¤¨ à¤µà¤¿à¤µà¤°à¤£',
+    nameNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤¨à¤¾à¤®',
+    titleNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤¶à¥€à¤°à¥à¤·à¤•',
+    alternateTitleNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤µà¥ˆà¤•à¤²à¥à¤ªà¤¿à¤• à¤¶à¥€à¤°à¥à¤·à¤•',
+    introductionNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤ªà¤°à¤¿à¤šà¤¯',
+    significanceNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤®à¤¹à¤¤à¥à¤µ',
+    descriptionNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤µà¤¿à¤µà¤°à¤£',
+    meaningNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤…à¤°à¥à¤¥',
+    wordMeaningNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤¶à¤¬à¥à¤¦à¤¾à¤°à¥à¤¥',
+    benefitsNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤²à¤¾à¤­',
+    processNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤ªà¤¾à¤  à¤µà¤¿à¤§à¤¿',
+    occasionNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤…à¤µà¤¸à¤°',
+    overviewNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤¸à¤¾à¤°à¤¾à¤‚à¤¶',
+    materialsNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€',
+    stepsNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤µà¤¿à¤§à¤¿',
+    cautionsNe: 'à¤¨à¥‡à¤ªà¤¾à¤²à¥€ à¤¸à¤¾à¤µà¤§à¤¾à¤¨à¥€à¤¹à¤°à¥‚',
+    deitiesProfiles: 'à¤¦à¥‡à¤µà¤¤à¤¾ / à¤ªà¥à¤°à¥‹à¤«à¤¾à¤‡à¤²',
+    devotionalContent: 'à¤­à¤•à¥à¤¤à¤¿ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€',
+    poojaBidhi: 'à¤ªà¥‚à¤œà¤¾ à¤µà¤¿à¤§à¤¿',
+    categories: 'à¤¶à¥à¤°à¥‡à¤£à¥€à¤¹à¤°à¥‚',
+    backupPublish: 'à¤¬à¥à¤¯à¤¾à¤•à¤…à¤ª à¤° à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨',
+    saveDeity: 'à¤¦à¥‡à¤µà¤¤à¤¾ à¤¸à¥‡à¤­',
+    saveCategory: 'à¤¶à¥à¤°à¥‡à¤£à¥€ à¤¸à¥‡à¤­',
+    saveContent: 'à¤­à¤•à¥à¤¤à¤¿ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤¸à¥‡à¤­',
+    savePooja: 'à¤ªà¥‚à¤œà¤¾ à¤®à¤¾à¤°à¥à¤—à¤¦à¤°à¥à¤¶à¤¨ à¤¸à¥‡à¤­',
+    clear: 'à¤–à¤¾à¤²à¥€',
+    publishing: 'à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨ à¤¹à¥à¤à¤¦à¥ˆ...',
   },
 } as const;
 
 function AdminFormActions({ isSaving, label, clearLabel, onCancel }: { isSaving: boolean; label: string; clearLabel: string; onCancel: () => void }) {
-  const savingLabel = label.includes('सेभ') ? 'सेभ हुँदैछ...' : 'Saving...';
+  const savingLabel = label.includes('à¤¸à¥‡à¤­') ? 'à¤¸à¥‡à¤­ à¤¹à¥à¤à¤¦à¥ˆà¤›...' : 'Saving...';
   return <div className="button-row"><button disabled={isSaving} className="action-button compact-save">{isSaving ? savingLabel : label}</button><button type="button" onClick={onCancel} className="secondary-button">{clearLabel}</button></div>;
 }
 
@@ -276,11 +242,11 @@ function AdminPicker({ value, options, placeholder, optional = false, onChange, 
   const [isCreating, setIsCreating] = useState(false);
   const [draft, setDraft] = useState('');
   const isNepali = /[\u0900-\u097F]/.test(placeholder);
-  const newLabel = isNepali ? `नयाँ ${placeholder}` : `New ${placeholder}`;
-  const cancelLabel = isNepali ? 'रद्द गर्नुहोस्' : 'Cancel';
-  const noDeityLabel = isNepali ? 'देवता छैन' : 'No deity';
-  const typeNewLabel = isNepali ? `नयाँ ${placeholder} लेख्नुहोस्` : `Type new ${placeholder.toLowerCase()}`;
-  const createLabel = isNepali ? 'सिर्जना गर्नुहोस्' : 'Create';
+  const newLabel = isNepali ? `à¤¨à¤¯à¤¾à¤ ${placeholder}` : `New ${placeholder}`;
+  const cancelLabel = isNepali ? 'à¤°à¤¦à¥à¤¦ à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥' : 'Cancel';
+  const noDeityLabel = isNepali ? 'à¤¦à¥‡à¤µà¤¤à¤¾ à¤›à¥ˆà¤¨' : 'No deity';
+  const typeNewLabel = isNepali ? `à¤¨à¤¯à¤¾à¤ ${placeholder} à¤²à¥‡à¤–à¥à¤¨à¥à¤¹à¥‹à¤¸à¥` : `Type new ${placeholder.toLowerCase()}`;
+  const createLabel = isNepali ? 'à¤¸à¤¿à¤°à¥à¤œà¤¨à¤¾ à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥' : 'Create';
   return (
     <div className="picker-field compact-picker">
       <select
@@ -342,7 +308,7 @@ function DeityImageEditor({
 }: {
   deity: DeityInput;
   status: string | null;
-  onUpload: (event: ChangeEvent<HTMLInputElement>) => void;
+  onUpload: (file: File | undefined) => void;
   onChange: (updater: (previous: DeityInput) => DeityInput) => void;
 }) {
   const imageSrc = getDeityImageSrc(deity);
@@ -355,7 +321,14 @@ function DeityImageEditor({
         <label className="secondary-button file-upload-button">
           <Upload size={15} />
           <span>Upload image</span>
-          <input type="file" accept="image/png,image/jpeg,image/webp" onChange={onUpload} />
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            onChange={(event) => {
+              onUpload(event.target.files?.[0]);
+              event.target.value = '';
+            }}
+          />
         </label>
         <button type="button" className="secondary-button" onClick={() => setCrop(DEFAULT_IMAGE_CROP)}>
           <RotateCcw size={15} />
@@ -396,7 +369,7 @@ function AdminRecordList({ title, toolbar, children }: { title: string; toolbar?
 }
 
 function AdminRecord({ title, subtitle, editLabel = 'Edit', onEdit, onDelete }: { key?: string; title: string; subtitle: string; editLabel?: string; onEdit: () => void; onDelete: () => void }) {
-  const deleteLabel = editLabel === 'सम्पादन' ? `${title} मेटाउनुहोस्` : `Delete ${title}`;
+  const deleteLabel = editLabel === 'à¤¸à¤®à¥à¤ªà¤¾à¤¦à¤¨' ? `${title} à¤®à¥‡à¤Ÿà¤¾à¤‰à¤¨à¥à¤¹à¥‹à¤¸à¥` : `Delete ${title}`;
   return <article className="record-card compact-record"><div className="record-card-copy"><p className="record-title">{title}</p><p className="record-subtitle">{subtitle}</p></div><div className="record-actions"><button onClick={onEdit} className="secondary-button">{editLabel}</button><button onClick={onDelete} className="icon-button" aria-label={deleteLabel}><Trash2 size={16} /></button></div></article>;
 }
 
@@ -461,24 +434,81 @@ export default function AdminPanel({
   const [categoryForm, setCategoryForm] = useState<CategoryInput>(emptyCategory);
   const [editing, setEditing] = useState<{ type: Tab; id: string } | null>(null);
   const [dismissedAlerts, setDismissedAlerts] = useState<Record<string, boolean>>({});
+  const [translating, setTranslating] = useState<Record<string, boolean>>({});
+  const [cropperSrc, setCropperSrc] = useState<string | null>(null);
+  const [cropperFor, setCropperFor] = useState<string>('');
+  const [cropperAspect, setCropperAspect] = useState<number | null>(null);
+
+  function detectLang(text: string): 'sa' | 'ne' | 'en' {
+    const devChars = (text.match(/[\u0900-\u097F]/g) || []).length;
+    const totalChars = text.replace(/\s/g, '').length;
+    if (devChars / (totalChars || 1) > 0.5) {
+      const lines = text.split('\n').filter(l => l.trim());
+      const avgLineLen = lines.reduce((s, l) => s + l.length, 0) / (lines.length || 1);
+      return avgLineLen > 25 ? 'sa' : 'ne';
+    }
+    return 'en';
+  }
+
+  async function autoTranslate(
+    fieldId: string,
+    text: string,
+    onResult: (translated: string, romanized?: string) => void
+  ) {
+    if (!text || text.trim().length < 3) return;
+    setTranslating(t => ({ ...t, [fieldId]: true }));
+    try {
+      const lang = detectLang(text);
+      if (lang === 'sa') {
+        const res = await fetch('/.netlify/functions/translate-content', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, from: 'sa', to: 'latn' }),
+        });
+        const data = await res.json();
+        onResult('', data.result || '');
+      } else if (lang === 'ne') {
+        const res = await fetch('/.netlify/functions/translate-content', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, from: 'ne', to: 'en' }),
+        });
+        const data = await res.json();
+        onResult(data.result || '');
+      } else {
+        const res = await fetch('/.netlify/functions/translate-content', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, from: 'en', to: 'ne' }),
+        });
+        const data = await res.json();
+        onResult(data.result || '');
+      }
+    } catch {
+      // Users can still edit translations manually if the external API is unavailable.
+    } finally {
+      setTranslating(t => ({ ...t, [fieldId]: false }));
+    }
+  }
+
   const labels = adminLabels[language];
   const localDraftNotice = language === 'ne'
     ? 'This browser has a newer unsynced local draft than the remote content. Publish to GitHub to make it live, or export a backup.'
     : 'This browser has a newer unsynced local draft than the remote content. Publish to GitHub to make it live, or export a backup.';
   const ui = language === 'ne'
     ? {
-        kicker: 'स्थानीय सामग्री स्टुडियो',
-        title: 'Om Stotra Sagar सामग्री व्यवस्थापन',
-        subtitle: 'सेभ गर्दा यो ब्राउजरमा तुरुन्तै लेखिन्छ। GitHub मा प्रकाशन वैकल्पिक backend मार्फत मात्र हुन्छ।',
-        localActive: 'स्थानीय ब्राउजर सामग्री सक्रिय छ। तयार भएपछि निर्यात वा प्रकाशन गर्नुहोस्।',
-        instantSave: 'सेभ गर्दा यो ब्राउजरमा तुरुन्तै अपडेट हुन्छ। GitHub मा प्रकाशन वैकल्पिक र अलग छ।',
-        deityTitle: editing?.type === 'deities' ? 'देवता प्रोफाइल सम्पादन' : 'देवता प्रोफाइल थप्नुहोस्',
-        contentTitle: editing?.type === 'content' ? 'भक्तिपूर्ण सामग्री सम्पादन' : 'भक्तिपूर्ण सामग्री थप्नुहोस्',
-        poojaTitle: editing?.type === 'pooja' ? 'पूजा विधि सम्पादन' : 'पूजा विधि थप्नुहोस्',
-        categoryTitle: editing?.type === 'categories' ? 'श्रेणी सम्पादन' : 'श्रेणी थप्नुहोस्',
-        contentList: 'भक्तिपूर्ण सामग्री',
-        poojaList: 'पूजा विधि',
-        categoryList: 'श्रेणीहरू',
+        kicker: 'à¤¸à¥à¤¥à¤¾à¤¨à¥€à¤¯ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤¸à¥à¤Ÿà¥à¤¡à¤¿à¤¯à¥‹',
+        title: 'Om Stotra Sagar à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤µà¥à¤¯à¤µà¤¸à¥à¤¥à¤¾à¤ªà¤¨',
+        subtitle: 'à¤¸à¥‡à¤­ à¤—à¤°à¥à¤¦à¤¾ à¤¯à¥‹ à¤¬à¥à¤°à¤¾à¤‰à¤œà¤°à¤®à¤¾ à¤¤à¥à¤°à¥à¤¨à¥à¤¤à¥ˆ à¤²à¥‡à¤–à¤¿à¤¨à¥à¤›à¥¤ GitHub à¤®à¤¾ à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨ à¤µà¥ˆà¤•à¤²à¥à¤ªà¤¿à¤• backend à¤®à¤¾à¤°à¥à¤«à¤¤ à¤®à¤¾à¤¤à¥à¤° à¤¹à¥à¤¨à¥à¤›à¥¤',
+        localActive: 'à¤¸à¥à¤¥à¤¾à¤¨à¥€à¤¯ à¤¬à¥à¤°à¤¾à¤‰à¤œà¤° à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤¸à¤•à¥à¤°à¤¿à¤¯ à¤›à¥¤ à¤¤à¤¯à¤¾à¤° à¤­à¤à¤ªà¤›à¤¿ à¤¨à¤¿à¤°à¥à¤¯à¤¾à¤¤ à¤µà¤¾ à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨ à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥à¥¤',
+        instantSave: 'à¤¸à¥‡à¤­ à¤—à¤°à¥à¤¦à¤¾ à¤¯à¥‹ à¤¬à¥à¤°à¤¾à¤‰à¤œà¤°à¤®à¤¾ à¤¤à¥à¤°à¥à¤¨à¥à¤¤à¥ˆ à¤…à¤ªà¤¡à¥‡à¤Ÿ à¤¹à¥à¤¨à¥à¤›à¥¤ GitHub à¤®à¤¾ à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨ à¤µà¥ˆà¤•à¤²à¥à¤ªà¤¿à¤• à¤° à¤…à¤²à¤— à¤›à¥¤',
+        deityTitle: editing?.type === 'deities' ? 'à¤¦à¥‡à¤µà¤¤à¤¾ à¤ªà¥à¤°à¥‹à¤«à¤¾à¤‡à¤² à¤¸à¤®à¥à¤ªà¤¾à¤¦à¤¨' : 'à¤¦à¥‡à¤µà¤¤à¤¾ à¤ªà¥à¤°à¥‹à¤«à¤¾à¤‡à¤² à¤¥à¤ªà¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+        contentTitle: editing?.type === 'content' ? 'à¤­à¤•à¥à¤¤à¤¿à¤ªà¥‚à¤°à¥à¤£ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤¸à¤®à¥à¤ªà¤¾à¤¦à¤¨' : 'à¤­à¤•à¥à¤¤à¤¿à¤ªà¥‚à¤°à¥à¤£ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤¥à¤ªà¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+        poojaTitle: editing?.type === 'pooja' ? 'à¤ªà¥‚à¤œà¤¾ à¤µà¤¿à¤§à¤¿ à¤¸à¤®à¥à¤ªà¤¾à¤¦à¤¨' : 'à¤ªà¥‚à¤œà¤¾ à¤µà¤¿à¤§à¤¿ à¤¥à¤ªà¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+        categoryTitle: editing?.type === 'categories' ? 'à¤¶à¥à¤°à¥‡à¤£à¥€ à¤¸à¤®à¥à¤ªà¤¾à¤¦à¤¨' : 'à¤¶à¥à¤°à¥‡à¤£à¥€ à¤¥à¤ªà¥à¤¨à¥à¤¹à¥‹à¤¸à¥',
+        contentList: 'à¤­à¤•à¥à¤¤à¤¿à¤ªà¥‚à¤°à¥à¤£ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€',
+        poojaList: 'à¤ªà¥‚à¤œà¤¾ à¤µà¤¿à¤§à¤¿',
+        categoryList: 'à¤¶à¥à¤°à¥‡à¤£à¥€à¤¹à¤°à¥‚',
       }
     : {
         kicker: 'Local Content Studio',
@@ -519,24 +549,28 @@ export default function AdminPanel({
     setPdfStatus(null);
   };
 
-  const handleDeityImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = '';
+  async function handleImageFile(file: File | undefined, fieldName: string, aspectRatio: number | null = null) {
     if (!file) return;
-    setImageUploadStatus(language === 'ne' ? 'तस्वीर तयार हुँदैछ...' : 'Preparing image...');
-    try {
-      const { dataUrl, warning } = await optimizeImageFile(file);
-      setDeityForm((prev) => ({
-        ...prev,
-        imageDataUrl: dataUrl,
-        imageSrc: dataUrl,
-        imageCrop: prev.imageCrop || DEFAULT_IMAGE_CROP,
-      }));
-      setImageUploadStatus(warning || (language === 'ne' ? 'तस्वीर थपियो। सेभ गर्नु अघि मिलाउनुहोस्।' : 'Image added. Adjust it before saving.'));
-    } catch (error) {
-      setImageUploadStatus(error instanceof Error ? error.message : 'Could not prepare image.');
+    if (!file.type.startsWith('image/')) {
+      setImageUploadStatus('File is not an image (jpg, png, webp, gif allowed).');
+      return;
     }
-  };
+    setImageUploadStatus(language === 'ne' ? 'à¤¤à¤¸à¥à¤µà¥€à¤° à¤•à¥à¤°à¤ª à¤—à¤°à¥à¤¨ à¤¤à¤¯à¤¾à¤° à¤›à¥¤' : 'Image ready to crop.');
+    const reader = new FileReader();
+    reader.onerror = () => setImageUploadStatus(`Could not read image: ${reader.error?.message || 'unknown error'}`);
+    reader.onload = (e) => {
+      const result = e.target?.result;
+      if (typeof result !== 'string' || !result.startsWith('data:image/')) {
+        setImageUploadStatus('Invalid image data returned by browser.');
+        return;
+      }
+      setCropperSrc(result);
+      setCropperFor(fieldName);
+      setCropperAspect(aspectRatio);
+    };
+    reader.readAsDataURL(file);
+  }
+
 
   const handlePdfUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -546,7 +580,7 @@ export default function AdminPanel({
       setPdfStatus('Upload a PDF file.');
       return;
     }
-    setPdfStatus(language === 'ne' ? 'PDF बाट पाठ निकालिँदैछ...' : 'Extracting text from PDF...');
+    setPdfStatus(language === 'ne' ? 'PDF à¤¬à¤¾à¤Ÿ à¤ªà¤¾à¤  à¤¨à¤¿à¤•à¤¾à¤²à¤¿à¤à¤¦à¥ˆà¤›...' : 'Extracting text from PDF...');
     try {
       const text = await extractPdfText(file);
       if (!text.trim()) {
@@ -555,7 +589,7 @@ export default function AdminPanel({
         return;
       }
       setContentForm((prev) => ({ ...prev, content: text, sourcePdfName: file.name }));
-      setPdfStatus(language === 'ne' ? 'PDF पाठ textarea मा राखियो। सेभ गर्नु अघि जाँच/सम्पादन गर्नुहोस्।' : 'Extracted PDF text was placed in the textarea. Review and edit before saving.');
+      setPdfStatus(language === 'ne' ? 'PDF à¤ªà¤¾à¤  textarea à¤®à¤¾ à¤°à¤¾à¤–à¤¿à¤¯à¥‹à¥¤ à¤¸à¥‡à¤­ à¤—à¤°à¥à¤¨à¥ à¤…à¤˜à¤¿ à¤œà¤¾à¤à¤š/à¤¸à¤®à¥à¤ªà¤¾à¤¦à¤¨ à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥à¥¤' : 'Extracted PDF text was placed in the textarea. Review and edit before saving.');
     } catch {
       setPdfStatus('PDF text could not be extracted. Please paste the text manually or attach the PDF as source.');
       setContentForm((prev) => ({ ...prev, sourcePdfName: file.name }));
@@ -573,22 +607,22 @@ export default function AdminPanel({
   const duplicateDeity = (name: string, id?: string) => deities.some((item) => item.id !== id && sameName(item.name, name));
   const duplicateCategory = (name: string, id?: string) => categories.some((item) => item.id !== id && sameName(item.name, name));
   const noticeText = {
-    nameRequired: language === 'ne' ? 'नाम अनिवार्य छ।' : 'Name is required.',
-    deityDuplicate: language === 'ne' ? 'यो नामको देवता पहिले नै छ।' : 'A deity with this name already exists.',
-    deitySaved: language === 'ne' ? 'देवता प्रोफाइल स्थानीय रूपमा सेभ भयो।' : 'Deity profile saved locally.',
-    contentRequired: language === 'ne' ? 'शीर्षक, देवता, श्रेणी र पूरा पाठ अनिवार्य छन्।' : 'Title, deity, category, and full text are required.',
-    titleLength: language === 'ne' ? 'शीर्षक १२० अक्षर वा कम हुनुपर्छ।' : 'Title must be 120 characters or fewer.',
-    contentLength: language === 'ne' ? 'सामग्री ५००० अक्षर वा कम हुनुपर्छ।' : 'Content must be 5000 characters or fewer.',
-    meaningLength: language === 'ne' ? 'अर्थ ३००० अक्षर वा कम हुनुपर्छ।' : 'Meaning must be 3000 characters or fewer.',
-    benefitsLength: language === 'ne' ? 'लाभ १००० अक्षर वा कम हुनुपर्छ।' : 'Benefits must be 1000 characters or fewer.',
-    contentSaved: language === 'ne' ? 'भक्तिपूर्ण सामग्री यो ब्राउजरमा सेभ भयो।' : 'Devotional content saved to this browser.',
-    poojaRequired: language === 'ne' ? 'शीर्षक, देवता र सारांश अनिवार्य छन्।' : 'Title, deity, and overview are required.',
-    poojaSaved: language === 'ne' ? 'पूजा विधि यो ब्राउजरमा सेभ भयो।' : 'Pooja Bidhi saved to this browser.',
-    storyRequired: language === 'ne' ? 'शीर्षक, सारांश र कथा अनिवार्य छन्।' : 'Title, summary, and story are required.',
-    storySaved: language === 'ne' ? 'कथा यो ब्राउजरमा सेभ भयो।' : 'Story saved to this browser.',
-    categoryRequired: language === 'ne' ? 'श्रेणी नाम अनिवार्य छ।' : 'Category name is required.',
-    categoryDuplicate: language === 'ne' ? 'यो नामको श्रेणी पहिले नै छ।' : 'A category with this name already exists.',
-    categorySaved: language === 'ne' ? 'श्रेणी स्थानीय रूपमा सेभ भयो।' : 'Category saved locally.',
+    nameRequired: language === 'ne' ? 'à¤¨à¤¾à¤® à¤…à¤¨à¤¿à¤µà¤¾à¤°à¥à¤¯ à¤›à¥¤' : 'Name is required.',
+    deityDuplicate: language === 'ne' ? 'à¤¯à¥‹ à¤¨à¤¾à¤®à¤•à¥‹ à¤¦à¥‡à¤µà¤¤à¤¾ à¤ªà¤¹à¤¿à¤²à¥‡ à¤¨à¥ˆ à¤›à¥¤' : 'A deity with this name already exists.',
+    deitySaved: language === 'ne' ? 'à¤¦à¥‡à¤µà¤¤à¤¾ à¤ªà¥à¤°à¥‹à¤«à¤¾à¤‡à¤² à¤¸à¥à¤¥à¤¾à¤¨à¥€à¤¯ à¤°à¥‚à¤ªà¤®à¤¾ à¤¸à¥‡à¤­ à¤­à¤¯à¥‹à¥¤' : 'Deity profile saved locally.',
+    contentRequired: language === 'ne' ? 'à¤¶à¥€à¤°à¥à¤·à¤•, à¤¦à¥‡à¤µà¤¤à¤¾, à¤¶à¥à¤°à¥‡à¤£à¥€ à¤° à¤ªà¥‚à¤°à¤¾ à¤ªà¤¾à¤  à¤…à¤¨à¤¿à¤µà¤¾à¤°à¥à¤¯ à¤›à¤¨à¥à¥¤' : 'Title, deity, category, and full text are required.',
+    titleLength: language === 'ne' ? 'à¤¶à¥€à¤°à¥à¤·à¤• à¥§à¥¨à¥¦ à¤…à¤•à¥à¤·à¤° à¤µà¤¾ à¤•à¤® à¤¹à¥à¤¨à¥à¤ªà¤°à¥à¤›à¥¤' : 'Title must be 120 characters or fewer.',
+    contentLength: language === 'ne' ? 'à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¥«à¥¦à¥¦à¥¦ à¤…à¤•à¥à¤·à¤° à¤µà¤¾ à¤•à¤® à¤¹à¥à¤¨à¥à¤ªà¤°à¥à¤›à¥¤' : 'Content must be 5000 characters or fewer.',
+    meaningLength: language === 'ne' ? 'à¤…à¤°à¥à¤¥ à¥©à¥¦à¥¦à¥¦ à¤…à¤•à¥à¤·à¤° à¤µà¤¾ à¤•à¤® à¤¹à¥à¤¨à¥à¤ªà¤°à¥à¤›à¥¤' : 'Meaning must be 3000 characters or fewer.',
+    benefitsLength: language === 'ne' ? 'à¤²à¤¾à¤­ à¥§à¥¦à¥¦à¥¦ à¤…à¤•à¥à¤·à¤° à¤µà¤¾ à¤•à¤® à¤¹à¥à¤¨à¥à¤ªà¤°à¥à¤›à¥¤' : 'Benefits must be 1000 characters or fewer.',
+    contentSaved: language === 'ne' ? 'à¤­à¤•à¥à¤¤à¤¿à¤ªà¥‚à¤°à¥à¤£ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤¯à¥‹ à¤¬à¥à¤°à¤¾à¤‰à¤œà¤°à¤®à¤¾ à¤¸à¥‡à¤­ à¤­à¤¯à¥‹à¥¤' : 'Devotional content saved to this browser.',
+    poojaRequired: language === 'ne' ? 'à¤¶à¥€à¤°à¥à¤·à¤•, à¤¦à¥‡à¤µà¤¤à¤¾ à¤° à¤¸à¤¾à¤°à¤¾à¤‚à¤¶ à¤…à¤¨à¤¿à¤µà¤¾à¤°à¥à¤¯ à¤›à¤¨à¥à¥¤' : 'Title, deity, and overview are required.',
+    poojaSaved: language === 'ne' ? 'à¤ªà¥‚à¤œà¤¾ à¤µà¤¿à¤§à¤¿ à¤¯à¥‹ à¤¬à¥à¤°à¤¾à¤‰à¤œà¤°à¤®à¤¾ à¤¸à¥‡à¤­ à¤­à¤¯à¥‹à¥¤' : 'Pooja Bidhi saved to this browser.',
+    storyRequired: language === 'ne' ? 'à¤¶à¥€à¤°à¥à¤·à¤•, à¤¸à¤¾à¤°à¤¾à¤‚à¤¶ à¤° à¤•à¤¥à¤¾ à¤…à¤¨à¤¿à¤µà¤¾à¤°à¥à¤¯ à¤›à¤¨à¥à¥¤' : 'Title, summary, and story are required.',
+    storySaved: language === 'ne' ? 'à¤•à¤¥à¤¾ à¤¯à¥‹ à¤¬à¥à¤°à¤¾à¤‰à¤œà¤°à¤®à¤¾ à¤¸à¥‡à¤­ à¤­à¤¯à¥‹à¥¤' : 'Story saved to this browser.',
+    categoryRequired: language === 'ne' ? 'à¤¶à¥à¤°à¥‡à¤£à¥€ à¤¨à¤¾à¤® à¤…à¤¨à¤¿à¤µà¤¾à¤°à¥à¤¯ à¤›à¥¤' : 'Category name is required.',
+    categoryDuplicate: language === 'ne' ? 'à¤¯à¥‹ à¤¨à¤¾à¤®à¤•à¥‹ à¤¶à¥à¤°à¥‡à¤£à¥€ à¤ªà¤¹à¤¿à¤²à¥‡ à¤¨à¥ˆ à¤›à¥¤' : 'A category with this name already exists.',
+    categorySaved: language === 'ne' ? 'à¤¶à¥à¤°à¥‡à¤£à¥€ à¤¸à¥à¤¥à¤¾à¤¨à¥€à¤¯ à¤°à¥‚à¤ªà¤®à¤¾ à¤¸à¥‡à¤­ à¤­à¤¯à¥‹à¥¤' : 'Category saved locally.',
   };
 
   const submitDeity = (event: FormEvent) => {
@@ -661,7 +695,7 @@ export default function AdminPanel({
   const deleteDeity = (deity: Deity) => {
     const hasRelated = stotras.some((item) => item.deity === deity.name) || poojaBidhi.some((item) => item.deity === deity.name) || stories.some((item) => item.deity === deity.name);
     const warning = language === 'ne'
-      ? (hasRelated ? 'यो देवतासँग सम्बन्धित सामग्री छ। मेटाउँदा ती सामग्री छुट्टिन सक्छन्। तैपनि मेटाउने?' : `${deity.name} मेटाउने?`)
+      ? (hasRelated ? 'à¤¯à¥‹ à¤¦à¥‡à¤µà¤¤à¤¾à¤¸à¤à¤— à¤¸à¤®à¥à¤¬à¤¨à¥à¤§à¤¿à¤¤ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤›à¥¤ à¤®à¥‡à¤Ÿà¤¾à¤‰à¤à¤¦à¤¾ à¤¤à¥€ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤›à¥à¤Ÿà¥à¤Ÿà¤¿à¤¨ à¤¸à¤•à¥à¤›à¤¨à¥à¥¤ à¤¤à¥ˆà¤ªà¤¨à¤¿ à¤®à¥‡à¤Ÿà¤¾à¤‰à¤¨à¥‡?' : `${deity.name} à¤®à¥‡à¤Ÿà¤¾à¤‰à¤¨à¥‡?`)
       : (hasRelated ? 'This deity has related content. Deleting it may orphan related items. Delete anyway?' : `Delete ${deity.name}?`);
     if (confirm(warning)) onDeleteDeity(deity.id);
   };
@@ -669,13 +703,43 @@ export default function AdminPanel({
   const deleteCategory = (category: Category) => {
     const used = stotras.some((item) => item.category === category.name);
     const warning = language === 'ne'
-      ? (used ? 'यो श्रेणी भक्तिपूर्ण सामग्रीमा प्रयोग भएको छ। मेटाउँदा सम्बन्धित सामग्री छुट्टिन सक्छ। तैपनि मेटाउने?' : `${category.name} मेटाउने?`)
+      ? (used ? 'à¤¯à¥‹ à¤¶à¥à¤°à¥‡à¤£à¥€ à¤­à¤•à¥à¤¤à¤¿à¤ªà¥‚à¤°à¥à¤£ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€à¤®à¤¾ à¤ªà¥à¤°à¤¯à¥‹à¤— à¤­à¤à¤•à¥‹ à¤›à¥¤ à¤®à¥‡à¤Ÿà¤¾à¤‰à¤à¤¦à¤¾ à¤¸à¤®à¥à¤¬à¤¨à¥à¤§à¤¿à¤¤ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤›à¥à¤Ÿà¥à¤Ÿà¤¿à¤¨ à¤¸à¤•à¥à¤›à¥¤ à¤¤à¥ˆà¤ªà¤¨à¤¿ à¤®à¥‡à¤Ÿà¤¾à¤‰à¤¨à¥‡?' : `${category.name} à¤®à¥‡à¤Ÿà¤¾à¤‰à¤¨à¥‡?`)
       : (used ? 'This category is used by devotional content. Deleting it may orphan related items. Delete anyway?' : `Delete ${category.name}?`);
     if (confirm(warning)) onDeleteCategory(category.id);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4">
+      {cropperSrc && (
+        <div className="cropper-modal-overlay">
+          <div className="cropper-modal">
+            <ImageCropper
+              src={cropperSrc}
+              aspectRatio={cropperAspect}
+              outputSize={{ w: 800, h: 600 }}
+              onDone={(dataUrl) => {
+                if (cropperFor === 'deityImage') {
+                  setDeityForm((prev) => ({
+                    ...prev,
+                    imageDataUrl: dataUrl,
+                    imageSrc: dataUrl,
+                    imageCrop: prev.imageCrop || DEFAULT_IMAGE_CROP,
+                  }));
+                  setImageUploadStatus(language === 'ne' ? 'à¤¤à¤¸à¥à¤µà¥€à¤° à¤¥à¤ªà¤¿à¤¯à¥‹à¥¤ à¤¸à¥‡à¤­ à¤—à¤°à¥à¤¨à¥ à¤…à¤˜à¤¿ à¤®à¤¿à¤²à¤¾à¤‰à¤¨à¥à¤¹à¥‹à¤¸à¥à¥¤' : 'Image added. Adjust it before saving.');
+                }
+                setCropperSrc(null);
+                setCropperFor('');
+                setCropperAspect(null);
+              }}
+              onCancel={() => {
+                setCropperSrc(null);
+                setCropperFor('');
+                setCropperAspect(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
       <div onClick={onClose} className="absolute inset-0 bg-deep-blue/72 backdrop-blur-sm" />
       <section className="admin-studio premium-shell admin-panel compact-admin relative z-10 flex h-[92vh] w-full max-w-6xl flex-col overflow-hidden">
         <header className="premium-header admin-hero compact-admin-header">
@@ -735,10 +799,10 @@ export default function AdminPanel({
               <form onSubmit={submitDeity} className="admin-card compact-form">
                 <SectionTitle title={ui.deityTitle} />
                 <input className="admin-input compact-input" placeholder={labels.name} value={deityForm.name} onChange={(e) => setDeityForm((p) => ({ ...p, name: e.target.value }))} />
-                <select className="admin-input compact-input" value={deityForm.type || 'Other'} onChange={(e) => setDeityForm((p) => ({ ...p, type: e.target.value as Deity['type'] }))}>{deityTypes.map((type) => <option key={type} value={type}>{language === 'ne' ? ({ God: 'देवता', Goddess: 'देवी', Form: 'स्वरूप', Other: 'अन्य' } as Record<string, string>)[type] : type}</option>)}</select>
+                <select className="admin-input compact-input" value={deityForm.type || 'Other'} onChange={(e) => setDeityForm((p) => ({ ...p, type: e.target.value as Deity['type'] }))}>{deityTypes.map((type) => <option key={type} value={type}>{language === 'ne' ? ({ God: 'à¤¦à¥‡à¤µà¤¤à¤¾', Goddess: 'à¤¦à¥‡à¤µà¥€', Form: 'à¤¸à¥à¤µà¤°à¥‚à¤ª', Other: 'à¤…à¤¨à¥à¤¯' } as Record<string, string>)[type] : type}</option>)}</select>
                 <input className="admin-input compact-input" placeholder={labels.sanskritName} value={deityForm.sanskritName || ''} onChange={(e) => setDeityForm((p) => ({ ...p, sanskritName: e.target.value }))} />
                 <input className="admin-input compact-input" placeholder={labels.imageUrl} value={deityForm.imageUrl || ''} onChange={(e) => setDeityForm((p) => ({ ...p, imageUrl: e.target.value }))} />
-                <DeityImageEditor deity={deityForm} status={imageUploadStatus} onUpload={handleDeityImageUpload} onChange={setDeityForm} />
+                <DeityImageEditor deity={deityForm} status={imageUploadStatus} onUpload={(file) => handleImageFile(file, 'deityImage', 1)} onChange={setDeityForm} />
                 <textarea className="admin-input compact-textarea" rows={7} placeholder={labels.introduction} value={deityForm.introduction || deityForm.description || ''} onChange={(e) => setDeityForm((p) => ({ ...p, introduction: e.target.value, description: e.target.value }))} />
                 <textarea className="admin-input compact-textarea" rows={7} placeholder={labels.significance} value={deityForm.significance} onChange={(e) => setDeityForm((p) => ({ ...p, significance: e.target.value }))} />
                 <textarea className="admin-input compact-textarea" rows={3} placeholder={labels.mantra} value={deityForm.mantra || ''} onChange={(e) => setDeityForm((p) => ({ ...p, mantra: e.target.value }))} />
@@ -760,15 +824,29 @@ export default function AdminPanel({
               <form onSubmit={submitContent} className="admin-card compact-form">
                 <SectionTitle title={ui.contentTitle} />
                 <div className="field-group">
-                  <input className={`admin-input compact-input ${contentForm.title.length > 120 ? 'field-error' : ''}`} placeholder={labels.title} value={contentForm.title} maxLength={170} onChange={(e) => setContentForm((p) => ({ ...p, title: e.target.value }))} />
+                  <input
+                    className={`admin-input compact-input ${contentForm.title.length > 120 ? 'field-error' : ''}`}
+                    placeholder={labels.title}
+                    value={contentForm.title}
+                    maxLength={170}
+                    onChange={(e) => setContentForm((p) => ({ ...p, title: e.target.value }))}
+                    onBlur={(e) => {
+                      autoTranslate('stotraTitle', e.target.value, (translated) => {
+                        if (translated) setContentForm(s => ({ ...s, alternateTitle: translated }));
+                      });
+                    }}
+                  />
                   <span className={`char-count ${contentForm.title.length > 120 ? 'char-count-error' : ''}`}>{contentForm.title.length} / 120</span>
+                  {translating['stotraTitle'] && (
+                    <span className="translate-status"><Languages size={12} /><Loader2 size={12} className="spin-icon" /> Translating...</span>
+                  )}
                 </div>
                 <input className="admin-input compact-input" placeholder={labels.alternateTitle} value={contentForm.alternateTitle || ''} onChange={(e) => setContentForm((p) => ({ ...p, alternateTitle: e.target.value }))} />
-                <AdminPicker value={contentForm.deity} options={deities.map((d) => ({ value: d.name, label: getLocalizedDeityName(d, language) }))} placeholder={labels.deity} onChange={(value) => setContentForm((p) => ({ ...p, deity: value }))} onCreate={(name) => { const saved = onSaveDeity({ ...emptyDeity, name, nameNe: language === 'ne' ? name : undefined, introduction: language === 'ne' ? `${name} को परिचय` : `${name} profile introduction.`, introductionNe: language === 'ne' ? `${name} को परिचय` : undefined, description: language === 'ne' ? `${name} को परिचय` : `${name} profile introduction.`, significance: language === 'ne' ? 'प्रकाशन अघि महत्त्व थप्नुहोस्।' : 'Add significance before publishing.', significanceNe: language === 'ne' ? 'प्रकाशन अघि महत्त्व थप्नुहोस्।' : undefined, tags: [name.toLowerCase()] }); if (saved) setContentForm((p) => ({ ...p, deity: saved.name })); }} />
-                <AdminPicker value={contentForm.category} options={categories.map((c) => ({ value: c.name, label: getLocalizedCategoryName(c, language) }))} placeholder={labels.category} onChange={(value) => setContentForm((p) => ({ ...p, category: value }))} onCreate={(name) => { const saved = onSaveCategory({ name, nameNe: language === 'ne' ? name : undefined, description: '', descriptionNe: language === 'ne' ? 'श्रेणी विवरण' : undefined }); if (saved) setContentForm((p) => ({ ...p, category: saved.name })); }} />
+                <AdminPicker value={contentForm.deity} options={deities.map((d) => ({ value: d.name, label: getLocalizedDeityName(d, language) }))} placeholder={labels.deity} onChange={(value) => setContentForm((p) => ({ ...p, deity: value }))} onCreate={(name) => { const saved = onSaveDeity({ ...emptyDeity, name, nameNe: language === 'ne' ? name : undefined, introduction: language === 'ne' ? `${name} à¤•à¥‹ à¤ªà¤°à¤¿à¤šà¤¯` : `${name} profile introduction.`, introductionNe: language === 'ne' ? `${name} à¤•à¥‹ à¤ªà¤°à¤¿à¤šà¤¯` : undefined, description: language === 'ne' ? `${name} à¤•à¥‹ à¤ªà¤°à¤¿à¤šà¤¯` : `${name} profile introduction.`, significance: language === 'ne' ? 'à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨ à¤…à¤˜à¤¿ à¤®à¤¹à¤¤à¥à¤¤à¥à¤µ à¤¥à¤ªà¥à¤¨à¥à¤¹à¥‹à¤¸à¥à¥¤' : 'Add significance before publishing.', significanceNe: language === 'ne' ? 'à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨ à¤…à¤˜à¤¿ à¤®à¤¹à¤¤à¥à¤¤à¥à¤µ à¤¥à¤ªà¥à¤¨à¥à¤¹à¥‹à¤¸à¥à¥¤' : undefined, tags: [name.toLowerCase()] }); if (saved) setContentForm((p) => ({ ...p, deity: saved.name })); }} />
+                <AdminPicker value={contentForm.category} options={categories.map((c) => ({ value: c.name, label: getLocalizedCategoryName(c, language) }))} placeholder={labels.category} onChange={(value) => setContentForm((p) => ({ ...p, category: value }))} onCreate={(name) => { const saved = onSaveCategory({ name, nameNe: language === 'ne' ? name : undefined, description: '', descriptionNe: language === 'ne' ? 'à¤¶à¥à¤°à¥‡à¤£à¥€ à¤µà¤¿à¤µà¤°à¤£' : undefined }); if (saved) setContentForm((p) => ({ ...p, category: saved.name })); }} />
                 <input className="admin-input compact-input" placeholder={labels.imageUrl} value={contentForm.imageUrl || ''} onChange={(e) => setContentForm((p) => ({ ...p, imageUrl: e.target.value }))} />
                 <details className="admin-nested-section pdf-import-section">
-                  <summary className="field-label"><FileText size={15} /> Import from PDF / PDF बाट सामग्री ल्याउनुहोस्</summary>
+                  <summary className="field-label"><FileText size={15} /> Import from PDF / PDF à¤¬à¤¾à¤Ÿ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤²à¥à¤¯à¤¾à¤‰à¤¨à¥à¤¹à¥‹à¤¸à¥</summary>
                   <label className="secondary-button file-upload-button">
                     <Upload size={15} />
                     <span>Upload PDF</span>
@@ -777,8 +855,40 @@ export default function AdminPanel({
                   {contentForm.sourcePdfName && <p className="admin-helper-text">Source PDF: {contentForm.sourcePdfName}</p>}
                   {pdfStatus && <p className="admin-helper-text">{pdfStatus}</p>}
                 </details>
-                <CharCountTextarea label={labels.contentFullText} required maxLength={50000} rows={14} placeholder={labels.contentFullText} value={contentForm.content} onChange={(e) => setContentForm((p) => ({ ...p, content: e.target.value }))} className="content-textarea devotional-textarea" />
-                <CharCountTextarea label={labels.meaning} maxLength={3000} rows={5} placeholder={labels.meaning} value={contentForm.meaning || contentForm.nepaliMeaning || ''} onChange={(e) => setContentForm((p) => ({ ...p, meaning: e.target.value, nepaliMeaning: e.target.value }))} />
+                <CharCountTextarea
+                  label={labels.contentFullText}
+                  required
+                  maxLength={50000}
+                  rows={14}
+                  placeholder={labels.contentFullText}
+                  value={contentForm.content}
+                  onChange={(e) => setContentForm((p) => ({ ...p, content: e.target.value }))}
+                  onBlur={(e) => {
+                    autoTranslate('stotraContent', e.target.value, (_translated, romanized) => {
+                      if (romanized) setContentForm(s => ({ ...s, romanizedContent: romanized }));
+                    });
+                  }}
+                  className="content-textarea devotional-textarea"
+                />
+                {translating['stotraContent'] && (
+                  <span className="translate-status"><Languages size={12} /><Loader2 size={12} className="spin-icon" /> Translating...</span>
+                )}
+                <CharCountTextarea
+                  label={labels.meaning}
+                  maxLength={3000}
+                  rows={5}
+                  placeholder={labels.meaning}
+                  value={contentForm.meaning || contentForm.nepaliMeaning || ''}
+                  onChange={(e) => setContentForm((p) => ({ ...p, meaning: e.target.value, nepaliMeaning: e.target.value }))}
+                  onBlur={(e) => {
+                    autoTranslate('stotraMeaning', e.target.value, (translated) => {
+                      if (translated) setContentForm(s => ({ ...s, nepaliMeaning: translated }));
+                    });
+                  }}
+                />
+                {translating['stotraMeaning'] && (
+                  <span className="translate-status"><Languages size={12} /><Loader2 size={12} className="spin-icon" /> Translating...</span>
+                )}
                 <textarea className="admin-input compact-textarea" rows={4} placeholder={labels.wordMeaning} value={contentForm.wordMeaning || ''} onChange={(e) => setContentForm((p) => ({ ...p, wordMeaning: e.target.value }))} />
                 <CharCountTextarea label={labels.benefits} maxLength={1000} rows={4} placeholder={labels.benefits} value={contentForm.benefits || ''} onChange={(e) => setContentForm((p) => ({ ...p, benefits: e.target.value }))} />
                 <textarea className="admin-input compact-textarea" rows={4} placeholder={labels.process} value={contentForm.process || ''} onChange={(e) => setContentForm((p) => ({ ...p, process: e.target.value }))} />
@@ -786,7 +896,21 @@ export default function AdminPanel({
                   <summary className="field-label">{labels.nepaliFields}</summary>
                   <input className="admin-input compact-input" placeholder={labels.titleNe} value={contentForm.titleNe || ''} onChange={(e) => setContentForm((p) => ({ ...p, titleNe: e.target.value }))} />
                   <input className="admin-input compact-input" placeholder={labels.alternateTitleNe} value={contentForm.alternateTitleNe || ''} onChange={(e) => setContentForm((p) => ({ ...p, alternateTitleNe: e.target.value }))} />
-                  <textarea className="admin-input compact-textarea" rows={4} placeholder={labels.meaningNe} value={contentForm.meaningNe || ''} onChange={(e) => setContentForm((p) => ({ ...p, meaningNe: e.target.value }))} />
+                  <textarea
+                    className="admin-input compact-textarea"
+                    rows={4}
+                    placeholder={labels.meaningNe}
+                    value={contentForm.meaningNe || ''}
+                    onChange={(e) => setContentForm((p) => ({ ...p, meaningNe: e.target.value }))}
+                    onBlur={(e) => {
+                      autoTranslate('stotraNepaliMeaning', e.target.value, (translated) => {
+                        if (translated) setContentForm(s => ({ ...s, meaning: translated }));
+                      });
+                    }}
+                  />
+                  {translating['stotraNepaliMeaning'] && (
+                    <span className="translate-status"><Languages size={12} /><Loader2 size={12} className="spin-icon" /> Translating...</span>
+                  )}
                   <textarea className="admin-input compact-textarea" rows={4} placeholder={labels.wordMeaningNe} value={contentForm.wordMeaningNe || ''} onChange={(e) => setContentForm((p) => ({ ...p, wordMeaningNe: e.target.value }))} />
                   <textarea className="admin-input compact-textarea" rows={4} placeholder={labels.benefitsNe} value={contentForm.benefitsNe || ''} onChange={(e) => setContentForm((p) => ({ ...p, benefitsNe: e.target.value }))} />
                   <textarea className="admin-input compact-textarea" rows={4} placeholder={labels.processNe} value={contentForm.processNe || ''} onChange={(e) => setContentForm((p) => ({ ...p, processNe: e.target.value }))} />
@@ -795,7 +919,7 @@ export default function AdminPanel({
                 <input className="admin-input compact-input" placeholder={`${labels.tags}, ${labels.commaSeparated}`} value={tagsToText(contentForm.tags)} onChange={(e) => setContentForm((p) => ({ ...p, tags: tagsFromText(e.target.value) }))} />
                 <AdminFormActions isSaving={isSaving} label={labels.saveContent} clearLabel={labels.clear} onCancel={resetContentForm} />
               </form>
-              <AdminRecordList title={ui.contentList} toolbar={<input className="admin-input compact-input" placeholder={labels.search} value={query} onChange={(e) => setQuery(e.target.value)} />}>{filteredContent.map((item) => <AdminRecord key={item.id} title={getLocalizedContentTitle(item, language)} subtitle={`${getLocalizedDeityName(item.deityNe || item.deity, language)} - ${getLocalizedCategoryName(item.categoryNe || item.category, language)}`} editLabel={labels.edit} onEdit={() => { setContentForm({ ...item, meaning: item.meaning || item.nepaliMeaning }); setPdfStatus(null); setEditing({ type: 'content', id: item.id }); }} onDelete={() => { if (confirm(language === 'ne' ? `${getLocalizedContentTitle(item, language)} मेटाउने?` : `Delete ${item.title}?`)) onDeleteStotra(item.id); }} />)}</AdminRecordList>
+              <AdminRecordList title={ui.contentList} toolbar={<input className="admin-input compact-input" placeholder={labels.search} value={query} onChange={(e) => setQuery(e.target.value)} />}>{filteredContent.map((item) => <AdminRecord key={item.id} title={getLocalizedContentTitle(item, language)} subtitle={`${getLocalizedDeityName(item.deityNe || item.deity, language)} - ${getLocalizedCategoryName(item.categoryNe || item.category, language)}`} editLabel={labels.edit} onEdit={() => { setContentForm({ ...item, meaning: item.meaning || item.nepaliMeaning }); setPdfStatus(null); setEditing({ type: 'content', id: item.id }); }} onDelete={() => { if (confirm(language === 'ne' ? `${getLocalizedContentTitle(item, language)} à¤®à¥‡à¤Ÿà¤¾à¤‰à¤¨à¥‡?` : `Delete ${item.title}?`)) onDeleteStotra(item.id); }} />)}</AdminRecordList>
             </div>
           )}
 
@@ -804,7 +928,7 @@ export default function AdminPanel({
               <form onSubmit={submitPooja} className="admin-card compact-form">
                 <SectionTitle title={ui.poojaTitle} />
                 <input className="admin-input compact-input" placeholder={labels.title} value={poojaForm.title} onChange={(e) => setPoojaForm((p) => ({ ...p, title: e.target.value }))} />
-                <AdminPicker value={poojaForm.deity} options={deities.map((d) => ({ value: d.name, label: getLocalizedDeityName(d, language) }))} placeholder={labels.deity} onChange={(value) => setPoojaForm((p) => ({ ...p, deity: value }))} onCreate={(name) => { const saved = onSaveDeity({ ...emptyDeity, name, nameNe: language === 'ne' ? name : undefined, introduction: language === 'ne' ? `${name} को परिचय` : `${name} profile introduction.`, introductionNe: language === 'ne' ? `${name} को परिचय` : undefined, description: language === 'ne' ? `${name} को परिचय` : `${name} profile introduction.`, significance: language === 'ne' ? 'प्रकाशन अघि महत्त्व थप्नुहोस्।' : 'Add significance before publishing.', significanceNe: language === 'ne' ? 'प्रकाशन अघि महत्त्व थप्नुहोस्।' : undefined, tags: [name.toLowerCase()] }); if (saved) setPoojaForm((p) => ({ ...p, deity: saved.name })); }} />
+                <AdminPicker value={poojaForm.deity} options={deities.map((d) => ({ value: d.name, label: getLocalizedDeityName(d, language) }))} placeholder={labels.deity} onChange={(value) => setPoojaForm((p) => ({ ...p, deity: value }))} onCreate={(name) => { const saved = onSaveDeity({ ...emptyDeity, name, nameNe: language === 'ne' ? name : undefined, introduction: language === 'ne' ? `${name} à¤•à¥‹ à¤ªà¤°à¤¿à¤šà¤¯` : `${name} profile introduction.`, introductionNe: language === 'ne' ? `${name} à¤•à¥‹ à¤ªà¤°à¤¿à¤šà¤¯` : undefined, description: language === 'ne' ? `${name} à¤•à¥‹ à¤ªà¤°à¤¿à¤šà¤¯` : `${name} profile introduction.`, significance: language === 'ne' ? 'à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨ à¤…à¤˜à¤¿ à¤®à¤¹à¤¤à¥à¤¤à¥à¤µ à¤¥à¤ªà¥à¤¨à¥à¤¹à¥‹à¤¸à¥à¥¤' : 'Add significance before publishing.', significanceNe: language === 'ne' ? 'à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨ à¤…à¤˜à¤¿ à¤®à¤¹à¤¤à¥à¤¤à¥à¤µ à¤¥à¤ªà¥à¤¨à¥à¤¹à¥‹à¤¸à¥à¥¤' : undefined, tags: [name.toLowerCase()] }); if (saved) setPoojaForm((p) => ({ ...p, deity: saved.name })); }} />
                 <input className="admin-input compact-input" placeholder={labels.occasion} value={poojaForm.occasion} onChange={(e) => setPoojaForm((p) => ({ ...p, occasion: e.target.value }))} />
                 <textarea className="admin-input compact-textarea" rows={5} placeholder={labels.overview} value={poojaForm.overview} onChange={(e) => setPoojaForm((p) => ({ ...p, overview: e.target.value }))} />
                 <textarea className="admin-input compact-textarea" rows={7} placeholder={labels.materials} value={poojaText.materials} onChange={(e) => setPoojaText((p) => ({ ...p, materials: e.target.value }))} />
@@ -825,7 +949,7 @@ export default function AdminPanel({
                 <input className="admin-input compact-input" placeholder={`${labels.tags}, ${labels.commaSeparated}`} value={tagsToText(poojaForm.tags)} onChange={(e) => setPoojaForm((p) => ({ ...p, tags: tagsFromText(e.target.value) }))} />
                 <AdminFormActions isSaving={isSaving} label={labels.savePooja} clearLabel={labels.clear} onCancel={() => { setPoojaForm(emptyPooja); setPoojaText({ materials: '', steps: '', benefits: '', materialsNe: '', stepsNe: '', benefitsNe: '' }); setEditing(null); }} />
               </form>
-              <AdminRecordList title={ui.poojaList}>{poojaBidhi.map((item) => <AdminRecord key={item.id} title={getLocalizedPoojaTitle(item, language)} subtitle={`${getLocalizedDeityName(item.deityNe || item.deity, language)} - ${getLocalizedText(language, item.occasionNe, item.occasion)}`} editLabel={labels.edit} onEdit={() => { resetPoojaForm(item); setEditing({ type: 'pooja', id: item.id }); }} onDelete={() => { if (confirm(language === 'ne' ? `${getLocalizedPoojaTitle(item, language)} मेटाउने?` : `Delete ${item.title}?`)) onDeletePoojaBidhi(item.id); }} />)}</AdminRecordList>
+              <AdminRecordList title={ui.poojaList}>{poojaBidhi.map((item) => <AdminRecord key={item.id} title={getLocalizedPoojaTitle(item, language)} subtitle={`${getLocalizedDeityName(item.deityNe || item.deity, language)} - ${getLocalizedText(language, item.occasionNe, item.occasion)}`} editLabel={labels.edit} onEdit={() => { resetPoojaForm(item); setEditing({ type: 'pooja', id: item.id }); }} onDelete={() => { if (confirm(language === 'ne' ? `${getLocalizedPoojaTitle(item, language)} à¤®à¥‡à¤Ÿà¤¾à¤‰à¤¨à¥‡?` : `Delete ${item.title}?`)) onDeletePoojaBidhi(item.id); }} />)}</AdminRecordList>
             </div>
           )}
 
@@ -850,13 +974,13 @@ export default function AdminPanel({
             <div className="admin-tools-grid">
               <div className="admin-card backup-card compact-form">
                 <SectionTitle title={labels.backupPublish} />
-                <AdminBackupAction title={labels.export} text={language === 'ne' ? 'ब्याकअप मात्र। सामान्य सम्पादनका लागि निर्यात आवश्यक छैन।' : 'Backup only. Normal editing does not require export.'} button={<button onClick={() => { setJsonText(onExportAllContent()); setNotice(language === 'ne' ? 'सामग्री तलको बाकसमा निर्यात गरियो।' : 'Content exported to the box below.'); }} className="action-button">{labels.export}</button>} />
-                <AdminBackupAction title={labels.import} text={language === 'ne' ? 'यो ब्राउजरमा ब्याकअप पुनर्स्थापित गर्नुहोस्।' : 'Restore a backup into this browser.'} button={<button onClick={() => onImportAllContent(jsonText) && setNotice(language === 'ne' ? 'सामग्री स्थानीय रूपमा आयात गरियो।' : 'Content imported locally.')} className="secondary-button">{labels.import}</button>} />
-                <AdminBackupAction title={labels.reset} text={language === 'ne' ? 'पुष्टि पछि bundled defaults पुनर्स्थापित हुन्छ।' : 'Restores bundled defaults after confirmation.'} button={<button onClick={() => { if (confirm(language === 'ne' ? 'सबै स्थानीय सामग्रीलाई डिफल्टमा फर्काउने?' : 'Reset all local content to defaults?')) onResetToDefaultContent(); }} className="secondary-button danger-button">{labels.reset}</button>} />
-                <AdminBackupAction title={labels.publish} text={language === 'ne' ? 'Netlify Functions मार्फत वैकल्पिक रिमोट प्रकाशन।' : 'Optional remote publishing through Netlify Functions.'} button={<button onClick={onPublishContent} disabled={isSaving} className="secondary-button">{isSaving ? labels.publishing : labels.publish}</button>} />
+                <AdminBackupAction title={labels.export} text={language === 'ne' ? 'à¤¬à¥à¤¯à¤¾à¤•à¤…à¤ª à¤®à¤¾à¤¤à¥à¤°à¥¤ à¤¸à¤¾à¤®à¤¾à¤¨à¥à¤¯ à¤¸à¤®à¥à¤ªà¤¾à¤¦à¤¨à¤•à¤¾ à¤²à¤¾à¤—à¤¿ à¤¨à¤¿à¤°à¥à¤¯à¤¾à¤¤ à¤†à¤µà¤¶à¥à¤¯à¤• à¤›à¥ˆà¤¨à¥¤' : 'Backup only. Normal editing does not require export.'} button={<button onClick={() => { setJsonText(onExportAllContent()); setNotice(language === 'ne' ? 'à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤¤à¤²à¤•à¥‹ à¤¬à¤¾à¤•à¤¸à¤®à¤¾ à¤¨à¤¿à¤°à¥à¤¯à¤¾à¤¤ à¤—à¤°à¤¿à¤¯à¥‹à¥¤' : 'Content exported to the box below.'); }} className="action-button">{labels.export}</button>} />
+                <AdminBackupAction title={labels.import} text={language === 'ne' ? 'à¤¯à¥‹ à¤¬à¥à¤°à¤¾à¤‰à¤œà¤°à¤®à¤¾ à¤¬à¥à¤¯à¤¾à¤•à¤…à¤ª à¤ªà¥à¤¨à¤°à¥à¤¸à¥à¤¥à¤¾à¤ªà¤¿à¤¤ à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥à¥¤' : 'Restore a backup into this browser.'} button={<button onClick={() => onImportAllContent(jsonText) && setNotice(language === 'ne' ? 'à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤¸à¥à¤¥à¤¾à¤¨à¥€à¤¯ à¤°à¥‚à¤ªà¤®à¤¾ à¤†à¤¯à¤¾à¤¤ à¤—à¤°à¤¿à¤¯à¥‹à¥¤' : 'Content imported locally.')} className="secondary-button">{labels.import}</button>} />
+                <AdminBackupAction title={labels.reset} text={language === 'ne' ? 'à¤ªà¥à¤·à¥à¤Ÿà¤¿ à¤ªà¤›à¤¿ bundled defaults à¤ªà¥à¤¨à¤°à¥à¤¸à¥à¤¥à¤¾à¤ªà¤¿à¤¤ à¤¹à¥à¤¨à¥à¤›à¥¤' : 'Restores bundled defaults after confirmation.'} button={<button onClick={() => { if (confirm(language === 'ne' ? 'à¤¸à¤¬à¥ˆ à¤¸à¥à¤¥à¤¾à¤¨à¥€à¤¯ à¤¸à¤¾à¤®à¤—à¥à¤°à¥€à¤²à¤¾à¤ˆ à¤¡à¤¿à¤«à¤²à¥à¤Ÿà¤®à¤¾ à¤«à¤°à¥à¤•à¤¾à¤‰à¤¨à¥‡?' : 'Reset all local content to defaults?')) onResetToDefaultContent(); }} className="secondary-button danger-button">{labels.reset}</button>} />
+                <AdminBackupAction title={labels.publish} text={language === 'ne' ? 'Netlify Functions à¤®à¤¾à¤°à¥à¤«à¤¤ à¤µà¥ˆà¤•à¤²à¥à¤ªà¤¿à¤• à¤°à¤¿à¤®à¥‹à¤Ÿ à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨à¥¤' : 'Optional remote publishing through Netlify Functions.'} button={<button onClick={onPublishContent} disabled={isSaving} className="secondary-button">{isSaving ? labels.publishing : labels.publish}</button>} />
                 <textarea className="admin-input admin-json compact-textarea" value={jsonText} onChange={(e) => setJsonText(e.target.value)} placeholder={labels.exportedJson} />
-                <p className="body-copy">{language === 'ne' ? 'स्थानीय सेभहरू यो ब्राउजरमा तुरुन्तै देखिन्छन्। लाइभ backend का लागि तयार भएपछि मात्र GitHub मा प्रकाशन प्रयोग गर्नुहोस्।' : 'Local saves appear immediately in this browser. Use Publish to GitHub when the content is ready for the live site backend.'}</p>
-                <p className="body-copy">{language === 'ne' ? 'Backend नभए प्रकाशन गर्दा “backend जडान गरिएको छैन” देखिन्छ। निर्यात/आयात भने स्थानीय रूपमा काम गर्छ।' : 'If backend is missing, Publish shows: backend not configured. Export/import still works locally.'}</p>
+                <p className="body-copy">{language === 'ne' ? 'à¤¸à¥à¤¥à¤¾à¤¨à¥€à¤¯ à¤¸à¥‡à¤­à¤¹à¤°à¥‚ à¤¯à¥‹ à¤¬à¥à¤°à¤¾à¤‰à¤œà¤°à¤®à¤¾ à¤¤à¥à¤°à¥à¤¨à¥à¤¤à¥ˆ à¤¦à¥‡à¤–à¤¿à¤¨à¥à¤›à¤¨à¥à¥¤ à¤²à¤¾à¤‡à¤­ backend à¤•à¤¾ à¤²à¤¾à¤—à¤¿ à¤¤à¤¯à¤¾à¤° à¤­à¤à¤ªà¤›à¤¿ à¤®à¤¾à¤¤à¥à¤° GitHub à¤®à¤¾ à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨ à¤ªà¥à¤°à¤¯à¥‹à¤— à¤—à¤°à¥à¤¨à¥à¤¹à¥‹à¤¸à¥à¥¤' : 'Local saves appear immediately in this browser. Use Publish to GitHub when the content is ready for the live site backend.'}</p>
+                <p className="body-copy">{language === 'ne' ? 'Backend à¤¨à¤­à¤ à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¨ à¤—à¤°à¥à¤¦à¤¾ â€œbackend à¤œà¤¡à¤¾à¤¨ à¤—à¤°à¤¿à¤à¤•à¥‹ à¤›à¥ˆà¤¨â€ à¤¦à¥‡à¤–à¤¿à¤¨à¥à¤›à¥¤ à¤¨à¤¿à¤°à¥à¤¯à¤¾à¤¤/à¤†à¤¯à¤¾à¤¤ à¤­à¤¨à¥‡ à¤¸à¥à¤¥à¤¾à¤¨à¥€à¤¯ à¤°à¥‚à¤ªà¤®à¤¾ à¤•à¤¾à¤® à¤—à¤°à¥à¤›à¥¤' : 'If backend is missing, Publish shows: backend not configured. Export/import still works locally.'}</p>
               </div>
             </div>
           )}

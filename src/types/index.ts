@@ -10,6 +10,7 @@ export interface Stotra {
   categoryNe?: string;
   imageUrl?: string;
   content: string;
+  romanizedContent?: string;
   meaning?: string;
   meaningNe?: string;
   nepaliMeaning?: string;

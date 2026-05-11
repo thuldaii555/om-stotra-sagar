@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, ChevronRight, Feather, ScrollText, Search, Sparkles } from 'lucide-react';
+﻿import { useEffect, useMemo, useState } from 'react';
+import { Calendar, CalendarDays, ChevronRight, Feather, Loader2, MapPin, Moon, Search, Sparkles, Sun, Star } from 'lucide-react';
 import type { Category, Deity, HinduStory, HistoryItem, PoojaBidhi, Stotra } from '../../types';
 import StateMessage from '../common/StateMessage';
 import { formatZonedDateTime } from '../../utils/dateTime';
@@ -35,6 +35,16 @@ interface HomePageProps {
   onToggleFavorite: (stotra: Stotra) => void;
 }
 
+interface HomePanchangData {
+  tithi?: { name: string; end_time?: string };
+  nakshatra?: { name: string; end_time?: string };
+  yoga?: { name: string };
+  vedic_weekday?: string;
+  sunrise?: string;
+  sunset?: string;
+  paksha?: string;
+}
+
 const getDailyStoraIndex = (stotras: Stotra[]): number => {
   if (stotras.length === 0) return 0;
   const today = new Date();
@@ -68,6 +78,9 @@ export default function HomePage({
   onOpenStotra,
 }: HomePageProps) {
   const [homeSearch, setHomeSearch] = useState('');
+  const [homePanchang, setHomePanchang] = useState<HomePanchangData | null>(null);
+  const [panchangLoading, setPanchangLoading] = useState(true);
+  const [panchangCity, setPanchangCity] = useState('Loading...');
   const [now, setNow] = useState(() => new Date());
   const featuredContent = (filteredStotras.length > 0 ? filteredStotras : stotras).slice(0, 5);
   const dailyStotra = stotras.length > 0 ? stotras[getDailyStoraIndex(stotras)] : null;
@@ -122,6 +135,36 @@ export default function HomePage({
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    async function load(la: number, lo: number, tz: number, city: string) {
+      try {
+        const r = await fetch(`/.netlify/functions/get-panchang?lat=${la}&lon=${lo}&tzone=${tz}`);
+        if (!r.ok) throw new Error();
+        const d = await r.json();
+        setHomePanchang(d.panchang || null);
+        setPanchangCity(city);
+      } catch {
+        setHomePanchang(null);
+        setPanchangCity(city);
+      } finally {
+        setPanchangLoading(false);
+      }
+    }
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (p) => {
+          const tz = -(new Date().getTimezoneOffset() / 60);
+          const city = Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop()?.replace(/_/g, ' ') || 'Your Location';
+          load(p.coords.latitude, p.coords.longitude, tz, city);
+        },
+        () => load(27.7172, 85.3240, 5.75, 'Kathmandu'),
+        { timeout: 5000 }
+      );
+    } else {
+      load(27.7172, 85.3240, 5.75, 'Kathmandu');
+    }
   }, []);
 
   const homeSearchQuery = homeSearch.trim().toLowerCase();
@@ -197,20 +240,80 @@ export default function HomePage({
             <h1 className="home-title-v2">{copy.title}</h1>
             <p className="home-tagline-v2">{copy.tagline}</p>
 
-            <div className="home-nav-pills">
-              <button onClick={() => onNavigate('stotras')} className="home-pill">
-                <ScrollText size={15} /> {language === 'ne' ? 'पुस्तकालय' : 'Library'}
-              </button>
-              <button onClick={() => onNavigate('gods')} className="home-pill">
-                <Sparkles size={15} /> {language === 'ne' ? 'देवता' : 'Gods'}
-              </button>
-              <button onClick={() => onNavigate('pooja')} className="home-pill">
-                <Feather size={15} /> {language === 'ne' ? 'पूजा' : 'Pooja'}
-              </button>
-              <button onClick={() => onNavigate('panchang')} className="home-pill">
-                <CalendarDays size={15} /> {language === 'ne' ? 'पञ्चाङ्ग' : 'Panchang'}
-              </button>
-            </div>
+            <button
+              className="home-panchang-widget"
+              onClick={() => onNavigate('panchang')}
+              aria-label="View full panchang"
+            >
+              <div className="hpw-top-row">
+                <div className="hpw-eyebrow-group">
+                  <Calendar size={12} className="hpw-cal-icon" />
+                  <span className="hpw-eyebrow">आजको पञ्चाङ्ग · Today's Panchang</span>
+                </div>
+                <div className="hpw-right">
+                  {!panchangLoading && (
+                    <span className="hpw-location-label">
+                      <MapPin size={9} /> {panchangCity}
+                    </span>
+                  )}
+                  <ChevronRight size={13} className="hpw-chevron" />
+                </div>
+              </div>
+
+              {panchangLoading ? (
+                <div className="hpw-loading">
+                  <Loader2 size={14} className="hpw-spinner" />
+                  <span>Loading...</span>
+                </div>
+              ) : homePanchang ? (
+                <div className="hpw-grid">
+                  {homePanchang.tithi?.name && (
+                    <div className="hpw-cell">
+                      <span className="hpw-cell-label">Tithi</span>
+                      <span className="hpw-cell-val">{homePanchang.tithi.name}</span>
+                    </div>
+                  )}
+                  {homePanchang.nakshatra?.name && (
+                    <div className="hpw-cell">
+                      <span className="hpw-cell-label">Nakshatra</span>
+                      <span className="hpw-cell-val">{homePanchang.nakshatra.name}</span>
+                    </div>
+                  )}
+                  {homePanchang.yoga?.name && (
+                    <div className="hpw-cell">
+                      <span className="hpw-cell-label">Yoga</span>
+                      <span className="hpw-cell-val">{homePanchang.yoga.name}</span>
+                    </div>
+                  )}
+                  {homePanchang.paksha && (
+                    <div className="hpw-cell">
+                      <span className="hpw-cell-label">Paksha</span>
+                      <span className="hpw-cell-val">{homePanchang.paksha}</span>
+                    </div>
+                  )}
+                  {homePanchang.sunrise && (
+                    <div className="hpw-cell hpw-cell-inline">
+                      <Sun size={11} className="hpw-sun" />
+                      <span className="hpw-cell-val">{homePanchang.sunrise}</span>
+                    </div>
+                  )}
+                  {homePanchang.sunset && (
+                    <div className="hpw-cell hpw-cell-inline">
+                      <Moon size={11} className="hpw-moon" />
+                      <span className="hpw-cell-val">{homePanchang.sunset}</span>
+                    </div>
+                  )}
+                  {homePanchang.vedic_weekday && (
+                    <div className="hpw-cell hpw-cell-inline">
+                      <Star size={11} className="hpw-sun" />
+                      <span className="hpw-cell-val">{homePanchang.vedic_weekday}</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="hpw-unavail">Tap to view panchang</p>
+              )}
+            </button>
 
             <div className="search-wrap search-wrap-wide home-search-wrap">
               <input

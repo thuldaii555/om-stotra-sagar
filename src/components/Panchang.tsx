@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from 'react';
 import { AlertCircle, CalendarDays, ChevronDown, Clock, Loader2, LocateFixed, MapPin, RefreshCw, Sparkles, Sun } from 'lucide-react';
-import type { Deity, PanchangContent, PanchangField, PanchangResult, PoojaBidhi, Stotra } from '../types';
+import type { Deity, PanchangContent, PanchangDebugInfo, PanchangField, PanchangResult, PoojaBidhi, Stotra } from '../types';
 import {
   DEFAULT_PANCHANG_LOCATION,
   fetchPanchang,
@@ -21,6 +21,7 @@ interface PanchangPageProps {
   onOpenStotra?: (stotra: Stotra) => void;
   onOpenPooja?: (pooja: PoojaBidhi) => void;
   onOpenDeity?: (deity: string) => void;
+  debugVisible?: boolean;
 }
 
 const CITIES: SavedPanchangLocation[] = [
@@ -44,6 +45,7 @@ export default function PanchangPage({
   onOpenStotra,
   onOpenPooja,
   onOpenDeity,
+  debugVisible = false,
 }: PanchangPageProps) {
   const [location, setLocation] = useState<SavedPanchangLocation>(() => readSavedPanchangLocation());
   const [date, setDate] = useState(getTodayIsoDate);
@@ -52,7 +54,11 @@ export default function PanchangPage({
   const [error, setError] = useState('');
   const [locationMessage, setLocationMessage] = useState('');
   const [showCities, setShowCities] = useState(false);
+  const [showDebug, setShowDebug] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<PanchangDebugInfo | null>(null);
+  const [lastRequest, setLastRequest] = useState('');
   const [now, setNow] = useState(() => new Date());
+  const canShowDebug = debugVisible || import.meta.env.DEV;
 
   const copy = language === 'ne'
     ? {
@@ -137,8 +143,11 @@ export default function PanchangPage({
       lng: nextLocation.lng,
       timezone: nextLocation.timezone,
       language,
+      debug: canShowDebug,
     });
     setData(result.result);
+    setDebugInfo(result.debug || result.result?.debug || null);
+    setLastRequest(`${nextDate} | ${nextLocation.city} | ${nextLocation.lat.toFixed(4)}, ${nextLocation.lng.toFixed(4)} | ${nextLocation.timezone}`);
     setError(result.status === 'success' ? '' : result.message || copy.failed);
     setLoading(false);
   };
@@ -287,6 +296,23 @@ export default function PanchangPage({
           </div>
         </div>
       )}
+      {canShowDebug && (
+        <section className="panch-debug-panel">
+          <button type="button" className="panch-debug-toggle" onClick={() => setShowDebug(current => !current)}>
+            Panchang API Debug <ChevronDown size={14} className={showDebug ? 'panch-debug-chevron-open' : ''} />
+          </button>
+          {showDebug && (
+            <div className="panch-debug-body">
+              <DebugRow label="configured" value={String(debugInfo?.configured ?? 'unknown')} />
+              <DebugRow label="last request" value={lastRequest || 'none'} />
+              <DebugRow label="provider status" value={debugInfo?.providerStatus == null ? 'unknown' : String(debugInfo.providerStatus)} />
+              <DebugRow label="provider keys" value={debugInfo?.providerKeys?.join(', ') || 'none'} />
+              <DebugRow label="normalized keys" value={debugInfo?.normalizedKeys?.join(', ') || 'none'} />
+              <DebugRow label="message" value={debugInfo?.message || error || 'No debug response yet.'} />
+            </div>
+          )}
+        </section>
+      )}
 
       <PanchangSection title={copy.overview} items={overview} icon={<CalendarDays size={18} />} />
       <PanchangSection title={copy.values} items={values} />
@@ -335,6 +361,15 @@ export default function PanchangPage({
         )}
       </section>
     </main>
+  );
+}
+
+function DebugRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="panch-debug-row">
+      <span>{label}</span>
+      <code>{value}</code>
+    </div>
   );
 }
 

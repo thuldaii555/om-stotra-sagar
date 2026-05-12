@@ -118,6 +118,7 @@ export interface PanchangRequest {
   lng: number;
   timezone: string;
   language?: 'ne' | 'en';
+  debug?: boolean;
 }
 
 export interface PanchangField {
@@ -157,6 +158,16 @@ export interface PanchangResult {
   specialOccasions?: string[];
   rawSummary?: string;
   message?: string;
+  debug?: PanchangDebugInfo;
+}
+
+export interface PanchangDebugInfo {
+  ok: boolean;
+  configured: boolean;
+  providerStatus: number | null;
+  providerKeys: string[];
+  normalizedKeys: string[];
+  message: string;
 }
 
 export interface PanchangContent {

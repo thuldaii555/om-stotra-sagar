@@ -677,6 +677,267 @@ h4 {
   }
 }
 
+.panch-debug-panel {
+  margin: 0 0 1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  color: var(--navy);
+  overflow: hidden;
+}
+
+.panch-debug-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.panch-debug-chevron-open {
+  transform: rotate(180deg);
+}
+
+.panch-debug-body {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0 0.9rem 0.9rem;
+}
+
+.panch-debug-row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.32fr) 1fr;
+  gap: 0.75rem;
+  align-items: start;
+  font-size: 0.78rem;
+}
+
+.panch-debug-row span {
+  color: var(--muted);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.panch-debug-row code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: inherit;
+}
+
+/* Final global contrast lock. Keep this last so older component rules cannot reintroduce pale text on light cards. */
+:root {
+  --bg: var(--bg-base);
+  --surface-2: var(--surface-raised);
+  --text: var(--navy);
+  --text-muted: var(--muted);
+  --accent: var(--saffron);
+}
+
+:is([data-theme="dark"], .dark) {
+  --bg: #100d18;
+  --bg-base: #100d18;
+  --cream: #100d18;
+  --cream-soft: #171220;
+  --paper: #1a1624;
+  --surface: #1a1624;
+  --surface-2: #241d30;
+  --surface-raised: #241d30;
+  --surface-soft: rgba(26, 22, 36, 0.97);
+  --text: #f8f1e7;
+  --text-muted: #d6cdbc;
+  --navy: #f8f1e7;
+  --brown: #f0dfc8;
+  --muted: #d6cdbc;
+  --muted-light: #c8bfaf;
+  --border: rgba(255, 235, 200, 0.18);
+  --border-strong: rgba(255, 235, 200, 0.28);
+  --accent: #ff8a3d;
+  --saffron: #ff8a3d;
+  --saffron-bright: #ffad72;
+  --gold: #f4c76a;
+  --gold-bright: #ffd981;
+}
+
+:is([data-theme="dark"], .dark) body,
+:is([data-theme="dark"], .dark) .app-shell {
+  background: var(--bg);
+  color: var(--text);
+}
+
+:is([data-theme="dark"], .dark) .card,
+:is([data-theme="dark"], .dark) .panchang-card,
+:is([data-theme="dark"], .dark) .home-panchang-card,
+:is([data-theme="dark"], .dark) .home-panchang-widget,
+:is([data-theme="dark"], .dark) .library-card,
+:is([data-theme="dark"], .dark) .admin-panel,
+:is([data-theme="dark"], .dark) .admin-studio,
+:is([data-theme="dark"], .dark) .admin-card,
+:is([data-theme="dark"], .dark) .reader-panel,
+:is([data-theme="dark"], .dark) .content-card,
+:is([data-theme="dark"], .dark) .editorial-card,
+:is([data-theme="dark"], .dark) .visual-card,
+:is([data-theme="dark"], .dark) .form-card,
+:is([data-theme="dark"], .dark) .stotra-card,
+:is([data-theme="dark"], .dark) .stotra-card-premium,
+:is([data-theme="dark"], .dark) .deity-card,
+:is([data-theme="dark"], .dark) .deity-profile-card,
+:is([data-theme="dark"], .dark) .pooja-card,
+:is([data-theme="dark"], .dark) .pooja-guide-card,
+:is([data-theme="dark"], .dark) .story-card,
+:is([data-theme="dark"], .dark) .story-feature-card,
+:is([data-theme="dark"], .dark) .term-card,
+:is([data-theme="dark"], .dark) .quick-card,
+:is([data-theme="dark"], .dark) .feature-card,
+:is([data-theme="dark"], .dark) .mini-card,
+:is([data-theme="dark"], .dark) .record-card,
+:is([data-theme="dark"], .dark) .backup-card,
+:is([data-theme="dark"], .dark) .metric-card,
+:is([data-theme="dark"], .dark) .panch-control-panel,
+:is([data-theme="dark"], .dark) .panch-elem-card,
+:is([data-theme="dark"], .dark) .panch-timing-card,
+:is([data-theme="dark"], .dark) .panch-focus-card,
+:is([data-theme="dark"], .dark) .panch-city-dropdown,
+:is([data-theme="dark"], .dark) .panch-debug-panel,
+:is([data-theme="dark"], .dark) .home-rec-card,
+:is([data-theme="dark"], .dark) .home-quicklink-item,
+:is([data-theme="dark"], .dark) .home-search-results-panel,
+:is([data-theme="dark"], .dark) .home-search-item,
+:is([data-theme="dark"], .dark) .stotra-list-item:not(.today-stotra-card) {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+:is([data-theme="dark"], .dark) .home-panchang-widget {
+  background: #171220;
+  border-color: rgba(244, 199, 106, 0.34);
+  box-shadow: 0 14px 42px rgba(0, 0, 0, 0.34);
+}
+
+:is([data-theme="dark"], .dark) .hpw-cell,
+:is([data-theme="dark"], .dark) .tag-chip,
+:is([data-theme="dark"], .dark) .panch-focus-chip,
+:is([data-theme="dark"], .dark) .home-vara-chip,
+:is([data-theme="dark"], .dark) .home-date-widget {
+  background: #241d30;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+:is([data-theme="dark"], .dark) .page-title,
+:is([data-theme="dark"], .dark) .home-title-v2,
+:is([data-theme="dark"], .dark) .home-section-title,
+:is([data-theme="dark"], .dark) .reader-title,
+:is([data-theme="dark"], .dark) .stotra-list-title,
+:is([data-theme="dark"], .dark) .today-stotra-title,
+:is([data-theme="dark"], .dark) .ql-title,
+:is([data-theme="dark"], .dark) .card-title,
+:is([data-theme="dark"], .dark) .home-search-item-title,
+:is([data-theme="dark"], .dark) .pec-val,
+:is([data-theme="dark"], .dark) .ptc-val,
+:is([data-theme="dark"], .dark) .hpw-cell-val {
+  color: var(--text);
+}
+
+:is([data-theme="dark"], .dark) .page-subtitle,
+:is([data-theme="dark"], .dark) .home-tagline-v2,
+:is([data-theme="dark"], .dark) .home-section-sub,
+:is([data-theme="dark"], .dark) .reader-subtitle,
+:is([data-theme="dark"], .dark) .reader-paragraph,
+:is([data-theme="dark"], .dark) .reader-text,
+:is([data-theme="dark"], .dark) .stotra-list-meta,
+:is([data-theme="dark"], .dark) .today-stotra-meta,
+:is([data-theme="dark"], .dark) .ql-sub,
+:is([data-theme="dark"], .dark) .body-copy,
+:is([data-theme="dark"], .dark) .card-copy,
+:is([data-theme="dark"], .dark) .quick-card-copy,
+:is([data-theme="dark"], .dark) .feature-card-copy,
+:is([data-theme="dark"], .dark) .mini-card-copy,
+:is([data-theme="dark"], .dark) .record-card-copy,
+:is([data-theme="dark"], .dark) .home-search-item-meta,
+:is([data-theme="dark"], .dark) .home-search-item-preview,
+:is([data-theme="dark"], .dark) .hpw-location-label,
+:is([data-theme="dark"], .dark) .hpw-unavail,
+:is([data-theme="dark"], .dark) .panch-muted,
+:is([data-theme="dark"], .dark) .panch-focus-note,
+:is([data-theme="dark"], .dark) .panch-debug-row span {
+  color: var(--text-muted);
+}
+
+:is([data-theme="dark"], .dark) .section-kicker,
+:is([data-theme="dark"], .dark) .pec-label,
+:is([data-theme="dark"], .dark) .hpw-eyebrow,
+:is([data-theme="dark"], .dark) .hpw-cell-label,
+:is([data-theme="dark"], .dark) .panchang-eyebrow {
+  color: var(--gold);
+}
+
+:is([data-theme="dark"], .dark) input,
+:is([data-theme="dark"], .dark) textarea,
+:is([data-theme="dark"], .dark) select,
+:is([data-theme="dark"], .dark) .admin-input,
+:is([data-theme="dark"], .dark) .search-bar,
+:is([data-theme="dark"], .dark) .panch-date-input {
+  background: #1f1a2b;
+  color: var(--text);
+  -webkit-text-fill-color: var(--text);
+  border-color: rgba(255, 235, 200, 0.22);
+  color-scheme: dark;
+}
+
+:is([data-theme="dark"], .dark) input::placeholder,
+:is([data-theme="dark"], .dark) textarea::placeholder,
+:is([data-theme="dark"], .dark) .admin-input::placeholder,
+:is([data-theme="dark"], .dark) .search-bar::placeholder {
+  color: #c8bfaf;
+  opacity: 1;
+}
+
+:is([data-theme="dark"], .dark) option {
+  background: #1f1a2b;
+  color: var(--text);
+}
+
+:is([data-theme="dark"], .dark) .secondary-button,
+:is([data-theme="dark"], .dark) .panch-ctrl-btn,
+:is([data-theme="dark"], .dark) .panch-rec-item,
+:is([data-theme="dark"], .dark) .panch-city-opt,
+:is([data-theme="dark"], .dark) .panch-city-detect,
+:is([data-theme="dark"], .dark) .nav-item {
+  background: #241d30;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+:is([data-theme="dark"], .dark) .nav-item-active,
+:is([data-theme="dark"], .dark) .action-button,
+:is([data-theme="dark"], .dark) .cropper-btn-done {
+  background: var(--accent);
+  color: #1a0f08;
+  border-color: transparent;
+}
+
+:is([data-theme="dark"], .dark) .panch-error-box {
+  background: rgba(255, 138, 61, 0.12);
+  border-color: rgba(255, 138, 61, 0.34);
+  color: var(--text);
+}
+
+:is([data-theme="dark"], .dark) .panch-error-title {
+  color: var(--text);
+}
+
+:is([data-theme="dark"], .dark) .panch-error-text,
+:is([data-theme="dark"], .dark) .panch-info-strip {
+  color: var(--text-muted);
+}
+
 /* Panchang daily dashboard refinements */
 .home-panchang-widget-full {
   max-width: 640px;
@@ -4745,6 +5006,204 @@ body {
   }
 }
 
+/* Absolute-last dark contrast overrides. */
+:is([data-theme="dark"], .dark) {
+  --bg: #100d18;
+  --bg-base: #100d18;
+  --cream: #100d18;
+  --cream-soft: #171220;
+  --paper: #1a1624;
+  --surface: #1a1624;
+  --surface-2: #241d30;
+  --surface-raised: #241d30;
+  --surface-soft: rgba(26, 22, 36, 0.97);
+  --text: #f8f1e7;
+  --text-muted: #d6cdbc;
+  --navy: #f8f1e7;
+  --brown: #f0dfc8;
+  --muted: #d6cdbc;
+  --muted-light: #c8bfaf;
+  --border: rgba(255, 235, 200, 0.18);
+  --border-strong: rgba(255, 235, 200, 0.28);
+  --accent: #ff8a3d;
+  --saffron: #ff8a3d;
+  --gold: #f4c76a;
+  --gold-bright: #ffd981;
+}
+
+:is([data-theme="dark"], .dark) body,
+:is([data-theme="dark"], .dark) .app-shell {
+  background: var(--bg);
+  color: var(--text);
+}
+
+:is([data-theme="dark"], .dark) .card,
+:is([data-theme="dark"], .dark) .panchang-card,
+:is([data-theme="dark"], .dark) .home-panchang-card,
+:is([data-theme="dark"], .dark) .home-panchang-widget,
+:is([data-theme="dark"], .dark) .library-card,
+:is([data-theme="dark"], .dark) .admin-panel,
+:is([data-theme="dark"], .dark) .admin-studio,
+:is([data-theme="dark"], .dark) .admin-card,
+:is([data-theme="dark"], .dark) .reader-panel,
+:is([data-theme="dark"], .dark) .content-card,
+:is([data-theme="dark"], .dark) .editorial-card,
+:is([data-theme="dark"], .dark) .visual-card,
+:is([data-theme="dark"], .dark) .form-card,
+:is([data-theme="dark"], .dark) .stotra-card,
+:is([data-theme="dark"], .dark) .stotra-card-premium,
+:is([data-theme="dark"], .dark) .deity-card,
+:is([data-theme="dark"], .dark) .deity-profile-card,
+:is([data-theme="dark"], .dark) .pooja-card,
+:is([data-theme="dark"], .dark) .pooja-guide-card,
+:is([data-theme="dark"], .dark) .story-card,
+:is([data-theme="dark"], .dark) .story-feature-card,
+:is([data-theme="dark"], .dark) .term-card,
+:is([data-theme="dark"], .dark) .quick-card,
+:is([data-theme="dark"], .dark) .feature-card,
+:is([data-theme="dark"], .dark) .mini-card,
+:is([data-theme="dark"], .dark) .record-card,
+:is([data-theme="dark"], .dark) .backup-card,
+:is([data-theme="dark"], .dark) .metric-card,
+:is([data-theme="dark"], .dark) .panch-control-panel,
+:is([data-theme="dark"], .dark) .panch-elem-card,
+:is([data-theme="dark"], .dark) .panch-timing-card,
+:is([data-theme="dark"], .dark) .panch-focus-card,
+:is([data-theme="dark"], .dark) .panch-city-dropdown,
+:is([data-theme="dark"], .dark) .panch-debug-panel,
+:is([data-theme="dark"], .dark) .home-rec-card,
+:is([data-theme="dark"], .dark) .home-quicklink-item,
+:is([data-theme="dark"], .dark) .home-search-results-panel,
+:is([data-theme="dark"], .dark) .home-search-item,
+:is([data-theme="dark"], .dark) .stotra-list-item:not(.today-stotra-card) {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+:is([data-theme="dark"], .dark) .home-panchang-widget {
+  background: #171220;
+  border-color: rgba(244, 199, 106, 0.34);
+}
+
+:is([data-theme="dark"], .dark) .hpw-cell,
+:is([data-theme="dark"], .dark) .tag-chip,
+:is([data-theme="dark"], .dark) .panch-focus-chip,
+:is([data-theme="dark"], .dark) .home-vara-chip,
+:is([data-theme="dark"], .dark) .home-date-widget {
+  background: #241d30;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+:is([data-theme="dark"], .dark) .page-title,
+:is([data-theme="dark"], .dark) .home-title-v2,
+:is([data-theme="dark"], .dark) .home-section-title,
+:is([data-theme="dark"], .dark) .reader-title,
+:is([data-theme="dark"], .dark) .stotra-list-title,
+:is([data-theme="dark"], .dark) .today-stotra-title,
+:is([data-theme="dark"], .dark) .ql-title,
+:is([data-theme="dark"], .dark) .card-title,
+:is([data-theme="dark"], .dark) .home-search-item-title,
+:is([data-theme="dark"], .dark) .pec-val,
+:is([data-theme="dark"], .dark) .ptc-val,
+:is([data-theme="dark"], .dark) .hpw-cell-val {
+  color: var(--text);
+}
+
+:is([data-theme="dark"], .dark) .page-subtitle,
+:is([data-theme="dark"], .dark) .home-tagline-v2,
+:is([data-theme="dark"], .dark) .home-section-sub,
+:is([data-theme="dark"], .dark) .reader-subtitle,
+:is([data-theme="dark"], .dark) .reader-paragraph,
+:is([data-theme="dark"], .dark) .reader-text,
+:is([data-theme="dark"], .dark) .stotra-list-meta,
+:is([data-theme="dark"], .dark) .today-stotra-meta,
+:is([data-theme="dark"], .dark) .ql-sub,
+:is([data-theme="dark"], .dark) .body-copy,
+:is([data-theme="dark"], .dark) .card-copy,
+:is([data-theme="dark"], .dark) .quick-card-copy,
+:is([data-theme="dark"], .dark) .feature-card-copy,
+:is([data-theme="dark"], .dark) .mini-card-copy,
+:is([data-theme="dark"], .dark) .record-card-copy,
+:is([data-theme="dark"], .dark) .home-search-item-meta,
+:is([data-theme="dark"], .dark) .home-search-item-preview,
+:is([data-theme="dark"], .dark) .hpw-location-label,
+:is([data-theme="dark"], .dark) .hpw-unavail,
+:is([data-theme="dark"], .dark) .panch-muted,
+:is([data-theme="dark"], .dark) .panch-focus-note,
+:is([data-theme="dark"], .dark) .panch-debug-row span {
+  color: var(--text-muted);
+}
+
+:is([data-theme="dark"], .dark) .section-kicker,
+:is([data-theme="dark"], .dark) .pec-label,
+:is([data-theme="dark"], .dark) .hpw-eyebrow,
+:is([data-theme="dark"], .dark) .hpw-cell-label,
+:is([data-theme="dark"], .dark) .panchang-eyebrow {
+  color: var(--gold);
+}
+
+:is([data-theme="dark"], .dark) input,
+:is([data-theme="dark"], .dark) textarea,
+:is([data-theme="dark"], .dark) select,
+:is([data-theme="dark"], .dark) .admin-input,
+:is([data-theme="dark"], .dark) .search-bar,
+:is([data-theme="dark"], .dark) .panch-date-input {
+  background: #1f1a2b;
+  color: var(--text);
+  -webkit-text-fill-color: var(--text);
+  border-color: rgba(255, 235, 200, 0.22);
+  color-scheme: dark;
+}
+
+:is([data-theme="dark"], .dark) input::placeholder,
+:is([data-theme="dark"], .dark) textarea::placeholder,
+:is([data-theme="dark"], .dark) .admin-input::placeholder,
+:is([data-theme="dark"], .dark) .search-bar::placeholder {
+  color: #c8bfaf;
+  opacity: 1;
+}
+
+:is([data-theme="dark"], .dark) option {
+  background: #1f1a2b;
+  color: var(--text);
+}
+
+:is([data-theme="dark"], .dark) .secondary-button,
+:is([data-theme="dark"], .dark) .panch-ctrl-btn,
+:is([data-theme="dark"], .dark) .panch-rec-item,
+:is([data-theme="dark"], .dark) .panch-city-opt,
+:is([data-theme="dark"], .dark) .panch-city-detect,
+:is([data-theme="dark"], .dark) .nav-item {
+  background: #241d30;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+:is([data-theme="dark"], .dark) .nav-item-active,
+:is([data-theme="dark"], .dark) .action-button,
+:is([data-theme="dark"], .dark) .cropper-btn-done {
+  background: var(--accent);
+  color: #1a0f08;
+  border-color: transparent;
+}
+
+:is([data-theme="dark"], .dark) .panch-error-box {
+  background: rgba(255, 138, 61, 0.12);
+  border-color: rgba(255, 138, 61, 0.34);
+  color: var(--text);
+}
+
+:is([data-theme="dark"], .dark) .panch-error-title {
+  color: var(--text);
+}
+
+:is([data-theme="dark"], .dark) .panch-error-text,
+:is([data-theme="dark"], .dark) .panch-info-strip {
+  color: var(--text-muted);
+}
+
 /* Final dark-mode contrast overrides kept last so older component rules cannot hide text. */
 [data-theme="dark"] {
   --bg-base: #100D18;
@@ -4838,6 +5297,100 @@ body {
 [data-theme="dark"] .cropper-btn-done {
   background: var(--saffron);
   color: #1A0F08;
+}
+
+/* High-specificity dark contrast guard for later legacy rules. */
+[data-theme="dark"] .app-shell,
+[data-theme="dark"] .page-title,
+[data-theme="dark"] .home-title-v2,
+[data-theme="dark"] .home-section-title,
+[data-theme="dark"] .reader-title,
+[data-theme="dark"] .stotra-list-title,
+[data-theme="dark"] .ql-title,
+[data-theme="dark"] .card-title,
+[data-theme="dark"] .pec-val,
+[data-theme="dark"] .ptc-val,
+[data-theme="dark"] .hpw-cell-val {
+  color: var(--text) !important;
+}
+
+[data-theme="dark"] .page-subtitle,
+[data-theme="dark"] .home-tagline-v2,
+[data-theme="dark"] .home-section-sub,
+[data-theme="dark"] .reader-subtitle,
+[data-theme="dark"] .reader-paragraph,
+[data-theme="dark"] .reader-text,
+[data-theme="dark"] .stotra-list-meta,
+[data-theme="dark"] .today-stotra-meta,
+[data-theme="dark"] .ql-sub,
+[data-theme="dark"] .body-copy,
+[data-theme="dark"] .card-copy,
+[data-theme="dark"] .quick-card-copy,
+[data-theme="dark"] .feature-card-copy,
+[data-theme="dark"] .mini-card-copy,
+[data-theme="dark"] .record-card-copy,
+[data-theme="dark"] .hpw-location-label,
+[data-theme="dark"] .hpw-unavail,
+[data-theme="dark"] .panch-muted,
+[data-theme="dark"] .panch-focus-note {
+  color: var(--text-muted) !important;
+}
+
+[data-theme="dark"] .home-panchang-widget,
+[data-theme="dark"] .admin-studio,
+[data-theme="dark"] .admin-card,
+[data-theme="dark"] .reader-panel,
+[data-theme="dark"] .content-card,
+[data-theme="dark"] .editorial-card,
+[data-theme="dark"] .form-card,
+[data-theme="dark"] .stotra-card,
+[data-theme="dark"] .deity-card,
+[data-theme="dark"] .pooja-card,
+[data-theme="dark"] .panch-control-panel,
+[data-theme="dark"] .panch-elem-card,
+[data-theme="dark"] .panch-timing-card,
+[data-theme="dark"] .panch-focus-card,
+[data-theme="dark"] .home-rec-card,
+[data-theme="dark"] .home-quicklink-item,
+[data-theme="dark"] .stotra-list-item:not(.today-stotra-card) {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+[data-theme="dark"] .home-panchang-widget {
+  background: #171220 !important;
+  border-color: rgba(244, 199, 106, 0.34) !important;
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select,
+[data-theme="dark"] .admin-input,
+[data-theme="dark"] .search-bar,
+[data-theme="dark"] .panch-date-input {
+  background: #1f1a2b !important;
+  color: var(--text) !important;
+  -webkit-text-fill-color: var(--text) !important;
+  border-color: rgba(255, 235, 200, 0.22) !important;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder,
+[data-theme="dark"] .admin-input::placeholder,
+[data-theme="dark"] .search-bar::placeholder {
+  color: #c8bfaf !important;
+  opacity: 1;
+}
+
+[data-theme="dark"] .secondary-button,
+[data-theme="dark"] .panch-ctrl-btn,
+[data-theme="dark"] .panch-rec-item,
+[data-theme="dark"] .panch-city-opt,
+[data-theme="dark"] .nav-item:not(.nav-item-active) {
+  background: #241d30 !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
 }
 
 /* Final home hero sizing override. */

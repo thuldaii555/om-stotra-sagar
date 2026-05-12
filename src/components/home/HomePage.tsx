@@ -74,6 +74,7 @@ export default function HomePage({
   const [panchangLoading, setPanchangLoading] = useState(true);
   const [panchangCity, setPanchangCity] = useState(language === 'ne' ? 'काठमाडौं, नेपाल' : 'Kathmandu, Nepal');
   const [panchangUnavailable, setPanchangUnavailable] = useState(false);
+  const [panchangMessage, setPanchangMessage] = useState('');
   const [now, setNow] = useState(() => new Date());
   const featuredContent = (filteredStotras.length > 0 ? filteredStotras : stotras).slice(0, 5);
   const dailyStotra = stotras.length > 0 ? stotras[getDailyStoraIndex(stotras)] : null;
@@ -138,9 +139,14 @@ export default function HomePage({
         lng: lo,
         timezone: tz,
         language,
+        debug: import.meta.env.DEV,
       });
       setHomePanchang(result.result);
       setPanchangUnavailable(result.status !== 'success');
+      setPanchangMessage(result.status === 'success' ? '' : result.message);
+      if (result.status !== 'success') {
+        console.error('Home Panchang load issue:', { message: result.message, debug: result.debug });
+      }
       setPanchangCity(city);
       setPanchangLoading(false);
     }
@@ -279,7 +285,7 @@ export default function HomePage({
                   {homePanchang?.festivals?.[0] || homePanchang?.specialOccasions?.[0] ? (
                     <p className="hpw-special">{homePanchang.festivals?.[0] || homePanchang.specialOccasions?.[0]}</p>
                   ) : panchangUnavailable ? (
-                    <p className="hpw-unavail">{language === 'ne' ? 'पञ्चाङ्ग विवरण अहिले उपलब्ध छैन।' : 'Panchang details are temporarily unavailable.'}</p>
+                    <p className="hpw-unavail">{panchangMessage || (language === 'ne' ? 'पञ्चाङ्ग विवरण अहिले उपलब्ध छैन।' : 'Panchang details are temporarily unavailable.')}</p>
                   ) : null}
                   <span className="hpw-action">{language === 'ne' ? 'पूरा पञ्चाङ्ग हेर्नुहोस्' : 'View full Panchang'}</span>
                 </>

@@ -746,6 +746,7 @@ export default function App() {
             setActiveDeity(deity);
             handleViewChange('gods');
           }}
+          debugVisible={adminUnlocked}
         />
       ) : activeView === 'favorites' ? (
         <FavoritesPage

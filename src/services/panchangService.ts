@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import type { PanchangField, PanchangLocation, PanchangRequest, PanchangResult } from '../types';
+import type { PanchangDebugInfo, PanchangField, PanchangLocation, PanchangRequest, PanchangResult } from '../types';
 
 const ENDPOINT = '/.netlify/functions/get-panchang';
 export const PANCHANG_LOCATION_KEY = 'om-stotra-sagar-panchang-location';
@@ -10,6 +10,7 @@ export interface PanchangFetchState {
   status: PanchangFetchStatus;
   result: PanchangResult | null;
   message: string;
+  debug?: PanchangDebugInfo;
 }
 
 export interface LocalPanchangInfo {
@@ -52,6 +53,7 @@ type PanchangFunctionResponse = {
   festivals?: unknown;
   specialOccasions?: unknown;
   rawSummary?: string;
+  debug?: PanchangDebugInfo;
 };
 
 export const DEFAULT_PANCHANG_LOCATION: SavedPanchangLocation = {
@@ -113,6 +115,7 @@ export async function fetchPanchang(request: PanchangRequest): Promise<PanchangF
     timezone: request.timezone,
   });
   if (request.language) params.set('language', request.language);
+  if (request.debug) params.set('debug', '1');
 
   try {
     const response = await fetch(`${ENDPOINT}?${params.toString()}`);
@@ -129,10 +132,10 @@ export async function fetchPanchang(request: PanchangRequest): Promise<PanchangF
     if (!response.ok) {
       const message = payload?.message || payload?.error || 'Unable to load Panchang right now.';
       if (response.status === 503 || payload?.configured === false || /not configured/i.test(message)) {
-        return { status: 'notConfigured', result: null, message };
+        return { status: 'notConfigured', result: null, message, debug: payload?.debug };
       }
-      console.error('Panchang API request failed:', { status: response.status, message });
-      return { status: 'error', result: null, message };
+      console.error('Panchang API request failed:', { status: response.status, message, debug: payload?.debug });
+      return { status: 'error', result: null, message: 'Panchang API returned an error. Please check API key/provider configuration.', debug: payload?.debug };
     }
 
     if (!payload || payload.configured === false || !payload.panchang) {
@@ -140,16 +143,22 @@ export async function fetchPanchang(request: PanchangRequest): Promise<PanchangF
         status: 'notConfigured',
         result: null,
         message: payload?.message || 'Panchang calculation source is not configured yet.',
+        debug: payload?.debug,
       };
     }
 
     const result = normalizePanchangResult(payload, request);
     if (!hasAnyCalculatedField(result)) {
-      console.error('Panchang response missing expected fields:', Object.keys(getSourceObject(payload)));
+      console.error('Panchang source responded, but values could not be mapped:', {
+        providerKeys: payload.debug?.providerKeys || Object.keys(getSourceObject(payload)),
+        normalizedKeys: payload.debug?.normalizedKeys || [],
+        message: payload.message,
+      });
       return {
         status: 'error',
-        result: null,
-        message: payload.message || 'Panchang details are temporarily unavailable.',
+        result,
+        message: payload.message || 'Panchang source responded, but values could not be mapped.',
+        debug: payload.debug,
       };
     }
 
@@ -157,6 +166,7 @@ export async function fetchPanchang(request: PanchangRequest): Promise<PanchangF
       status: 'success',
       result,
       message: payload.message || result.message || '',
+      debug: payload.debug,
     };
   } catch (error) {
     console.error('Panchang fetch failed:', error);
@@ -181,10 +191,10 @@ export function normalizePanchangResult(payload: PanchangFunctionResponse, reque
     tithi: normalizeField(findValue(source, ['tithi', 'tithi_name']) ?? payload.tithi),
     nakshatra: normalizeField(findValue(source, ['nakshatra', 'nakshatra_name']) ?? payload.nakshatra),
     yoga: normalizeField(findValue(source, ['yoga', 'yog']) ?? payload.yoga),
-    karana: normalizeField(findValue(source, ['karana', 'karan']) ?? payload.karana),
+    karana: normalizeField(findValue(source, ['karana', 'karanas', 'karan']) ?? payload.karana),
     paksha: normalizeField(findValue(source, ['paksha']) ?? payload.paksha),
     lunarMonth: normalizeField(findValue(source, ['lunarMonth', 'lunar_month', 'maasa', 'masa', 'month']) ?? payload.lunarMonth),
-    rahuKaal: normalizeField(findValue(source, ['rahuKaal', 'rahu_kal', 'rahuKala', 'rahu_kaal']) ?? payload.rahuKaal),
+    rahuKaal: normalizeField(findValue(source, ['rahuKaal', 'rahu_kal', 'rahuKala', 'rahu_kaal', 'rahu_kalam', 'rahuKalam']) ?? payload.rahuKaal),
     abhijitMuhurat: normalizeField(findValue(source, ['abhijitMuhurat', 'abhijit_muhurta', 'abhijit_muhurat']) ?? payload.abhijitMuhurat),
     gulikaKaal: normalizeField(findValue(source, ['gulikaKaal', 'gulika_kaal', 'gulika']) ?? payload.gulikaKaal),
     yamaganda: normalizeField(findValue(source, ['yamaganda', 'yamagandam', 'yamaGanda', 'yamghanta']) ?? payload.yamaganda),
@@ -194,6 +204,7 @@ export function normalizePanchangResult(payload: PanchangFunctionResponse, reque
     specialOccasions: normalizeStringList(findValue(source, ['specialOccasions', 'special_occasions', 'special_notes', 'notes']) ?? payload.specialOccasions),
     rawSummary: extractSummary(payload, source),
     message: asString(payload.message || source.message || ''),
+    debug: payload.debug,
   };
 }
 
@@ -226,13 +237,20 @@ function normalizeField(value: unknown): PanchangField | null {
     const source = value as Record<string, unknown>;
     const details = source.details && typeof source.details === 'object' ? source.details as Record<string, unknown> : {};
     const endTimeObject = source.end_time && typeof source.end_time === 'object' ? source.end_time as Record<string, unknown> : {};
+    const timing = source.timing && typeof source.timing === 'object' ? source.timing as Record<string, unknown> : {};
+    const numericChild = firstObjectChild(source);
+    if (numericChild) return normalizeField(numericChild);
     const name = asString(
       source.name ?? source.title ?? source.value ?? source.text ?? source.label ?? source.display ??
       source.tithi_name ?? source.nakshatra_name ?? source.yoga_name ?? source.karana_name ??
+      source.weekday_name ?? source.vedic_weekday_name ?? source.lunar_month_name ?? source.lunar_month_full_name ??
       details.name ?? details.tithi_name ?? details.nakshatra_name ?? details.yoga_name ?? details.karana_name
     );
-    const start = asString(source.start ?? source.startTime ?? source.from ?? source.begin ?? source.start_time);
-    const end = asString(source.end ?? source.endTime ?? source.to ?? source.finish ?? source.end ?? endTimeObject.timings ?? source.end_time);
+    const start = asString(source.start ?? source.startTime ?? source.from ?? source.begin ?? source.start_time ?? source.starts_at ?? timing.from ?? timing.start);
+    const end = asString(
+      source.end ?? source.endTime ?? source.to ?? source.finish ?? source.end_time ?? source.ends_at ??
+      source.completes_at ?? source.completion ?? source.completed_at ?? endTimeObject.timings ?? timing.to ?? timing.end
+    );
     if (!name && !start && !end) return null;
     return {
       name: name || start || end || '',
@@ -241,6 +259,14 @@ function normalizeField(value: unknown): PanchangField | null {
     };
   }
   return null;
+}
+
+function firstObjectChild(source: Record<string, unknown>): unknown {
+  const entries = Object.entries(source);
+  const numericEntry = entries.find(([key, value]) => /^\d+$/.test(key) && value && typeof value === 'object');
+  if (numericEntry) return numericEntry[1];
+  const objectEntries = entries.filter(([, value]) => value && typeof value === 'object');
+  return entries.length > 0 && objectEntries.length === entries.length ? objectEntries[0][1] : null;
 }
 
 function findValue(source: Record<string, unknown>, keys: string[]): unknown {
